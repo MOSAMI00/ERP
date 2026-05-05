@@ -2,48 +2,93 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, SoftDeletes;
 
-    protected $table = 'userss';
-
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
-        'name',
+        'full_name',
         'email',
-        'password',
+        'phone',
+        'password_hash',
+        'avatar',
+        'type',
+        'status',
+        'ban_reason',
+        'kyc_status',
+        'rating',
+        'operations_count',
+        'governorate',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var array<int, string>
-     */
     protected $hidden = [
-        'password',
-        'remember_token',
+        'password_hash',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
             'email_verified_at' => 'datetime',
-            'password' => 'hashed',
         ];
+    }
+
+    public function getAuthPassword()
+    {
+        return $this->password_hash;
+    }
+
+    public function equipment()
+    {
+        return $this->hasMany(Equipment::class, 'owner_id');
+    }
+
+    public function rentalsAsTenant()
+    {
+        return $this->hasMany(RentalOperation::class, 'tenant_id');
+    }
+
+    public function rentalsAsOwner()
+    {
+        return $this->hasMany(RentalOperation::class, 'owner_id');
+    }
+
+    public function kycDocuments()
+    {
+        return $this->hasMany(KycDocument::class, 'user_id');
+    }
+
+    public function paymentMethods()
+    {
+        return $this->hasMany(UserPaymentMethod::class, 'user_id');
+    }
+
+    public function reviews()
+    {
+        return $this->hasMany(Review::class, 'reviewer_id');
+    }
+
+    public function disputes()
+    {
+        return $this->hasMany(Dispute::class, 'raised_by_id');
+    }
+
+    public function submittedHandoverReports()
+    {
+        return $this->hasMany(HandoverReport::class, 'submitted_by_id');
+    }
+
+    public function confirmedHandoverReports()
+    {
+        return $this->hasMany(HandoverReport::class, 'confirmed_by_id');
+    }
+
+    public function handoverDecisions()
+    {
+        return $this->hasMany(EquipmentHandover::class, 'decided_by_id');
     }
 }
