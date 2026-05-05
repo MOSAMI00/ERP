@@ -1,6 +1,14 @@
 <?php
 
 namespace App\Models;
+use App\Models\User;
+use App\Models\Equipment;
+use App\Models\Contract;
+use App\Models\Payment;
+use App\Models\HandoverReport;
+use App\Models\EquipmentHandover;
+use App\Models\Dispute;
+use App\Models\Review;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;

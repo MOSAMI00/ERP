@@ -1,6 +1,14 @@
 <?php
 
 namespace App\Models;
+use App\Models\Equipment;
+use App\Models\RentalOperation;
+use App\Models\KycDocument;
+use App\Models\UserPaymentMethod;
+use App\Models\Review;
+use App\Models\Dispute;
+use App\Models\HandoverReport;
+use App\Models\EquipmentHandover;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;

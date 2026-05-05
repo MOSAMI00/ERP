@@ -1,6 +1,9 @@
 <?php
 
 namespace App\Models;
+use App\Models\Admin;
+use App\Models\User;
+use App\Models\RentalOperation;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
