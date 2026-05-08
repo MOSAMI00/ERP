@@ -1,0 +1,49 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Equipment;
+use App\Models\EquipmentAvailability;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
+
+class EquipmentAvailabilityController extends Controller
+{
+    public function index(Equipment $equipment)
+    {
+        $this->authorize('update', $equipment);
+
+        return Inertia::render('Equipment/Availability', [
+            'equipment'    => $equipment,
+            'availability' => $equipment->availability()->get(),
+        ]);
+    }
+
+    public function store(Request $request, Equipment $equipment)
+    {
+        $this->authorize('update', $equipment);
+
+        $data = $request->validate([
+            'start_date' => ['required', 'date'],
+            'end_date'   => ['required', 'date', 'after_or_equal:start_date'],
+            'status'     => ['required', 'in:available,blocked'],
+            'note'       => ['nullable', 'string'],
+        ]);
+
+        EquipmentAvailability::create([
+            ...$data,
+            'equipment_id' => $equipment->id,
+        ]);
+
+        return back()->with('success', 'Availability updated.');
+    }
+
+    public function destroy(EquipmentAvailability $availability)
+    {
+        $this->authorize('update', $availability->equipment);
+
+        $availability->delete();
+
+        return back()->with('success', 'Availability entry removed.');
+    }
+}

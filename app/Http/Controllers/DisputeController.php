@@ -1,0 +1,68 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Dispute;
+use App\Models\EquipmentHandover;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
+
+class DisputeController extends Controller
+{
+    public function index()
+    {
+        $disputes = Dispute::where('raised_by_id', Auth::id())
+            ->with(['rental.equipment', 'handover'])
+            ->latest()
+            ->paginate(10);
+
+        return Inertia::render('Disputes/Index', [
+            'disputes' => $disputes,
+        ]);
+    }
+
+    public function create(EquipmentHandover $handover)
+    {
+        return Inertia::render('Disputes/Create', [
+            'handover' => $handover->load(['rental.equipment', 'rental.owner']),
+        ]);
+    }
+
+    public function store(Request $request)
+    {
+        $data = $request->validate([
+            'rental_op_id'          => ['required', 'exists:rental_operations,id'],
+            'equipment_handover_id' => ['required', 'exists:equipment_handover,id'],
+            'tenant_claim'          => ['required', 'string'],
+            'requested_amount'      => ['nullable', 'numeric', 'min:0'],
+        ]);
+
+        Dispute::create([
+            ...$data,
+            'raised_by_id' => Auth::id(),
+            'status'       => 'open',
+        ]);
+
+        // update rental status
+        \App\Models\RentalOperation::find($data['rental_op_id'])
+            ->update(['status' => 'disputed']);
+
+        return redirect()->route('disputes.index')
+            ->with('success', 'Dispute opened.');
+    }
+
+    public function show(Dispute $dispute)
+    {
+        $this->authorize('view', $dispute);
+
+        return Inertia::render('Disputes/Show', [
+            'dispute' => $dispute->load([
+                'rental.equipment',
+                'raisedBy',
+                'resolvedBy',
+                'handover',
+            ]),
+        ]);
+    }
+}

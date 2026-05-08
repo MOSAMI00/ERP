@@ -2,24 +2,23 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\Facades\Vite;
-use Illuminate\Support\ServiceProvider;
+use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 
-class AppServiceProvider extends ServiceProvider
+class AuthServiceProvider extends ServiceProvider
 {
-    /**
-     * Register any application services.
-     */
-    public function register(): void
-    {
-        //
-    }
+    protected $policies = [
+        \App\Models\Equipment::class          => \App\Policies\EquipmentPolicy::class,
+        \App\Models\RentalOperation::class    => \App\Policies\RentalOperationPolicy::class,
+        \App\Models\Contract::class           => \App\Policies\ContractPolicy::class,
+        \App\Models\Payment::class            => \App\Policies\PaymentPolicy::class,
+        \App\Models\HandoverReport::class     => \App\Policies\HandoverReportPolicy::class,
+        \App\Models\EquipmentHandover::class  => \App\Policies\EquipmentHandoverPolicy::class,
+        \App\Models\Dispute::class            => \App\Policies\DisputePolicy::class,
+        \App\Models\Review::class             => \App\Policies\ReviewPolicy::class,
+    ];
 
-    /**
-     * Bootstrap any application services.
-     */
     public function boot(): void
     {
-        Vite::prefetch(concurrency: 3);
+        $this->registerPolicies();
     }
 }

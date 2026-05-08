@@ -1,4 +1,5 @@
 <?php
+// app/Http/Middleware/HandleInertiaRequests.php
 
 namespace App\Http\Middleware;
 
@@ -7,33 +8,40 @@ use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
 {
-    /**
-     * The root template that is loaded on the first page visit.
-     *
-     * @var string
-     */
     protected $rootView = 'app';
 
-    /**
-     * Determine the current asset version.
-     */
     public function version(Request $request): ?string
     {
         return parent::version($request);
     }
 
-    /**
-     * Define the props that are shared by default.
-     *
-     * @return array<string, mixed>
-     */
     public function share(Request $request): array
     {
-        return [
-            ...parent::share($request),
+        return array_merge(parent::share($request), [
             'auth' => [
-                'user' => $request->user(),
+                'user' => $request->user() ? [
+                    'id'          => $request->user()->id,
+                    'full_name'   => $request->user()->full_name,
+                    'email'       => $request->user()->email,
+                    'type'        => $request->user()->type,
+                    'status'      => $request->user()->status,
+                    'kyc_status'  => $request->user()->kyc_status,
+                    'avatar'      => $request->user()->avatar,
+                    'rating'      => $request->user()->rating,
+                    'governorate' => $request->user()->governorate,
+                ] : null,
             ],
-        ];
+            'flash' => [
+                'success' => $request->session()->get('success'),
+                'error'   => $request->session()->get('error'),
+                'warning' => $request->session()->get('warning'),
+            ],
+            'notifications_count' => $request->user()
+                ? \App\Models\Notification::where('recipient_id', $request->user()->id)
+                    ->where('recipient_type', 'user')
+                    ->where('is_read', false)
+                    ->count()
+                : 0,
+        ]);
     }
 }

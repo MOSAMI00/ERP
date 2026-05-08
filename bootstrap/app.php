@@ -11,12 +11,20 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+
+        // Inertia shared data على كل طلب web
         $middleware->web(append: [
             \App\Http\Middleware\HandleInertiaRequests::class,
-            \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,
         ]);
 
-        //
+        // Aliases مختصرة للاستخدام في Routes
+        $middleware->alias([
+            'owner'      => \App\Http\Middleware\EnsureUserIsOwner::class,
+            'tenant'     => \App\Http\Middleware\EnsureUserIsTenant::class,
+            'active'     => \App\Http\Middleware\EnsureUserIsActive::class,
+            'kyc'        => \App\Http\Middleware\EnsureKycVerified::class,
+        ]);
+
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
