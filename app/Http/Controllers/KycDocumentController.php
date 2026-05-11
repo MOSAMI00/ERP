@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\KycDocument;
 use Illuminate\Http\Request;
+use App\Http\Requests\StoreKycDocumentRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
@@ -27,16 +28,12 @@ class KycDocumentController extends Controller
         return Inertia::render('Kyc/Create');
     }
 
-    public function store(Request $request)
+    public function store(StoreKycDocumentRequest $request)
     {
         /** @var User $user */
         $user = Auth::user();
 
-        $request->validate([
-            'doc_type'    => ['required', 'in:national_id,passport,military_id'],
-            'front_image' => ['required', 'image', 'mimes:jpg,jpeg,png', 'max:4096'],
-            'back_image'  => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:4096'],
-        ]);
+        $request->validated();
 
         $frontPath = $request->file('front_image')
             ->store("kyc/{$user->id}", 'public');

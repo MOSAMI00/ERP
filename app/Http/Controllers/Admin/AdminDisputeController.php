@@ -8,6 +8,7 @@ use App\Domains\Dispute\Services\DisputeWorkflowService;
 use App\Http\Controllers\Controller;
 use App\Models\Dispute;
 use Illuminate\Http\Request;
+use App\Http\Requests\Admin\ResolveDisputeRequest;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
@@ -43,13 +44,9 @@ class AdminDisputeController extends Controller
         ]);
     }
 
-    public function resolve(Request $request, Dispute $dispute)
+    public function resolve(ResolveDisputeRequest $request, Dispute $dispute)
     {
-        $data = $request->validate([
-            'admin_decision'     => ['required', 'in:accept_deduction,reject_deduction,modify_compensation'],
-            'final_compensation' => ['nullable', 'numeric', 'min:0'],
-            'admin_note'         => ['required', 'string'],
-        ]);
+        $data = $request->validated();
 
         $admin = Auth::guard('admin')->user();
         abort_unless($admin, 403);

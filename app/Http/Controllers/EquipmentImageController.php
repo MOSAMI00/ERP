@@ -5,18 +5,16 @@ namespace App\Http\Controllers;
 use App\Models\Equipment;
 use App\Models\EquipmentImage;
 use Illuminate\Http\Request;
+use App\Http\Requests\StoreEquipmentImageRequest;
 use Inertia\Inertia;
 
 class EquipmentImageController extends Controller
 {
-    public function store(Request $request, Equipment $equipment)
+    public function store(StoreEquipmentImageRequest $request, Equipment $equipment)
     {
         $this->authorize('update', $equipment);
 
-        $request->validate([
-            'images'    => ['required', 'array', 'min:1', 'max:10'],
-            'images.*'  => ['image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
-        ]);
+        $request->validated();
 
         foreach ($request->file('images') as $index => $image) {
             $path = $image->store("equipment/{$equipment->id}", 'public');

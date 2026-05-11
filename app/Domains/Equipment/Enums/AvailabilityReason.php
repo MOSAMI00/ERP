@@ -1,9 +1,8 @@
 <?php
 namespace App\Domains\Equipment\Enums;
 
-enum EquipmentStatus: string
+enum AvailabilityReason: string
 {
-    case Active  = 'active';
-    case Hidden  = 'hidden';
-    case Deleted = 'deleted';
+    case Booked       = 'booked';
+    case OwnerBlocked = 'owner_blocked';
 }

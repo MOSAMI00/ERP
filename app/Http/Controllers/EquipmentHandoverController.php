@@ -7,6 +7,7 @@ use App\Domains\Compensation\Services\CompensationWorkflowService;
 use App\Models\EquipmentHandover;
 use App\Models\RentalOperation;
 use Illuminate\Http\Request;
+use App\Http\Requests\DecideHandoverRequest;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
@@ -28,16 +29,11 @@ class EquipmentHandoverController extends Controller
         ]);
     }
 
-    public function decide(Request $request, EquipmentHandover $handover)
+    public function decide(DecideHandoverRequest $request, EquipmentHandover $handover)
     {
         $this->authorize('update', $handover);
 
-        $data = $request->validate([
-            'owner_decision'     => ['required', 'in:full_refund,partial_refund,no_refund'],
-            'proposed_deduction' => ['nullable', 'numeric', 'min:0'],
-            'final_condition'    => ['required', 'in:good,damaged,partially_damaged'],
-            'final_notes'        => ['nullable', 'string'],
-        ]);
+        $data = $request->validated();
 
         $handover->update([
             'final_condition' => $data['final_condition'],

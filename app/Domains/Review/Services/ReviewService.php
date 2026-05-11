@@ -58,6 +58,33 @@ class ReviewService
         return $review->refresh();
     }
 
+    public function deleteReview(Review $review, User $admin): void
+    {
+        DB::transaction(function () use ($review, $admin) {
+            $targetType = $review->target_type;
+            $targetId = $review->target_id;
+            
+            $review->delete();
+            
+            // Re-fetch to recalculate without this review
+            if ($targetType === 'equipment') {
+                $equipment = Equipment::find($targetId);
+                if ($equipment) {
+                    $this->recalculateEquipmentRating($equipment);
+                }
+            } else {
+                $avg = Review::where('target_type', 'user')
+                    ->where('target_id', $targetId)
+                    ->where('status', ReviewStatus::Visible->value)
+                    ->avg('rating');
+        
+                User::find($targetId)?->update(['rating' => round($avg ?? 0.0, 2)]);
+            }
+
+            $this->audit->log('review_deleted', $review, $admin);
+        });
+    }
+
     private function mustBeCompleted(RentalOperation $rental): void
     {
         if ($rental->status !== RentalStatus::Completed) {

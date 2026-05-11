@@ -6,6 +6,7 @@ use App\Domains\Review\Services\ReviewService;
 use App\Models\Review;
 use App\Models\RentalOperation;
 use Illuminate\Http\Request;
+use App\Http\Requests\StoreReviewRequest;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
@@ -24,15 +25,9 @@ class ReviewController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function store(StoreReviewRequest $request)
     {
-        $data = $request->validate([
-            'rental_op_id' => ['required', 'exists:rental_operations,id'],
-            'target_id'    => ['required', 'integer'],
-            'target_type'  => ['required', 'in:user,equipment'],
-            'rating'       => ['required', 'numeric', 'min:1', 'max:5'],
-            'review_text'  => ['nullable', 'string', 'max:1000'],
-        ]);
+        $data = $request->validated();
 
         $rental = RentalOperation::findOrFail($data['rental_op_id']);
         $this->authorize('create', [Review::class, $rental]);

@@ -8,12 +8,17 @@ use App\Domains\Rental\Enums\RentalStatus;
 use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
 use App\Models\Payment;
+use App\Domains\Payment\Services\PaymentWorkflowService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 class AdminPaymentController extends Controller
 {
+    public function __construct(
+        private PaymentWorkflowService $paymentWorkflow,
+    ) {}
+
     public function index(Request $request)
     {
         $payments = Payment::with(['rental.equipment', 'rental.tenant', 'rental.owner', 'payer'])
@@ -61,22 +66,10 @@ class AdminPaymentController extends Controller
 
     public function approve(Request $request, Payment $payment)
     {
-        $payment->update([
-            'status'  => PaymentStatus::Paid->value,
-            'paid_at' => now(),
-        ]);
+        $admin = Auth::guard('admin')->user();
+        abort_unless($admin, 403);
 
-        if ($payment->type === PaymentType::Rental && $payment->rental?->status === RentalStatus::Confirmed) {
-            $payment->rental->update(['status' => RentalStatus::Paid->value]);
-        }
-
-        AuditLog::create([
-            'admin_id'   => Auth::guard('admin')->id() ?? Auth::id(),
-            'event_type' => 'payment_approved',
-            'target_id'  => $payment->id,
-            'target_type'=> 'payment',
-            'details'    => "Payment #{$payment->id} approved by admin.",
-        ]);
+        $this->paymentWorkflow->adminApprove($payment, $admin);
 
         return back()->with('success', 'Payment approved.');
     }
@@ -87,18 +80,10 @@ class AdminPaymentController extends Controller
             'rejection_reason' => ['required', 'string', 'max:500'],
         ]);
 
-        $payment->update([
-            'status' => PaymentStatus::Failed->value,
-            'stop_reason'  => $data['rejection_reason'],
-        ]);
+        $admin = Auth::guard('admin')->user();
+        abort_unless($admin, 403);
 
-        AuditLog::create([
-            'admin_id'    => Auth::guard('admin')->id() ?? Auth::id(),
-            'event_type'  => 'payment_rejected',
-            'target_id'   => $payment->id,
-            'target_type' => 'payment',
-            'details'     => "Payment #{$payment->id} rejected. Reason: {$data['rejection_reason']}",
-        ]);
+        $this->paymentWorkflow->adminReject($payment, $admin, $data['rejection_reason']);
 
         return back()->with('success', 'Payment rejected.');
     }
@@ -110,24 +95,10 @@ class AdminPaymentController extends Controller
             'refund_reason' => ['required', 'string'],
         ]);
 
-        // إنشاء payment جديد من نوع refund
-        Payment::create([
-            'rental_op_id'   => $payment->rental_op_id,
-            'payer_id'       => $payment->payer_id,
-            'amount'         => $data['refund_amount'],
-            'type'           => PaymentType::InsuranceRefund->value,
-            'payment_method' => $payment->payment_method,
-            'status'         => PaymentStatus::Paid->value,
-            'transferred_at' => now(),
-        ]);
+        $admin = Auth::guard('admin')->user();
+        abort_unless($admin, 403);
 
-        AuditLog::create([
-            'admin_id'    => Auth::guard('admin')->id() ?? Auth::id(),
-            'event_type'  => 'payment_refunded',
-            'target_id'   => $payment->id,
-            'target_type' => 'payment',
-            'details'     => "Refund of {$data['refund_amount']} issued for Payment #{$payment->id}. Reason: {$data['refund_reason']}",
-        ]);
+        $this->paymentWorkflow->adminRefund($payment, $admin, (float) $data['refund_amount'], $data['refund_reason']);
 
         return back()->with('success', 'Refund issued successfully.');
     }

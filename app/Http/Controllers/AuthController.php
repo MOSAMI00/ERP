@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use App\Http\Requests\Auth\RegisterRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -39,16 +40,9 @@ class AuthController extends Controller
         return Inertia::render('Auth/Register');
     }
 
-    public function register(Request $request)
+    public function register(RegisterRequest $request)
     {
-        $data = $request->validate([
-            'full_name'  => ['required', 'string', 'max:255'],
-            'email'      => ['required', 'email', 'unique:users'],
-            'phone'      => ['nullable', 'string', 'unique:users'],
-            'password'   => ['required', 'confirmed', 'min:8'],
-            'type'       => ['nullable', 'in:tenant,owner'],
-            'governorate'=> ['nullable', 'string'],
-        ]);
+        $data = $request->validated();
 
         $password = $data['password'];
         unset($data['password'], $data['password_confirmation']);

@@ -138,6 +138,68 @@ class PaymentWorkflowService
     }
 
     // ══════════════════════════════════════════
+    // ADMIN ACTIONS
+    // ══════════════════════════════════════════
+
+    public function adminApprove(Payment $payment, \App\Models\Admin $admin): Payment
+    {
+        return DB::transaction(function () use ($payment, $admin) {
+            $payment = Payment::query()->whereKey($payment->id)->lockForUpdate()->firstOrFail();
+            $rental = $payment->rental()->lockForUpdate()->first();
+
+            $this->updatePaymentStatus->handle($payment, PaymentStatus::Paid);
+            $payment->update(['paid_at' => now()]);
+
+            if ($rental && $payment->type === PaymentType::Rental->value && $rental->status === RentalStatus::Confirmed->value) {
+                $this->updateRentalStatus->handle($rental, RentalStatus::Paid);
+            }
+
+            $this->audit->log('payment_approved', $payment, $admin);
+
+            return $payment;
+        });
+    }
+
+    public function adminReject(Payment $payment, \App\Models\Admin $admin, string $reason): Payment
+    {
+        return DB::transaction(function () use ($payment, $admin, $reason) {
+            $payment = Payment::query()->whereKey($payment->id)->lockForUpdate()->firstOrFail();
+
+            $this->updatePaymentStatus->handle($payment, PaymentStatus::Failed);
+            $payment->update(['stop_reason' => $reason]);
+
+            $this->audit->log('payment_rejected', $payment, $admin);
+
+            return $payment;
+        });
+    }
+
+    public function adminRefund(Payment $payment, \App\Models\Admin $admin, float $amount, string $reason): Payment
+    {
+        return DB::transaction(function () use ($payment, $admin, $amount, $reason) {
+            $payment = Payment::query()->whereKey($payment->id)->lockForUpdate()->firstOrFail();
+
+            if ($amount > $payment->amount) {
+                throw new \DomainException("Refund amount cannot exceed payment amount.");
+            }
+
+            $refund = Payment::create([
+                'rental_op_id'   => $payment->rental_op_id,
+                'payer_id'       => $payment->payer_id,
+                'amount'         => $amount,
+                'type'           => PaymentType::InsuranceRefund->value,
+                'payment_method' => $payment->payment_method,
+                'status'         => PaymentStatus::Paid->value,
+                'transferred_at' => now(),
+            ]);
+
+            $this->audit->log('payment_refunded', $payment, $admin);
+
+            return $refund;
+        });
+    }
+
+    // ══════════════════════════════════════════
     // Private helpers
     // ══════════════════════════════════════════
 

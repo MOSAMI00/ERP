@@ -6,6 +6,7 @@ use App\Domains\Payment\Services\PaymentWorkflowService;
 use App\Models\Payment;
 use App\Models\RentalOperation;
 use Illuminate\Http\Request;
+use App\Http\Requests\StorePaymentRequest;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
@@ -40,13 +41,9 @@ class PaymentController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function store(StorePaymentRequest $request)
     {
-        $data = $request->validate([
-            'rental_op_id'     => ['required', 'exists:rental_operations,id'],
-            'payment_method'   => ['required', 'in:bank_transfer,cash,platform_wallet'],
-            'transaction_ref'  => ['nullable', 'string'],
-        ]);
+        $data = $request->validated();
 
         $rental = RentalOperation::findOrFail($data['rental_op_id']);
         $this->authorize('view', $rental);

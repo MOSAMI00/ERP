@@ -6,6 +6,7 @@ use App\Domains\Equipment\Enums\AvailabilityReason;
 use App\Models\Equipment;
 use App\Models\EquipmentAvailability;
 use Illuminate\Http\Request;
+use App\Http\Requests\StoreEquipmentAvailabilityRequest;
 use Inertia\Inertia;
 
 class EquipmentAvailabilityController extends Controller
@@ -20,16 +21,11 @@ class EquipmentAvailabilityController extends Controller
         ]);
     }
 
-    public function store(Request $request, Equipment $equipment)
+    public function store(StoreEquipmentAvailabilityRequest $request, Equipment $equipment)
     {
         $this->authorize('update', $equipment);
 
-        $data = $request->validate([
-            'start_date' => ['required', 'date'],
-            'end_date'   => ['required', 'date', 'after_or_equal:start_date'],
-            'status'     => ['required', 'in:available,blocked'],
-            'note'       => ['nullable', 'string'],
-        ]);
+        $data = $request->validated();
 
         if ($data['status'] === 'available') {
             EquipmentAvailability::where('equipment_id', $equipment->id)

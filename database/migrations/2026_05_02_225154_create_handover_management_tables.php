@@ -83,8 +83,7 @@ return new class extends Migration
 
             $table->timestamps();
 
-            $table->index(['rental_op_id', 'owner_decision']);
-            $table->index('objection_deadline');
+           
         });
 
         /*
@@ -133,6 +132,8 @@ return new class extends Migration
             $table->timestamp('objection_submitted_at')->nullable();
 
             $table->timestamps();
+             $table->index(['rental_op_id', 'owner_decision']);
+            $table->index('objection_deadline');
         });
     }
 

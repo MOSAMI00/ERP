@@ -6,6 +6,7 @@ use App\Domains\Dispute\Services\DisputeWorkflowService;
 use App\Models\Dispute;
 use App\Models\EquipmentHandover;
 use Illuminate\Http\Request;
+use App\Http\Requests\StoreDisputeRequest;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
@@ -34,14 +35,9 @@ class DisputeController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function store(StoreDisputeRequest $request)
     {
-        $data = $request->validate([
-            'rental_op_id'          => ['required', 'exists:rental_operations,id'],
-            'equipment_handover_id' => ['required', 'exists:equipment_handover,id'],
-            'tenant_claim'          => ['required', 'string'],
-            'requested_amount'      => ['nullable', 'numeric', 'min:0'],
-        ]);
+        $data = $request->validated();
 
         $handover = EquipmentHandover::with('rental')->findOrFail($data['equipment_handover_id']);
         abort_unless((int) $handover->rental_op_id === (int) $data['rental_op_id'], 422);

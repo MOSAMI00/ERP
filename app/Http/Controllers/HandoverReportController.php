@@ -6,6 +6,7 @@ use App\Domains\Handover\Services\HandoverWorkflowService;
 use App\Models\HandoverReport;
 use App\Models\RentalOperation;
 use Illuminate\Http\Request;
+use App\Http\Requests\StoreHandoverReportRequest;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
@@ -25,17 +26,9 @@ class HandoverReportController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function store(StoreHandoverReportRequest $request)
     {
-        $data = $request->validate([
-            'rental_op_id'     => ['required', 'exists:rental_operations,id'],
-            'phase'            => ['required', 'in:delivery,return'],
-            'notes'            => ['nullable', 'string'],
-            'has_issues'       => ['required', 'boolean'],
-            'condition_status' => ['required', 'in:good,damaged,partially_damaged'],
-            'images'           => ['nullable', 'array'],
-            'images.*'         => ['image', 'max:4096'],
-        ]);
+        $data = $request->validated();
 
         $user = Auth::user();
         $rental = RentalOperation::findOrFail($data['rental_op_id']);

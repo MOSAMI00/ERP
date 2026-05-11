@@ -7,6 +7,8 @@ use App\Models\User;
 use App\Models\RentalOperation;
 use App\Models\Equipment;
 use Illuminate\Http\Request;
+use App\Http\Requests\StoreRentalRequest;
+use App\Http\Requests\CancelRentalRequest;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
@@ -37,14 +39,9 @@ class RentalOperationController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function store(StoreRentalRequest $request)
     {
-        $data = $request->validate([
-            'equipment_id'      => ['required', 'exists:equipment,id'],
-            'start_date'        => ['required', 'date', 'after:today'],
-            'end_date'          => ['required', 'date', 'after:start_date'],
-            'delivery_location' => ['required', 'string'],
-        ]);
+        $data = $request->validated();
 
         $rental = $this->workflow->createRental($data, $request->user());
 
@@ -72,13 +69,11 @@ class RentalOperationController extends Controller
         return back()->with('success', 'Rental confirmed.');
     }
 
-    public function cancel(Request $request, RentalOperation $rental)
+    public function cancel(CancelRentalRequest $request, RentalOperation $rental)
     {
         $this->authorize('cancel', $rental);
 
-        $data = $request->validate([
-            'cancellation_reason' => ['required', 'string'],
-        ]);
+        $data = $request->validated();
 
         if ((int) Auth::id() === (int) $rental->owner_id) {
             $this->workflow->cancelByOwner($rental, $data['cancellation_reason']);

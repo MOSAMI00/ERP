@@ -6,6 +6,8 @@ use App\Models\User;
 use App\Models\Equipment;
 use App\Models\Category;
 use Illuminate\Http\Request;
+use App\Http\Requests\StoreEquipmentRequest;
+use App\Http\Requests\UpdateEquipmentRequest;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
@@ -30,21 +32,12 @@ class EquipmentController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function store(StoreEquipmentRequest $request)
     {
         /** @var User $user */
         $user = Auth::user();
 
-        $data = $request->validate([
-            'category_id'      => ['required', 'exists:categories,id'],
-            'name'             => ['required', 'string', 'max:255'],
-            'description'      => ['required', 'string'],
-            'governorate'      => ['required', 'string'],
-            'address'          => ['required', 'string'],
-            'price_per_day'    => ['required', 'numeric', 'min:0'],
-            'insurance_amount' => ['required', 'numeric', 'min:0'],
-            'rental_terms'     => ['required', 'string'],
-        ]);
+        $data = $request->validated();
 
         $equipment = $user->equipment()->create($data);
 
@@ -71,20 +64,11 @@ class EquipmentController extends Controller
         ]);
     }
 
-    public function update(Request $request, Equipment $equipment)
+    public function update(UpdateEquipmentRequest $request, Equipment $equipment)
     {
         $this->authorize('update', $equipment);
 
-        $data = $request->validate([
-            'name'             => ['required', 'string', 'max:255'],
-            'description'      => ['required', 'string'],
-            'governorate'      => ['required', 'string'],
-            'address'          => ['required', 'string'],
-            'price_per_day'    => ['required', 'numeric', 'min:0'],
-            'insurance_amount' => ['required', 'numeric', 'min:0'],
-            'rental_terms'     => ['required', 'string'],
-            'status'           => ['nullable', 'in:active,hidden'],
-        ]);
+        $data = $request->validated();
 
         $equipment->update($data);
 
