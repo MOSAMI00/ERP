@@ -4,6 +4,7 @@ namespace App\Domains\User\Services;
 
 use App\Domains\User\Actions\UpdateKycStatusAction;
 use App\Domains\User\Enums\KycStatus;
+use App\Domains\Shared\Exceptions\InvalidStateTransitionException;
 use App\Shared\Audit\AuditLogService;
 use App\Shared\Notifications\NotificationService;
 use App\Models\KycDocument;
@@ -21,7 +22,7 @@ class KycVerificationService
     public function approve(KycDocument $document, Admin $admin): KycDocument
     {
         if ($document->status !== KycStatus::Pending) {
-            throw new \DomainException('Only pending KYC documents can be approved.');
+            throw InvalidStateTransitionException::expected('pending', $document->status->value ?? $document->status);
         }
 
         DB::transaction(function () use ($document, $admin) {
@@ -38,7 +39,7 @@ class KycVerificationService
     public function reject(KycDocument $document, Admin $admin, string $reason): KycDocument
     {
         if ($document->status !== KycStatus::Pending) {
-            throw new \DomainException('Only pending KYC documents can be rejected.');
+            throw InvalidStateTransitionException::expected('pending', $document->status->value ?? $document->status);
         }
 
         DB::transaction(function () use ($document, $admin, $reason) {

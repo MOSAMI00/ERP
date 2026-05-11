@@ -3,6 +3,7 @@
 namespace App\Domains\Rental\Services;
 
 use App\Domains\Rental\Enums\RentalStatus;
+use App\Domains\Shared\Exceptions\InvalidStateTransitionException;
 use App\Models\RentalOperation;
 
 class RentalStateResolver
@@ -104,18 +105,16 @@ class RentalStateResolver
     private function mustBe(RentalOperation $rental, RentalStatus $status): void
     {
         if ($rental->status !== $status) {
-            throw new \DomainException(
-                "Expected [{$status->value}], got [{$rental->status->value}]"
-            );
+            throw InvalidStateTransitionException::expected($status->value, $rental->status->value);
         }
     }
 
     private function mustBeIn(RentalOperation $rental, array $statuses): void
     {
         if (! $this->hasStatus($rental, $statuses)) {
-            $allowed = implode(', ', array_map(fn($s) => $s->value, $statuses));
-            throw new \DomainException(
-                "Expected one of [{$allowed}], got [{$rental->status->value}]"
+            throw InvalidStateTransitionException::expectedOneOf(
+                array_map(fn($s) => $s->value, $statuses),
+                $rental->status->value,
             );
         }
     }
@@ -123,7 +122,7 @@ class RentalStateResolver
     private function mustNotBeExpired(RentalOperation $rental): void
     {
         if ($this->isDeadlineExpired($rental)) {
-            throw new \DomainException('Payment deadline has expired.');
+            throw InvalidStateTransitionException::expected('payment deadline not expired', 'expired');
         }
     }
 

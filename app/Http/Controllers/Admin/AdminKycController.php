@@ -6,6 +6,7 @@ use App\Domains\User\Services\KycVerificationService;
 use App\Http\Controllers\Controller;
 use App\Models\KycDocument;
 use Illuminate\Http\Request;
+use App\Http\Requests\Admin\RejectKycRequest;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
@@ -38,14 +39,12 @@ class AdminKycController extends Controller
         return back()->with('success', 'KYC approved.');
     }
 
-    public function reject(Request $request, KycDocument $document)
+    public function reject(RejectKycRequest $request, KycDocument $document)
     {
         $admin = Auth::guard('admin')->user();
         abort_unless($admin, 403);
 
-        $data = $request->validate([
-            'rejection_reason' => ['nullable', 'string', 'max:1000'],
-        ]);
+        $data = $request->validated();
 
         $this->kyc->reject($document, $admin, $data['rejection_reason'] ?? 'Rejected by admin.');
 

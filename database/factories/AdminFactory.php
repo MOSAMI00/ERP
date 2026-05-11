@@ -15,13 +15,35 @@ class AdminFactory extends Factory
     public function definition(): array
     {
         return [
-            'full_name' => fake()->name(),
+            'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
-            'phone' => fake()->unique()->numerify('05########'),
-            'role_id' => 1,
-            'is_active' => true,
             'password_hash' => static::$password ??= Hash::make('password'),
-            'remember_token' => Str::random(10),
+            'role_id' => $this->ensureAdminRole(),
+            'status' => 'active',
         ];
+    }
+
+    /**
+     * Ensure an admin role exists and return its ID.
+     * This prevents FK violations in test environments using RefreshDatabase.
+     */
+    private function ensureAdminRole(): int
+    {
+        $role = \App\Models\AdminRole::firstOrCreate(
+            ['role_name' => 'Super Admin'],
+            [
+                'role_name' => 'Super Admin',
+                'can_manage_users' => true,
+                'can_manage_equipment' => true,
+                'can_manage_rentals' => true,
+                'can_manage_disputes' => true,
+                'can_manage_financial' => true,
+                'can_manage_reviews' => true,
+                'can_view_audit_log' => true,
+                'can_manage_settings' => true,
+            ],
+        );
+
+        return $role->id;
     }
 }

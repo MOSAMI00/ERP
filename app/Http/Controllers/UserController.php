@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use App\Http\Requests\UpdateProfileRequest;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
@@ -20,17 +21,12 @@ class UserController extends Controller
         ]);
     }
 
-    public function update(Request $request)
+    public function update(UpdateProfileRequest $request)
     {
         /** @var User $user */
         $user = Auth::user();
 
-        $data = $request->validate([
-            'full_name'   => ['required', 'string', 'max:255'],
-            'phone'       => ['required', 'string', 'unique:users,phone,' . $user->id],
-            'governorate' => ['required', 'string'],
-            'avatar'      => ['nullable', 'image', 'max:2048'],
-        ]);
+        $data = $request->validated();
 
         if ($request->hasFile('avatar')) {
             $data['avatar'] = $request->file('avatar')->store('avatars', 'public');

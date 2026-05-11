@@ -3,6 +3,7 @@
 namespace App\Domains\Rental\Actions;
 
 use App\Domains\Rental\Enums\RentalStatus;
+use App\Domains\Shared\Exceptions\UnauthorizedDomainActionException;
 use App\Models\Equipment;
 use App\Models\RentalOperation;
 use App\Models\User;
@@ -15,7 +16,7 @@ class CreateRentalAction
         $equipment = Equipment::findOrFail($data['equipment_id']);
 
         if ((int) $equipment->owner_id === (int) $tenant->id) {
-            throw new \DomainException('Owner cannot rent their own equipment.');
+            throw new UnauthorizedDomainActionException('Owner cannot rent their own equipment.');
         }
 
         $start = Carbon::parse($data['start_date']);

@@ -16,6 +16,8 @@ use App\Http\Controllers\KycDocumentController;
 use App\Http\Controllers\UserPaymentMethodController;
 use App\Http\Controllers\NotificationController;
 
+use App\Http\Controllers\UserController;
+
 use App\Http\Controllers\Admin\AdminAuthController;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\AdminKycController;
@@ -54,6 +56,9 @@ require __DIR__.'/auth.php';
 // USER ROUTES (Requires Authentication)
 // ==========================================
 Route::middleware(['auth'])->group(function () {
+    // User Profile (domain-specific)
+    Route::get('user/profile', [UserController::class, 'profile'])->name('user.profile');
+    Route::put('user/profile', [UserController::class, 'update'])->name('user.profile.update');
     // Categories & Equipment (Publicly viewable parts can be extracted if needed, but assuming auth for now)
     Route::resource('categories', CategoryController::class)->only(['index', 'show']);
     Route::resource('equipment', EquipmentController::class);

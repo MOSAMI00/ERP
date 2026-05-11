@@ -13,6 +13,9 @@ use App\Domains\Payment\Services\PaymentWorkflowService;
 use App\Domains\Rental\Actions\UpdateRentalStatusAction;
 use App\Domains\Rental\Enums\RentalStatus;
 use App\Domains\Rental\Services\RentalStateResolver;
+use App\Domains\Shared\Exceptions\DuplicateOperationException;
+use App\Domains\Shared\Exceptions\InvalidStateTransitionException;
+use App\Domains\Shared\Exceptions\PaymentException;
 use App\Models\EquipmentHandover;
 use App\Models\RentalOperation;
 use App\Shared\Audit\AuditLogService;
@@ -191,9 +194,7 @@ class CompensationWorkflowService
     private function mustNotHaveHandover(RentalOperation $rental): void
     {
         if ($rental->equipmentHandover()->exists()) {
-            throw new \DomainException(
-                "Rental [{$rental->id}] already has an equipment handover record."
-            );
+            throw DuplicateOperationException::forModel('EquipmentHandover', $rental->id);
         }
     }
 
@@ -210,25 +211,21 @@ class CompensationWorkflowService
             ->exists();
 
         if (! $tenantSubmitted || ! $ownerSubmitted) {
-            throw new \DomainException('Both return handover reports are required before compensation evaluation.');
+            throw new InvalidStateTransitionException('Both return handover reports are required before compensation evaluation.');
         }
     }
 
     private function mustBePendingDecision(EquipmentHandover $handover): void
     {
         if ($handover->owner_decision !== null) {
-            throw new \DomainException(
-                "Handover [{$handover->id}] already has a decision: [{$handover->owner_decision->value}]"
-            );
+            throw InvalidStateTransitionException::expected('pending decision', $handover->owner_decision->value ?? 'decided');
         }
     }
 
     private function mustBeWithinObjectionWindow(EquipmentHandover $handover): void
     {
         if ($this->isObjectionWindowExpired($handover)) {
-            throw new \DomainException(
-                "Objection window for handover [{$handover->id}] has expired."
-            );
+            throw InvalidStateTransitionException::expected('within objection window', 'expired');
         }
     }
 
@@ -247,7 +244,7 @@ class CompensationWorkflowService
     private function mustBePendingTenantResponse(EquipmentHandover $handover): void
     {
         if (! $this->isPendingTenantResponse($handover)) {
-            throw new \DomainException('There is no pending tenant compensation response.');
+            throw new InvalidStateTransitionException('There is no pending tenant compensation response.');
         }
     }
 
@@ -256,13 +253,11 @@ class CompensationWorkflowService
         float $deductionAmount
     ): void {
         if ($deductionAmount < 0) {
-            throw new \DomainException('Deduction amount cannot be negative.');
+            throw PaymentException::invalidAmount('Deduction amount cannot be negative.');
         }
 
         if ($deductionAmount > $rental->insurance_amount) {
-            throw new \DomainException(
-                "Deduction [{$deductionAmount}] exceeds insurance [{$rental->insurance_amount}]."
-            );
+            throw PaymentException::deductionExceedsInsurance($deductionAmount, $rental->insurance_amount);
         }
     }
 }

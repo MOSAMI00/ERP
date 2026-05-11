@@ -6,6 +6,9 @@ use App\Domains\Review\Actions\CreateReviewAction;
 use App\Domains\Review\Actions\UpdateReviewStatusAction;
 use App\Domains\Review\Enums\ReviewStatus;
 use App\Domains\Rental\Enums\RentalStatus;
+use App\Domains\Shared\Exceptions\InvalidStateTransitionException;
+use App\Domains\Shared\Exceptions\UnauthorizedDomainActionException;
+use App\Domains\Shared\Exceptions\DuplicateOperationException;
 use App\Shared\Audit\AuditLogService;
 use App\Models\Equipment;
 use App\Models\RentalOperation;
@@ -88,7 +91,7 @@ class ReviewService
     private function mustBeCompleted(RentalOperation $rental): void
     {
         if ($rental->status !== RentalStatus::Completed) {
-            throw new \DomainException('Reviews can only be submitted for completed rentals.');
+            throw new InvalidStateTransitionException('Reviews can only be submitted for completed rentals.');
         }
     }
 
@@ -98,7 +101,7 @@ class ReviewService
             $reviewer->id !== $rental->tenant_id &&
             $reviewer->id !== $rental->owner_id
         ) {
-            throw new \DomainException('You are not a participant in this rental.');
+            throw UnauthorizedDomainActionException::notParticipant();
         }
     }
 
@@ -117,7 +120,7 @@ class ReviewService
             ->exists();
 
         if ($exists) {
-            throw new \DomainException('You have already reviewed this rental.');
+            throw DuplicateOperationException::forModel('Review', $reviewer->id);
         }
     }
 
@@ -128,7 +131,7 @@ class ReviewService
             $rating < 1 ||
             $rating > 5
         ) {
-            throw new \DomainException('Rating must be between 1 and 5.');
+            throw new InvalidStateTransitionException('Rating must be between 1 and 5.');
         }
     }
 

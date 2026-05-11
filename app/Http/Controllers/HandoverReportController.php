@@ -62,13 +62,7 @@ class HandoverReportController extends Controller
     {
         $this->authorize('confirm', $report);
 
-        $user = Auth::user();
-
-        $report->update([
-            'confirmed_by_id'   => $user->id,
-            'confirmed_by_role' => $user->type,
-            'confirmed_at'      => now(),
-        ]);
+        $this->workflow->confirmReport($report, Auth::user());
 
         return back()->with('success', 'Report confirmed.');
     }

@@ -1,6 +1,7 @@
 <?php
 namespace App\Domains\Admin\Services;
 
+use App\Domains\Shared\Exceptions\UnauthorizedDomainActionException;
 use App\Models\Admin;
 
 class AdminAuthorizationService
@@ -13,7 +14,7 @@ class AdminAuthorizationService
     public function assertPermission(Admin $admin, string $permission): void
     {
         if (! $this->hasPermission($admin, $permission)) {
-            throw new \Exception("Admin lacks permission: [{$permission}].");
+            throw new UnauthorizedDomainActionException("Admin lacks permission: [{$permission}].");
         }
     }
 

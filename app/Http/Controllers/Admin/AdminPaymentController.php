@@ -9,6 +9,8 @@ use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
 use App\Models\Payment;
 use App\Domains\Payment\Services\PaymentWorkflowService;
+use App\Http\Requests\Admin\RejectPaymentRequest;
+use App\Http\Requests\Admin\RefundPaymentRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -74,11 +76,9 @@ class AdminPaymentController extends Controller
         return back()->with('success', 'Payment approved.');
     }
 
-    public function reject(Request $request, Payment $payment)
+    public function reject(RejectPaymentRequest $request, Payment $payment)
     {
-        $data = $request->validate([
-            'rejection_reason' => ['required', 'string', 'max:500'],
-        ]);
+        $data = $request->validated();
 
         $admin = Auth::guard('admin')->user();
         abort_unless($admin, 403);
@@ -88,12 +88,9 @@ class AdminPaymentController extends Controller
         return back()->with('success', 'Payment rejected.');
     }
 
-    public function refund(Request $request, Payment $payment)
+    public function refund(RefundPaymentRequest $request, Payment $payment)
     {
-        $data = $request->validate([
-            'refund_amount' => ['required', 'numeric', 'min:0', 'max:' . $payment->amount],
-            'refund_reason' => ['required', 'string'],
-        ]);
+        $data = $request->validated();
 
         $admin = Auth::guard('admin')->user();
         abort_unless($admin, 403);

@@ -5,6 +5,7 @@ namespace App\Domains\Rental\Services;
 use App\Domains\Equipment\Enums\AvailabilityReason;
 use App\Domains\Equipment\Enums\EquipmentStatus;
 use App\Domains\Rental\Enums\RentalStatus;
+use App\Domains\Shared\Exceptions\InvalidStateTransitionException;
 use App\Models\Equipment;
 use App\Models\RentalOperation;
 use App\Models\EquipmentAvailability;
@@ -39,11 +40,11 @@ class RentalAvailabilityService
     public function validateForSubmit(int $equipmentId, string $startDate, string $endDate): void
     {
         if (! $this->checkAvailability($equipmentId, $startDate, $endDate)) {
-            throw new \Exception('Equipment is not available for the selected dates.');
+            throw new InvalidStateTransitionException('Equipment is not available for the selected dates.');
         }
         $equipment = Equipment::findOrFail($equipmentId);
         if ($equipment->status !== EquipmentStatus::Active) {
-            throw new \Exception('Equipment is not active.');
+            throw new InvalidStateTransitionException('Equipment is not active.');
         }
     }
 
@@ -58,7 +59,7 @@ class RentalAvailabilityService
             ->exists();
 
         if ($hasConflict) {
-            throw new \DomainException('Equipment is no longer available for the selected dates.');
+            throw new InvalidStateTransitionException('Equipment is no longer available for the selected dates.');
         }
 
         $hasRentalConflict = RentalOperation::where('equipment_id', $rental->equipment_id)
@@ -74,7 +75,7 @@ class RentalAvailabilityService
             ->exists();
 
         if ($hasRentalConflict) {
-            throw new \DomainException('Equipment has a conflicting active rental.');
+            throw new InvalidStateTransitionException('Equipment has a conflicting active rental.');
         }
 
         EquipmentAvailability::create([

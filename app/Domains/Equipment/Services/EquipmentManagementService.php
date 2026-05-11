@@ -5,6 +5,7 @@ namespace App\Domains\Equipment\Services;
 use App\Domains\Equipment\Actions\CreateEquipmentAction;
 use App\Domains\Equipment\Actions\UpdateEquipmentStatusAction;
 use App\Domains\Equipment\Enums\EquipmentStatus;
+use App\Domains\Shared\Exceptions\InvalidStateTransitionException;
 use App\Shared\Audit\AuditLogService;
 use App\Models\Equipment;
 use App\Models\User;
@@ -34,7 +35,7 @@ class EquipmentManagementService
     public function toggleVisibility(Equipment $equipment): Equipment
     {
         if ($equipment->status === EquipmentStatus::Deleted) {
-            throw new \Exception('Deleted equipment cannot change visibility.');
+            throw InvalidStateTransitionException::expected('active or hidden', 'deleted');
         }
 
         $newStatus = $equipment->status === EquipmentStatus::Active

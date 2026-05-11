@@ -4,6 +4,7 @@ namespace App\Domains\User\Services;
 
 use App\Domains\User\Actions\UpdateUserStatusAction;
 use App\Domains\User\Enums\UserStatus;
+use App\Domains\Shared\Exceptions\InvalidStateTransitionException;
 use App\Shared\Audit\AuditLogService;
 use App\Models\Admin;
 use App\Models\User;
@@ -18,7 +19,7 @@ class UserStatusService
     public function suspend(User $user, Admin $admin): User
     {
         if ($user->status === UserStatus::Banned) {
-            throw new \DomainException('Banned users cannot be suspended.');
+            throw InvalidStateTransitionException::expected('non-banned', 'banned');
         }
 
         ($this->updateStatus)($user, UserStatus::Suspended);
@@ -41,11 +42,11 @@ class UserStatusService
     public function activate(User $user, Admin $admin): User
     {
         if ($user->status === UserStatus::Active) {
-            throw new \DomainException('User is already active.');
+            throw InvalidStateTransitionException::expected('non-active', 'active');
         }
 
         if ($user->status === UserStatus::Banned) {
-            throw new \DomainException('Banned users cannot be activated.');
+            throw InvalidStateTransitionException::expected('non-banned', 'banned');
         }
 
         ($this->updateStatus)($user, UserStatus::Active);

@@ -16,6 +16,7 @@ use App\Domains\Rental\Enums\RentalStatus;
 use App\Domains\Rental\Services\RentalStateResolver;
 use App\Models\Payment;
 use App\Models\RentalOperation;
+use App\Domains\Shared\Exceptions\PaymentException;
 use App\Shared\Audit\AuditLogService;
 use App\Shared\Notifications\NotificationService;
 use App\Shared\Settings\PlatformSettingsService;
@@ -145,6 +146,12 @@ class PaymentWorkflowService
     {
         return DB::transaction(function () use ($payment, $admin) {
             $payment = Payment::query()->whereKey($payment->id)->lockForUpdate()->firstOrFail();
+
+            // Idempotency guard — already approved
+            if ($payment->status === PaymentStatus::Paid->value) {
+                return $payment;
+            }
+
             $rental = $payment->rental()->lockForUpdate()->first();
 
             $this->updatePaymentStatus->handle($payment, PaymentStatus::Paid);
@@ -180,7 +187,7 @@ class PaymentWorkflowService
             $payment = Payment::query()->whereKey($payment->id)->lockForUpdate()->firstOrFail();
 
             if ($amount > $payment->amount) {
-                throw new \DomainException("Refund amount cannot exceed payment amount.");
+                throw PaymentException::invalidAmount('Refund amount cannot exceed payment amount.');
             }
 
             $refund = Payment::create([
@@ -208,13 +215,11 @@ class PaymentWorkflowService
         float $deductionAmount
     ): void {
         if ($deductionAmount < 0) {
-            throw new \DomainException('Deduction amount cannot be negative.');
+            throw PaymentException::invalidAmount('Deduction amount cannot be negative.');
         }
 
         if ($deductionAmount > $rental->insurance_amount) {
-            throw new \DomainException(
-                "Deduction [{$deductionAmount}] exceeds insurance [{$rental->insurance_amount}]."
-            );
+            throw PaymentException::deductionExceedsInsurance($deductionAmount, $rental->insurance_amount);
         }
     }
 }

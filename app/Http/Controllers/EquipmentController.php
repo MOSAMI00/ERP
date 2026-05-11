@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Equipment;
 use App\Models\Category;
+use App\Domains\Equipment\Enums\EquipmentStatus;
 use Illuminate\Http\Request;
 use App\Http\Requests\StoreEquipmentRequest;
 use App\Http\Requests\UpdateEquipmentRequest;
@@ -16,7 +17,7 @@ class EquipmentController extends Controller
     public function index()
     {
         $equipment = Equipment::with(['category', 'images'])
-            ->where('status', 'active')
+            ->where('status', EquipmentStatus::Active->value)
             ->latest()
             ->paginate(12);
 
@@ -80,7 +81,7 @@ class EquipmentController extends Controller
     {
         $this->authorize('delete', $equipment);
 
-        $equipment->update(['status' => 'deleted']);
+        $equipment->update(['status' => EquipmentStatus::Deleted->value]);
         $equipment->delete();
 
         return redirect()->route('owner.equipment.index')

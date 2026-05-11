@@ -6,6 +6,7 @@ use App\Domains\User\Services\UserStatusService;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
+use App\Http\Requests\Admin\BanUserRequest;
 use Inertia\Inertia;
 
 class AdminUserController extends Controller
@@ -47,11 +48,9 @@ class AdminUserController extends Controller
         return back()->with('success', 'User suspended.');
     }
 
-    public function ban(Request $request, User $user)
+    public function ban(BanUserRequest $request, User $user)
     {
-        $data = $request->validate([
-            'ban_reason' => ['required', 'string'],
-        ]);
+        $data = $request->validated();
 
         $admin = auth()->guard('admin')->user();
         abort_unless($admin, 403);

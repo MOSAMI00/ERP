@@ -11,6 +11,10 @@ use App\Domains\Payment\Services\PaymentWorkflowService;
 use App\Domains\Rental\Actions\UpdateRentalStatusAction;
 use App\Domains\Rental\Enums\RentalStatus;
 use App\Domains\Rental\Services\RentalStateResolver;
+use App\Domains\Shared\Exceptions\DuplicateOperationException;
+use App\Domains\Shared\Exceptions\InvalidStateTransitionException;
+use App\Domains\Shared\Exceptions\UnauthorizedDomainActionException;
+use App\Domains\Shared\Exceptions\PaymentException;
 use App\Models\Admin;
 use App\Models\Dispute;
 use App\Models\EquipmentHandover;
@@ -194,34 +198,28 @@ class DisputeWorkflowService
     private function mustNotHaveDispute(RentalOperation $rental): void
     {
         if ($rental->dispute()->exists()) {
-            throw new \DomainException(
-                "Rental [{$rental->id}] already has an open dispute."
-            );
+            throw DuplicateOperationException::forModel('Dispute', $rental->id);
         }
     }
 
     private function mustBeRentalTenant(EquipmentHandover $handover, User $tenant): void
     {
         if ((int) $handover->rental->tenant_id !== (int) $tenant->id) {
-            throw new \DomainException('Only the rental tenant can open a dispute.');
+            throw UnauthorizedDomainActionException::notTenant();
         }
     }
 
     private function mustBeOpen(Dispute $dispute): void
     {
         if ($dispute->status !== DisputeStatus::Open) {
-            throw new \DomainException(
-                "Expected dispute status [open], got [{$dispute->status->value}]."
-            );
+            throw InvalidStateTransitionException::expected('open', $dispute->status->value);
         }
     }
 
     private function mustBeUnderReview(Dispute $dispute): void
     {
         if ($dispute->status !== DisputeStatus::UnderReview) {
-            throw new \DomainException(
-                "Expected dispute status [under_review], got [{$dispute->status->value}]."
-            );
+            throw InvalidStateTransitionException::expected('under_review', $dispute->status->value);
         }
     }
 
@@ -230,13 +228,11 @@ class DisputeWorkflowService
         float $finalCompensation
     ): void {
         if ($finalCompensation < 0) {
-            throw new \DomainException('Compensation amount cannot be negative.');
+            throw PaymentException::invalidAmount('Compensation amount cannot be negative.');
         }
 
         if ($finalCompensation > $dispute->rental->insurance_amount) {
-            throw new \DomainException(
-                "Compensation [{$finalCompensation}] exceeds insurance [{$dispute->rental->insurance_amount}]."
-            );
+            throw PaymentException::deductionExceedsInsurance($finalCompensation, $dispute->rental->insurance_amount);
         }
     }
 
@@ -245,13 +241,11 @@ class DisputeWorkflowService
         float $requestedAmount
     ): void {
         if ($requestedAmount < 0) {
-            throw new \DomainException('Requested amount cannot be negative.');
+            throw PaymentException::invalidAmount('Requested amount cannot be negative.');
         }
 
         if ($requestedAmount > $rental->insurance_amount) {
-            throw new \DomainException(
-                "Requested amount [{$requestedAmount}] exceeds insurance [{$rental->insurance_amount}]."
-            );
+            throw PaymentException::deductionExceedsInsurance($requestedAmount, $rental->insurance_amount);
         }
     }
 }

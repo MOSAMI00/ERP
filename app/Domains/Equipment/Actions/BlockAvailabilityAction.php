@@ -3,6 +3,7 @@
 namespace App\Domains\Equipment\Actions;
 
 use App\Domains\Equipment\Enums\AvailabilityReason;
+use App\Domains\Shared\Exceptions\DuplicateOperationException;
 use App\Models\EquipmentAvailability;
 
 class BlockAvailabilityAction
@@ -19,7 +20,7 @@ class BlockAvailabilityAction
             ->exists();
 
         if ($overlap) {
-            throw new \Exception('Date range overlaps with an existing blocked period.');
+            throw new DuplicateOperationException('Date range overlaps with an existing blocked period.');
         }
 
         return EquipmentAvailability::create([
