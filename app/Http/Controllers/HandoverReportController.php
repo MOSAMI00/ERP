@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Domains\Handover\Services\HandoverWorkflowService;
 use App\Models\HandoverReport;
 use App\Models\RentalOperation;
 use Illuminate\Http\Request;
@@ -10,6 +11,10 @@ use Inertia\Inertia;
 
 class HandoverReportController extends Controller
 {
+    public function __construct(
+        private HandoverWorkflowService $workflow,
+    ) {}
+
     public function create(RentalOperation $rental)
     {
         $this->authorize('view', $rental);
@@ -33,25 +38,27 @@ class HandoverReportController extends Controller
         ]);
 
         $user = Auth::user();
+        $rental = RentalOperation::findOrFail($data['rental_op_id']);
+        $this->authorize('view', $rental);
 
-        $report = HandoverReport::create([
-            'rental_op_id'     => $data['rental_op_id'],
-            'phase'            => $data['phase'],
-            'submitted_by_id'  => $user->id,
-            'submitted_by_role'=> $user->type,
-            'notes'            => $data['notes'] ?? null,
-            'has_issues'       => $data['has_issues'],
-            'condition_status' => $data['condition_status'],
-        ]);
+        $imageUrls = [];
 
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $index => $image) {
-                $url = $image->store('handover-images', 'public');
-                $report->images()->create([
-                    'image_url'  => $url,
-                    'sort_order' => $index,
-                ]);
+                $imageUrls[] = $image->store('handover-images', 'public');
             }
+        }
+
+        if ($data['phase'] === 'delivery' && (int) $user->id === (int) $rental->owner_id) {
+            $this->workflow->submitOwnerDeliveryReport($rental, $user, $data, $imageUrls);
+        } elseif ($data['phase'] === 'delivery' && (int) $user->id === (int) $rental->tenant_id) {
+            $this->workflow->submitTenantDeliveryReport($rental, $user, $data, $imageUrls);
+        } elseif ($data['phase'] === 'return' && (int) $user->id === (int) $rental->tenant_id) {
+            $this->workflow->submitTenantReturnReport($rental, $user, $data, $imageUrls);
+        } elseif ($data['phase'] === 'return' && (int) $user->id === (int) $rental->owner_id) {
+            $this->workflow->submitOwnerReturnReport($rental, $user, $data, $imageUrls);
+        } else {
+            abort(403);
         }
 
         return redirect()->route('rentals.show', $data['rental_op_id'])
@@ -60,6 +67,8 @@ class HandoverReportController extends Controller
 
     public function confirm(Request $request, HandoverReport $report)
     {
+        $this->authorize('confirm', $report);
+
         $user = Auth::user();
 
         $report->update([

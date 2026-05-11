@@ -26,6 +26,7 @@ class KycVerificationService
 
         DB::transaction(function () use ($document, $admin) {
             ($this->updateKyc)($document, KycStatus::Approved);
+            $document->update(['reviewed_by' => $admin->id]);
             $this->audit->log('kyc_document_approved', $document, $admin);
         });
 
@@ -42,6 +43,7 @@ class KycVerificationService
 
         DB::transaction(function () use ($document, $admin, $reason) {
             ($this->updateKyc)($document, KycStatus::Rejected, $reason);
+            $document->update(['reviewed_by' => $admin->id]);
             $this->audit->log('kyc_document_rejected', $document, $admin);
         });
 

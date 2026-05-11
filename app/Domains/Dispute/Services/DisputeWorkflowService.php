@@ -42,7 +42,9 @@ class DisputeWorkflowService
         string $tenantClaim,
         float $requestedAmount,
     ): Dispute {
+        $this->mustBeRentalTenant($handover, $tenant);
         $this->stateResolver->canOpenDispute($handover->rental);
+        $this->validateRequestedAmount($handover->rental, $requestedAmount);
 
         // ✦ Duplicate protection
         $this->mustNotHaveDispute($handover->rental);
@@ -198,6 +200,13 @@ class DisputeWorkflowService
         }
     }
 
+    private function mustBeRentalTenant(EquipmentHandover $handover, User $tenant): void
+    {
+        if ((int) $handover->rental->tenant_id !== (int) $tenant->id) {
+            throw new \DomainException('Only the rental tenant can open a dispute.');
+        }
+    }
+
     private function mustBeOpen(Dispute $dispute): void
     {
         if ($dispute->status !== DisputeStatus::Open) {
@@ -227,6 +236,21 @@ class DisputeWorkflowService
         if ($finalCompensation > $dispute->rental->insurance_amount) {
             throw new \DomainException(
                 "Compensation [{$finalCompensation}] exceeds insurance [{$dispute->rental->insurance_amount}]."
+            );
+        }
+    }
+
+    private function validateRequestedAmount(
+        RentalOperation $rental,
+        float $requestedAmount
+    ): void {
+        if ($requestedAmount < 0) {
+            throw new \DomainException('Requested amount cannot be negative.');
+        }
+
+        if ($requestedAmount > $rental->insurance_amount) {
+            throw new \DomainException(
+                "Requested amount [{$requestedAmount}] exceeds insurance [{$rental->insurance_amount}]."
             );
         }
     }

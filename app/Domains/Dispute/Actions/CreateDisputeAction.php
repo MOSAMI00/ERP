@@ -23,7 +23,7 @@ class CreateDisputeAction
             'raised_by_id'           => $raisedBy->id,
             'tenant_claim'           => $tenantClaim,
             'requested_amount'       => $requestedAmount,
-            'status'                 => DisputeStatus::Open,
+            'status'                 => DisputeStatus::Open->value,
         ]);
     }
 }

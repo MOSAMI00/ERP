@@ -60,6 +60,9 @@ return new class extends Migration
             $table->timestamp('confirmed_at')->nullable();
 
             $table->timestamps();
+
+            $table->unique(['rental_op_id', 'phase', 'submitted_by_id'], 'handover_unique_submitter_phase');
+            $table->index(['rental_op_id', 'phase']);
         });
 
         /*
@@ -79,6 +82,9 @@ return new class extends Migration
             $table->integer('sort_order')->default(0);
 
             $table->timestamps();
+
+            $table->index(['rental_op_id', 'owner_decision']);
+            $table->index('objection_deadline');
         });
 
         /*

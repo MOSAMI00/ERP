@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 class AuthController extends Controller
@@ -43,15 +44,21 @@ class AuthController extends Controller
         $data = $request->validate([
             'full_name'  => ['required', 'string', 'max:255'],
             'email'      => ['required', 'email', 'unique:users'],
-            'phone'      => ['required', 'string', 'unique:users'],
+            'phone'      => ['nullable', 'string', 'unique:users'],
             'password'   => ['required', 'confirmed', 'min:8'],
-            'type'       => ['required', 'in:tenant,owner'],
-            'governorate'=> ['required', 'string'],
+            'type'       => ['nullable', 'in:tenant,owner'],
+            'governorate'=> ['nullable', 'string'],
         ]);
+
+        $password = $data['password'];
+        unset($data['password'], $data['password_confirmation']);
 
         $user = User::create([
             ...$data,
-            'password_hash' => Hash::make($data['password']),
+            'phone' => $data['phone'] ?? 'pending-'.Str::lower(Str::random(12)),
+            'type' => $data['type'] ?? 'tenant',
+            'governorate' => $data['governorate'] ?? 'unknown',
+            'password_hash' => Hash::make($password),
         ]);
 
         Auth::login($user);

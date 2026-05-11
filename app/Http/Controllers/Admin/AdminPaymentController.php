@@ -2,7 +2,11 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Domains\Payment\Enums\PaymentStatus;
+use App\Domains\Payment\Enums\PaymentType;
+use App\Domains\Rental\Enums\RentalStatus;
 use App\Http\Controllers\Controller;
+use App\Models\AuditLog;
 use App\Models\Payment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -36,9 +40,9 @@ class AdminPaymentController extends Controller
             'payments' => $payments,
             'filters'  => $request->only(['status', 'type', 'search']),
             'summary'  => [
-                'total_completed' => Payment::where('status', 'completed')->sum('amount'),
-                'total_pending'   => Payment::where('status', 'pending')->sum('amount'),
-                'total_refunds'   => Payment::where('type', 'refund')->where('status', 'completed')->sum('amount'),
+                'total_completed' => Payment::where('status', PaymentStatus::Paid->value)->sum('amount'),
+                'total_pending'   => Payment::where('status', PaymentStatus::Pending->value)->sum('amount'),
+                'total_refunds'   => Payment::where('type', PaymentType::InsuranceRefund->value)->where('status', PaymentStatus::Paid->value)->sum('amount'),
             ],
         ]);
     }
@@ -58,17 +62,20 @@ class AdminPaymentController extends Controller
     public function approve(Request $request, Payment $payment)
     {
         $payment->update([
-            'status'  => 'completed',
+            'status'  => PaymentStatus::Paid->value,
             'paid_at' => now(),
         ]);
 
-        // تسجيل في الـ Audit Log
-        \App\Models\AuditLog::create([
-            'admin_id'   => Auth::id(),
+        if ($payment->type === PaymentType::Rental && $payment->rental?->status === RentalStatus::Confirmed) {
+            $payment->rental->update(['status' => RentalStatus::Paid->value]);
+        }
+
+        AuditLog::create([
+            'admin_id'   => Auth::guard('admin')->id() ?? Auth::id(),
             'event_type' => 'payment_approved',
             'target_id'  => $payment->id,
             'target_type'=> 'payment',
-            'notes'      => "Payment #{$payment->id} approved by admin.",
+            'details'    => "Payment #{$payment->id} approved by admin.",
         ]);
 
         return back()->with('success', 'Payment approved.');
@@ -81,16 +88,16 @@ class AdminPaymentController extends Controller
         ]);
 
         $payment->update([
-            'status' => 'failed',
-            'notes'  => $data['rejection_reason'],
+            'status' => PaymentStatus::Failed->value,
+            'stop_reason'  => $data['rejection_reason'],
         ]);
 
-        \App\Models\AuditLog::create([
-            'admin_id'    => Auth::id(),
+        AuditLog::create([
+            'admin_id'    => Auth::guard('admin')->id() ?? Auth::id(),
             'event_type'  => 'payment_rejected',
             'target_id'   => $payment->id,
             'target_type' => 'payment',
-            'notes'       => "Payment #{$payment->id} rejected. Reason: {$data['rejection_reason']}",
+            'details'     => "Payment #{$payment->id} rejected. Reason: {$data['rejection_reason']}",
         ]);
 
         return back()->with('success', 'Payment rejected.');
@@ -108,19 +115,18 @@ class AdminPaymentController extends Controller
             'rental_op_id'   => $payment->rental_op_id,
             'payer_id'       => $payment->payer_id,
             'amount'         => $data['refund_amount'],
-            'type'           => 'refund',
+            'type'           => PaymentType::InsuranceRefund->value,
             'payment_method' => $payment->payment_method,
-            'status'         => 'completed',
-            'paid_at'        => now(),
-            'notes'          => $data['refund_reason'],
+            'status'         => PaymentStatus::Paid->value,
+            'transferred_at' => now(),
         ]);
 
-        \App\Models\AuditLog::create([
-            'admin_id'    => Auth::id(),
+        AuditLog::create([
+            'admin_id'    => Auth::guard('admin')->id() ?? Auth::id(),
             'event_type'  => 'payment_refunded',
             'target_id'   => $payment->id,
             'target_type' => 'payment',
-            'notes'       => "Refund of {$data['refund_amount']} issued for Payment #{$payment->id}.",
+            'details'     => "Refund of {$data['refund_amount']} issued for Payment #{$payment->id}. Reason: {$data['refund_reason']}",
         ]);
 
         return back()->with('success', 'Refund issued successfully.');

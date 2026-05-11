@@ -70,6 +70,7 @@ return new class extends Migration
             $table->id();
 
             $table->decimal('platform_fee_rate', 5, 2)->default(0);
+            $table->integer('payment_deadline_hours')->default(24);
 
             $table->integer('min_rental_days')->default(1);
             $table->integer('max_rental_days')->default(365);
@@ -81,7 +82,7 @@ return new class extends Migration
 
             $table->unsignedBigInteger('updated_by')->nullable();
 
-            $table->timestamp('updated_at')->nullable();
+            $table->timestamps();
         });
 
         /*
@@ -93,20 +94,13 @@ return new class extends Migration
             $table->id();
 
             $table->foreignId('admin_id')
+                ->nullable()
                 ->constrained('admins')
-                ->cascadeOnDelete();
+                ->nullOnDelete();
 
-            $table->string('admin_role');
+            $table->string('admin_role')->nullable();
 
-            $table->enum('event_type', [
-                'ban',
-                'content_delete',
-                'dispute_decision',
-                'edit',
-                'financial_action',
-                'suspend',
-                'warn'
-            ]);
+            $table->string('event_type');
 
             $table->string('target_type');
             $table->unsignedBigInteger('target_id');
@@ -116,6 +110,9 @@ return new class extends Migration
             $table->string('ip_address')->nullable();
 
             $table->timestamps();
+
+            $table->index(['target_type', 'target_id']);
+            $table->index('event_type');
         });
     }
 

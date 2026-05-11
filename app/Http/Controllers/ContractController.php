@@ -34,12 +34,14 @@ class ContractController extends Controller
             'tenant_signature' => ['required', 'string'],
         ]);
 
+        abort_unless((int) Auth::id() === (int) $contract->rental->tenant_id, 403);
+
         $contract->update([
-            'tenant_signature'   => $data['tenant_signature'],
+            'tenant_signature'   => 'signed',
             'tenant_signed_at'   => now(),
         ]);
 
-        if ($contract->owner_signature) {
+        if ($contract->owner_signature === 'signed') {
             $contract->update(['status' => 'signed']);
         }
 
@@ -48,18 +50,20 @@ class ContractController extends Controller
 
     public function ownerSign(Request $request, Contract $contract)
     {
-        $this->authorize('update', $contract->rental);
+        $this->authorize('view', $contract->rental);
 
         $data = $request->validate([
             'owner_signature' => ['required', 'string'],
         ]);
 
+        abort_unless((int) Auth::id() === (int) $contract->rental->owner_id, 403);
+
         $contract->update([
-            'owner_signature'   => $data['owner_signature'],
+            'owner_signature'   => 'signed',
             'owner_signed_at'   => now(),
         ]);
 
-        if ($contract->tenant_signature) {
+        if ($contract->tenant_signature === 'signed') {
             $contract->update(['status' => 'signed']);
         }
 

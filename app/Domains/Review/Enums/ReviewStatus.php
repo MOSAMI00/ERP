@@ -4,6 +4,8 @@ namespace App\Domains\Review\Enums;
 
 enum ReviewStatus: string
 {
-    case Published = 'published';
-    case Hidden    = 'hidden';
+    case Visible = 'visible';
+    case Hidden  = 'hidden';
+    case Deleted = 'deleted';
+    case Flagged = 'flagged';
 }

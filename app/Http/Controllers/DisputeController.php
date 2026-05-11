@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Domains\Dispute\Services\DisputeWorkflowService;
 use App\Models\Dispute;
 use App\Models\EquipmentHandover;
 use Illuminate\Http\Request;
@@ -10,6 +11,10 @@ use Inertia\Inertia;
 
 class DisputeController extends Controller
 {
+    public function __construct(
+        private DisputeWorkflowService $workflow,
+    ) {}
+
     public function index()
     {
         $disputes = Dispute::where('raised_by_id', Auth::id())
@@ -38,15 +43,15 @@ class DisputeController extends Controller
             'requested_amount'      => ['nullable', 'numeric', 'min:0'],
         ]);
 
-        Dispute::create([
-            ...$data,
-            'raised_by_id' => Auth::id(),
-            'status'       => 'open',
-        ]);
+        $handover = EquipmentHandover::with('rental')->findOrFail($data['equipment_handover_id']);
+        abort_unless((int) $handover->rental_op_id === (int) $data['rental_op_id'], 422);
 
-        // update rental status
-        \App\Models\RentalOperation::find($data['rental_op_id'])
-            ->update(['status' => 'disputed']);
+        $this->workflow->openDispute(
+            $handover,
+            $request->user(),
+            $data['tenant_claim'],
+            (float) ($data['requested_amount'] ?? 0),
+        );
 
         return redirect()->route('disputes.index')
             ->with('success', 'Dispute opened.');

@@ -12,7 +12,7 @@ class HoldEscrowAction
     public function handle(Payment $payment): void
     {
         $payment->update([
-            'escrow_status' => EscrowStatus::Held,
+            'escrow_status' => EscrowStatus::Held->value,
         ]);
     }
 }

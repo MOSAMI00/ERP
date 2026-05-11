@@ -14,6 +14,7 @@ class CreateContractAction
             'contract_body'    => $this->generateBody($rental),
             'tenant_signature' => 'pending',
             'owner_signature'  => 'pending',
+            'status'           => 'pending',
         ]);
     }
 

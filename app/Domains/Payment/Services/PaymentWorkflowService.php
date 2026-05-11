@@ -8,7 +8,9 @@ use App\Domains\Payment\Actions\ReleaseEscrowAction;
 use App\Domains\Payment\Actions\RefundInsuranceAction;
 use App\Domains\Payment\Actions\TransferOwnerFundsAction;
 use App\Domains\Payment\Actions\UpdatePaymentStatusAction;
+use App\Domains\Payment\Enums\EscrowStatus;
 use App\Domains\Payment\Enums\PaymentStatus;
+use App\Domains\Payment\Enums\PaymentType;
 use App\Domains\Rental\Actions\UpdateRentalStatusAction;
 use App\Domains\Rental\Enums\RentalStatus;
 use App\Domains\Rental\Services\RentalStateResolver;
@@ -41,19 +43,21 @@ class PaymentWorkflowService
     // ══════════════════════════════════════════
     public function processPayment(RentalOperation $rental, array $paymentData): Payment
     {
-        $this->stateResolver->canPay($rental);
-
-        // ✦ Idempotency guard
-        $existing = $rental->payments()
-            ->where('status', PaymentStatus::Paid)
-            ->latest()
-            ->first();
-
-        if ($existing) {
-            return $existing;
-        }
-
         $payment = DB::transaction(function () use ($rental, $paymentData) {
+            $rental = RentalOperation::query()->whereKey($rental->id)->lockForUpdate()->firstOrFail();
+            $this->stateResolver->canPay($rental);
+
+            $existing = $rental->payments()
+                ->where('type', PaymentType::Rental->value)
+                ->where('status', PaymentStatus::Paid->value)
+                ->lockForUpdate()
+                ->latest()
+                ->first();
+
+            if ($existing) {
+                return $existing;
+            }
+
             $feeRate = $this->settings->getPlatformFeeRate();
 
             $payment = $this->createPayment->handle($rental, $paymentData, $feeRate);
@@ -114,7 +118,8 @@ class PaymentWorkflowService
     public function refundOnCancellation(RentalOperation $rental): void
     {
         $payment = $rental->payments()
-            ->where('status', PaymentStatus::Paid)
+            ->where('type', PaymentType::Rental->value)
+            ->where('status', PaymentStatus::Paid->value)
             ->latest()
             ->first();
 
@@ -123,7 +128,8 @@ class PaymentWorkflowService
         }
 
         DB::transaction(function () use ($rental, $payment) {
-            $this->escrow->refund($payment);
+            $this->escrow->refundToTenant($payment, (float) $payment->amount);
+            $payment->update(['escrow_status' => EscrowStatus::Refunded->value]);
             $this->updatePaymentStatus->handle($payment, PaymentStatus::Refunded);
             $this->audit->log('payment_refunded_on_cancel', $rental);
         });

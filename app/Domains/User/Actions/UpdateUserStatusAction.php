@@ -9,7 +9,7 @@ class UpdateUserStatusAction
 {
     public function __invoke(User $user, UserStatus $status): User
     {
-        $user->update(['status' => $status]);
+        $user->update(['status' => $status->value]);
 
         return $user->refresh();
     }

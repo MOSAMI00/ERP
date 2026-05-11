@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Domains\Payment\Services\PaymentWorkflowService;
 use App\Models\Payment;
 use App\Models\RentalOperation;
 use Illuminate\Http\Request;
@@ -10,6 +11,10 @@ use Inertia\Inertia;
 
 class PaymentController extends Controller
 {
+    public function __construct(
+        private PaymentWorkflowService $workflow,
+    ) {}
+
     public function index()
     {
         $payments = Payment::whereHas('rental', function ($q) {
@@ -39,18 +44,15 @@ class PaymentController extends Controller
     {
         $data = $request->validate([
             'rental_op_id'     => ['required', 'exists:rental_operations,id'],
-            'amount'           => ['required', 'numeric', 'min:0'],
-            'type'             => ['required', 'in:rental,insurance,refund,platform_fee'],
             'payment_method'   => ['required', 'in:bank_transfer,cash,platform_wallet'],
             'transaction_ref'  => ['nullable', 'string'],
         ]);
 
-        $payment = Payment::create([
-            ...$data,
-            'payer_id'   => Auth::id(),
-            'status'     => 'pending',
-            'paid_at'    => null,
-        ]);
+        $rental = RentalOperation::findOrFail($data['rental_op_id']);
+        $this->authorize('view', $rental);
+        abort_unless((int) Auth::id() === (int) $rental->tenant_id, 403);
+
+        $payment = $this->workflow->processPayment($rental, $data);
 
         return redirect()->route('payments.show', $payment)
             ->with('success', 'Payment initiated.');
@@ -65,11 +67,8 @@ class PaymentController extends Controller
 
     public function confirm(Payment $payment)
     {
-        $payment->update([
-            'status'  => 'completed',
-            'paid_at' => now(),
-        ]);
+        abort(403);
 
-        return back()->with('success', 'Payment confirmed.');
+        return back();
     }
 }

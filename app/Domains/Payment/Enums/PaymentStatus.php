@@ -9,5 +9,6 @@ enum PaymentStatus: string
     case Paid       = 'paid';
     case Failed     = 'failed';      // ✦ بدل Stopped
     case Cancelled  = 'cancelled';   // ✦ إلغاء واضح
+    case Stopped    = 'stopped';
     case Refunded   = 'refunded';
 }

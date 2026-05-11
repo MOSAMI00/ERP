@@ -15,14 +15,19 @@ class CreateReviewAction
             ? $rental->owner_id
             : $rental->tenant_id;
 
+        $targetType = $data['target_type'] ?? 'user';
+        $targetId = $targetType === 'equipment'
+            ? $rental->equipment_id
+            : $revieweeId;
+
         return Review::create([
-            'rental_operation_id' => $rental->id,
-            'equipment_id'        => $rental->equipment_id,
             'reviewer_id'         => $reviewer->id,
-            'reviewee_id'         => $revieweeId,
+            'target_id'           => $targetId,
+            'target_type'         => $targetType,
+            'rental_op_id'        => $rental->id,
             'rating'              => $data['rating'],
-            'comment'             => $data['comment'] ?? null,
-            'status'              => ReviewStatus::Published,
+            'review_text'         => $data['review_text'] ?? $data['comment'] ?? null,
+            'status'              => ReviewStatus::Visible->value,
         ]);
     }
 }

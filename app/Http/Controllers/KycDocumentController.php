@@ -58,9 +58,10 @@ class KycDocumentController extends Controller
 
         $user->kycDocuments()->create([
             'doc_type'    => $request->doc_type,
-            'front_image' => $frontPath,
-            'back_image'  => $backPath,
+            'front_url'   => $frontPath,
+            'back_url'    => $backPath,
             'status'      => 'pending',
+            'submitted_at' => now(),
         ]);
 
         $user->update(['kyc_status' => 'pending']);

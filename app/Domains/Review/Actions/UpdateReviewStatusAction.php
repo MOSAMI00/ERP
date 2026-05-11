@@ -9,7 +9,7 @@ class UpdateReviewStatusAction
 {
     public function __invoke(Review $review, ReviewStatus $status): Review
     {
-        $review->update(['status' => $status]);
+        $review->update(['status' => $status->value]);
 
         return $review->refresh();
     }

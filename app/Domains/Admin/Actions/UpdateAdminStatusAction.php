@@ -9,7 +9,7 @@ class UpdateAdminStatusAction
 {
     public function __invoke(Admin $admin, AdminStatus $status): Admin
     {
-        $admin->update(['status' => $status]);
+        $admin->update(['status' => $status->value]);
         return $admin->refresh();
     }
 }

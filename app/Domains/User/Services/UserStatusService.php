@@ -28,9 +28,10 @@ class UserStatusService
         return $user->refresh();
     }
 
-    public function ban(User $user, Admin $admin): User
+    public function ban(User $user, Admin $admin, ?string $reason = null): User
     {
         ($this->updateStatus)($user, UserStatus::Banned);
+        $user->update(['ban_reason' => $reason]);
 
         $this->audit->log('user_banned', $user, $admin);
 
@@ -48,6 +49,7 @@ class UserStatusService
         }
 
         ($this->updateStatus)($user, UserStatus::Active);
+        $user->update(['ban_reason' => null]);
 
         $this->audit->log('user_activated', $user, $admin);
 

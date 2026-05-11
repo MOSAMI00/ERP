@@ -25,12 +25,12 @@ class ReviewService
     {
         $this->mustBeCompleted($rental);
         $this->mustBelongToRental($rental, $reviewer);
-        $this->mustNotBeDuplicate($rental, $reviewer);
+        $this->mustNotBeDuplicate($rental, $reviewer, $data);
         $this->mustBeValidRating($data['rating']);
 
         return DB::transaction(function () use ($rental, $reviewer, $data) {
             $review = ($this->createReview)($rental, $reviewer, $data);
-            $this->recalculateEquipmentRating($rental->equipment);
+            $this->recalculateTargetRating($review);
             $this->audit->log('review_submitted', $review);
             return $review;
         });
@@ -40,7 +40,7 @@ class ReviewService
     {
         DB::transaction(function () use ($review, $admin) {
             ($this->updateStatus)($review, ReviewStatus::Hidden);
-            $this->recalculateEquipmentRating($review->equipment);
+            $this->recalculateTargetRating($review);
             $this->audit->log('review_hidden', $review, $admin);
         });
 
@@ -50,8 +50,8 @@ class ReviewService
     public function restoreReview(Review $review, User $admin): Review
     {
         DB::transaction(function () use ($review, $admin) {
-            ($this->updateStatus)($review, ReviewStatus::Published);
-            $this->recalculateEquipmentRating($review->equipment);
+            ($this->updateStatus)($review, ReviewStatus::Visible);
+            $this->recalculateTargetRating($review);
             $this->audit->log('review_restored', $review, $admin);
         });
 
@@ -75,9 +75,19 @@ class ReviewService
         }
     }
 
-    private function mustNotBeDuplicate(RentalOperation $rental, User $reviewer): void
+    private function mustNotBeDuplicate(RentalOperation $rental, User $reviewer, array $data): void
     {
-        $exists = $rental->reviews()->where('reviewer_id', $reviewer->id)->exists();
+        $targetType = $data['target_type'] ?? 'user';
+        $revieweeId = $reviewer->id === $rental->tenant_id
+            ? $rental->owner_id
+            : $rental->tenant_id;
+        $targetId = $targetType === 'equipment' ? $rental->equipment_id : $revieweeId;
+
+        $exists = $rental->reviews()
+            ->where('reviewer_id', $reviewer->id)
+            ->where('target_type', $targetType)
+            ->where('target_id', $targetId)
+            ->exists();
 
         if ($exists) {
             throw new \DomainException('You have already reviewed this rental.');
@@ -95,13 +105,31 @@ class ReviewService
         }
     }
 
+    private function recalculateTargetRating(Review $review): void
+    {
+        if ($review->target_type === 'equipment') {
+            $equipment = Equipment::find($review->target_id);
+            if ($equipment) {
+                $this->recalculateEquipmentRating($equipment);
+            }
+
+            return;
+        }
+
+        $avg = Review::where('target_type', 'user')
+            ->where('target_id', $review->target_id)
+            ->where('status', ReviewStatus::Visible->value)
+            ->avg('rating');
+
+        User::find($review->target_id)?->update(['rating' => round($avg ?? 0.0, 2)]);
+    }
+
     private function recalculateEquipmentRating(Equipment $equipment): void
     {
-        $published = $equipment->reviews()->where('status', ReviewStatus::Published->value);
+        $published = $equipment->reviews()->where('status', ReviewStatus::Visible->value);
 
         $equipment->update([
-            'rating'       => round($published->avg('rating') ?? 0.0, 2),
-            'review_count' => $published->count(),
+            'rating' => round($published->avg('rating') ?? 0.0, 2),
         ]);
     }
 }

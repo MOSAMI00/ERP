@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Domains\Review\Services\ReviewService;
 use App\Models\Review;
 use App\Models\RentalOperation;
 use Illuminate\Http\Request;
@@ -10,6 +11,10 @@ use Inertia\Inertia;
 
 class ReviewController extends Controller
 {
+    public function __construct(
+        private ReviewService $reviews,
+    ) {}
+
     public function create(RentalOperation $rental)
     {
         $this->authorize('view', $rental);
@@ -29,30 +34,13 @@ class ReviewController extends Controller
             'review_text'  => ['nullable', 'string', 'max:1000'],
         ]);
 
-        Review::create([
-            ...$data,
-            'reviewer_id' => Auth::id(),
-            'status'      => 'visible',
-        ]);
+        $rental = RentalOperation::findOrFail($data['rental_op_id']);
+        $this->authorize('create', [Review::class, $rental]);
 
-        // update rating average
-        $this->updateRating($data['target_type'], $data['target_id']);
+        $this->reviews->submitReview($rental, $request->user(), $data);
 
         return redirect()->route('rentals.show', $data['rental_op_id'])
             ->with('success', 'Review submitted.');
     }
 
-    private function updateRating(string $type, int $id): void
-    {
-        $avg = Review::where('target_type', $type)
-            ->where('target_id', $id)
-            ->where('status', 'visible')
-            ->avg('rating');
-
-        if ($type === 'user') {
-            \App\Models\User::find($id)?->update(['rating' => round($avg, 2)]);
-        } else {
-            \App\Models\Equipment::find($id)?->update(['rating' => round($avg, 2)]);
-        }
-    }
 }

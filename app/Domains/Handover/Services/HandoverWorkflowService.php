@@ -34,6 +34,7 @@ class HandoverWorkflowService
         array $reportData,
         array $images = []
     ): void {
+        $this->mustBeRentalOwner($rental, $owner);
         $this->stateResolver->canSubmitDeliveryReport($rental);
 
         // ✦ Duplicate protection
@@ -61,6 +62,7 @@ class HandoverWorkflowService
         array $reportData,
         array $images = []
     ): void {
+        $this->mustBeRentalTenant($rental, $tenant);
         $this->stateResolver->canSubmitDeliveryReport($rental);
 
         // ✦ Duplicate protection
@@ -78,6 +80,7 @@ class HandoverWorkflowService
 
             // ✦ كلا الطرفين رفعا → in_use
             $this->updateRentalStatus->handle($rental, RentalStatus::InUse);
+            $rental->update(['delivery_confirmed_at' => now()]);
             $this->audit->log('tenant_delivery_confirmed', $rental);
         });
 
@@ -94,6 +97,7 @@ class HandoverWorkflowService
         array $reportData,
         array $images = []
     ): void {
+        $this->mustBeRentalTenant($rental, $tenant);
         $this->stateResolver->canSubmitReturnReport($rental);
 
         // ✦ Duplicate protection
@@ -121,6 +125,7 @@ class HandoverWorkflowService
         array $reportData,
         array $images = []
     ): void {
+        $this->mustBeRentalOwner($rental, $owner);
         $this->stateResolver->canSubmitReturnReport($rental);
 
         // ✦ Duplicate protection
@@ -136,6 +141,7 @@ class HandoverWorkflowService
                 $this->uploadImages->handle($report, $images);
             }
 
+            $rental->update(['return_confirmed_at' => now()]);
             $this->audit->log('owner_return_report_submitted', $rental);
         });
 
@@ -162,6 +168,20 @@ class HandoverWorkflowService
             throw new \DomainException(
                 "User [{$userId}] already submitted a [{$phase->value}] report for this rental."
             );
+        }
+    }
+
+    private function mustBeRentalOwner(RentalOperation $rental, User $user): void
+    {
+        if ((int) $rental->owner_id !== (int) $user->id) {
+            throw new \DomainException('Only the rental owner can perform this handover action.');
+        }
+    }
+
+    private function mustBeRentalTenant(RentalOperation $rental, User $user): void
+    {
+        if ((int) $rental->tenant_id !== (int) $user->id) {
+            throw new \DomainException('Only the rental tenant can perform this handover action.');
         }
     }
 

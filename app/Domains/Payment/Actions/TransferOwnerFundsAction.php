@@ -11,21 +11,29 @@ class TransferOwnerFundsAction
 {
     public function handle(RentalOperation $rental): void
     {
+        if ($rental->payments()
+            ->where('type', PaymentType::OwnerTransfer->value)
+            ->where('status', PaymentStatus::Paid->value)
+            ->exists()
+        ) {
+            return;
+        }
+
         $rentalPayment = $rental->payments()
-            ->where('type', PaymentType::Rental)
-            ->where('status', PaymentStatus::Paid)
+            ->where('type', PaymentType::Rental->value)
+            ->where('status', PaymentStatus::Paid->value)
             ->firstOrFail();
 
-        $ownerAmount = $rentalPayment->amount
-            - $rentalPayment->platform_fee
-            - $rental->insurance_amount;
+        $ownerAmount = (float) $rentalPayment->amount
+            - (float) $rentalPayment->platform_fee
+            - (float) $rental->insurance_amount;
 
         Payment::create([
             'rental_op_id'   => $rental->id,
-            'type'           => PaymentType::OwnerTransfer,
+            'type'           => PaymentType::OwnerTransfer->value,
             'amount'         => $ownerAmount,
             'platform_fee'   => 0,
-            'status'         => PaymentStatus::Paid,
+            'status'         => PaymentStatus::Paid->value,
             'escrow_status'  => null,
             'transferred_at' => now(),
         ]);

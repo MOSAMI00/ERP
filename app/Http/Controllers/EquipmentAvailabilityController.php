@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Domains\Equipment\Enums\AvailabilityReason;
 use App\Models\Equipment;
 use App\Models\EquipmentAvailability;
 use Illuminate\Http\Request;
@@ -30,10 +31,20 @@ class EquipmentAvailabilityController extends Controller
             'note'       => ['nullable', 'string'],
         ]);
 
-        EquipmentAvailability::create([
-            ...$data,
-            'equipment_id' => $equipment->id,
-        ]);
+        if ($data['status'] === 'available') {
+            EquipmentAvailability::where('equipment_id', $equipment->id)
+                ->where('unavailable_from', $data['start_date'])
+                ->where('unavailable_to', $data['end_date'])
+                ->where('reason', AvailabilityReason::OwnerBlocked->value)
+                ->delete();
+        } else {
+            EquipmentAvailability::create([
+                'equipment_id' => $equipment->id,
+                'unavailable_from' => $data['start_date'],
+                'unavailable_to' => $data['end_date'],
+                'reason' => AvailabilityReason::OwnerBlocked->value,
+            ]);
+        }
 
         return back()->with('success', 'Availability updated.');
     }

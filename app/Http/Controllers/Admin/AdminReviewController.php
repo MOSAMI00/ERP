@@ -48,8 +48,7 @@ class AdminReviewController extends Controller
     {
         $review->update([
             'status'      => 'hidden',
-            'hidden_by'   => Auth::id(),
-            'hidden_at'   => now(),
+            'deleted_by_id' => Auth::guard('admin')->id() ?? Auth::id(),
         ]);
 
         // إعادة حساب التقييم بعد الإخفاء
@@ -61,9 +60,8 @@ class AdminReviewController extends Controller
     public function restore(Review $review)
     {
         $review->update([
-            'status'    => 'visible',
-            'hidden_by' => null,
-            'hidden_at' => null,
+            'status' => 'visible',
+            'deleted_by_id' => null,
         ]);
 
         $this->recalculateRating($review->target_type, $review->target_id);
@@ -73,9 +71,10 @@ class AdminReviewController extends Controller
 
     public function destroy(Review $review)
     {
-        $this->recalculateRating($review->target_type, $review->target_id);
-
+        $targetType = $review->target_type;
+        $targetId = $review->target_id;
         $review->delete();
+        $this->recalculateRating($targetType, $targetId);
 
         return back()->with('success', 'Review deleted permanently.');
     }

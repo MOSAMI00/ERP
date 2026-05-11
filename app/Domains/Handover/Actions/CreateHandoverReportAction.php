@@ -17,9 +17,9 @@ class CreateHandoverReportAction
     ): HandoverReport {
         return HandoverReport::create([
             'rental_op_id'      => $rental->id,
-            'phase'             => $phase,
+            'phase'             => $phase->value,
             'submitted_by_id'   => $submittedBy->id,
-            'submitted_by_role' => $data['submitted_by_role'],
+            'submitted_by_role' => $submittedBy->type,
             'notes'             => $data['notes'] ?? null,
             'has_issues'        => $data['has_issues'] ?? false,
             'condition_status'  => $data['condition_status'],

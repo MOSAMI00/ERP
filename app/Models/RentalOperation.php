@@ -31,6 +31,7 @@ class RentalOperation extends Model
         'total_amount',
         'status',
         'cancellation_reason',
+        'payment_deadline',
         'delivery_location',
         'delivery_time',
         'delivery_confirmed_at',
@@ -48,20 +49,15 @@ class RentalOperation extends Model
     {
         return [
             'status'               => RentalStatus::class,
-            'start_date'           => 'date',
-            'end_date'             => 'date',
-            'payment_deadline'     => 'datetime',
-            'delivery_time'        => 'datetime',
-            'delivery_confirmed_at' => 'datetime',
-            'return_confirmed_at'  => 'datetime',
-            'rental_amount'        => 'decimal:2',
-            'insurance_amount'     => 'decimal:2',
-            'total_amount'         => 'decimal:2',
             'start_date' => 'date',
             'end_date' => 'date',
+            'payment_deadline' => 'datetime',
             'delivery_time' => 'datetime',
             'delivery_confirmed_at' => 'datetime',
             'return_confirmed_at' => 'datetime',
+            'rental_amount' => 'decimal:2',
+            'insurance_amount' => 'decimal:2',
+            'total_amount' => 'decimal:2',
         ];
     }
 

@@ -60,6 +60,9 @@ return new class extends Migration
             $table->timestamp('resolved_at')->nullable();
 
             $table->timestamps();
+
+            $table->unique('rental_op_id');
+            $table->index(['status', 'resolved_at']);
         });
 
         /*
@@ -91,6 +94,7 @@ return new class extends Migration
 
             $table->enum('status', [
                 'visible',
+                'hidden',
                 'deleted',
                 'flagged'
             ])->default('visible');
@@ -102,6 +106,9 @@ return new class extends Migration
 
             $table->timestamps();
             $table->softDeletes();
+
+            $table->unique(['reviewer_id', 'rental_op_id', 'target_type', 'target_id'], 'reviews_unique_reviewer_target_rental');
+            $table->index(['target_type', 'target_id', 'status']);
         });
 
         /*
@@ -139,6 +146,9 @@ return new class extends Migration
             $table->timestamp('read_at')->nullable();
 
             $table->timestamps();
+
+            $table->index(['recipient_type', 'recipient_id', 'is_read']);
+            $table->index(['reference_type', 'reference_id']);
         });
     }
 

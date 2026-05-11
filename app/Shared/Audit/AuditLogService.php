@@ -3,7 +3,6 @@
 namespace App\Shared\Audit;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Arr;
 use App\Models\AuditLog;
 
 class AuditLogService
@@ -11,20 +10,23 @@ class AuditLogService
     public function log(string $event, Model $subject, ?Model $actor = null): void
     {
         AuditLog::create([
-            'event'        => $event,
-            'subject_type' => $subject->getMorphClass(),
-            'subject_id'   => $subject->getKey(),
-            'actor_type'   => $actor?->getMorphClass(),
-            'actor_id'     => $actor?->getKey(),
-            'metadata'     => $this->extractMetadata($subject),
+            'admin_id'    => $actor instanceof \App\Models\Admin ? $actor->getKey() : null,
+            'admin_role'  => $actor instanceof \App\Models\Admin ? $actor->role?->role_name : null,
+            'event_type'  => $event,
+            'target_type' => $subject->getMorphClass(),
+            'target_id'   => $subject->getKey(),
+            'details'     => $this->extractMetadata($subject),
         ]);
     }
 
-    private function extractMetadata(Model $subject): array
+    private function extractMetadata(Model $subject): string
     {
-        return Arr::except($subject->toArray(), [
+        $metadata = \Illuminate\Support\Arr::except($subject->toArray(), [
             'password',
+            'password_hash',
             'remember_token',
         ]);
+
+        return json_encode($metadata, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     }
 }

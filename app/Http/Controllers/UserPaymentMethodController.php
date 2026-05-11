@@ -26,10 +26,11 @@ class UserPaymentMethodController extends Controller
         $user = Auth::user();
 
         $data = $request->validate([
-            'method_type'    => ['required', 'in:bank_transfer,mobile_wallet'],
-            'account_name'   => ['required', 'string', 'max:255'],
-            'account_number' => ['required', 'string', 'max:255'],
+            'type'           => ['required', 'in:bank_account,e_wallet'],
+            'account_name'   => ['nullable', 'required_if:type,bank_account', 'string', 'max:255'],
+            'account_number' => ['nullable', 'required_if:type,bank_account', 'string', 'max:255'],
             'bank_name'      => ['nullable', 'string'],
+            'wallet_number'  => ['nullable', 'required_if:type,e_wallet', 'string', 'max:255'],
             'is_default'     => ['boolean'],
         ]);
 

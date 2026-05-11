@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Domains\Rental\Services\RentalWorkflowService;
 use App\Models\User;
 use App\Models\RentalOperation;
 use App\Models\Equipment;
@@ -11,6 +12,10 @@ use Inertia\Inertia;
 
 class RentalOperationController extends Controller
 {
+    public function __construct(
+        private RentalWorkflowService $workflow,
+    ) {}
+
     public function index()
     {
         /** @var User $user */
@@ -41,22 +46,7 @@ class RentalOperationController extends Controller
             'delivery_location' => ['required', 'string'],
         ]);
 
-        $equipment = Equipment::findOrFail($data['equipment_id']);
-        $days = now()->parse($data['start_date'])->diffInDays($data['end_date']);
-
-        $rental = RentalOperation::create([
-            'equipment_id'     => $data['equipment_id'],
-            'start_date'       => $data['start_date'],
-            'end_date'         => $data['end_date'],
-            'delivery_location'=> $data['delivery_location'],
-            'tenant_id'        => Auth::id(),
-            'owner_id'         => $equipment->owner_id,
-            'duration_days'    => $days,
-            'rental_amount'    => $equipment->price_per_day * $days,
-            'insurance_amount' => $equipment->insurance_amount,
-            'total_amount'     => ($equipment->price_per_day * $days) + $equipment->insurance_amount,
-            'status'           => 'pending',
-        ]);
+        $rental = $this->workflow->createRental($data, $request->user());
 
         return redirect()->route('rentals.show', $rental)
             ->with('success', 'Rental request sent.');
@@ -77,7 +67,7 @@ class RentalOperationController extends Controller
     {
         $this->authorize('confirm', $rental);
 
-        $rental->update(['status' => 'confirmed']);
+        $this->workflow->approveRental($rental);
 
         return back()->with('success', 'Rental confirmed.');
     }
@@ -90,10 +80,11 @@ class RentalOperationController extends Controller
             'cancellation_reason' => ['required', 'string'],
         ]);
 
-        $rental->update([
-            'status'              => 'cancelled',
-            'cancellation_reason' => $data['cancellation_reason'],
-        ]);
+        if ((int) Auth::id() === (int) $rental->owner_id) {
+            $this->workflow->cancelByOwner($rental, $data['cancellation_reason']);
+        } else {
+            $this->workflow->cancelByTenant($rental, $data['cancellation_reason']);
+        }
 
         return back()->with('success', 'Rental cancelled.');
     }

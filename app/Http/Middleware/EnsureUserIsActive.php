@@ -3,6 +3,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Domains\User\Enums\UserStatus;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -17,13 +18,13 @@ class EnsureUserIsActive
             return $next($request);
         }
 
-        if ($user->status === 'banned') {
+        if ($user->status === UserStatus::Banned) {
             Auth::logout();
             return redirect()->route('login')
                 ->with('error', "Your account has been banned. Reason: {$user->ban_reason}");
         }
 
-        if ($user->status === 'suspended') {
+        if ($user->status === UserStatus::Suspended) {
             Auth::logout();
             return redirect()->route('login')
                 ->with('error', 'Your account has been suspended. Please contact support.');

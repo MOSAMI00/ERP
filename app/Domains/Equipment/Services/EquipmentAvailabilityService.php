@@ -21,9 +21,9 @@ class EquipmentAvailabilityService
         return [
             'rented'  => RentalOperation::where('equipment_id', $equipmentId)
                 ->whereIn('status', [
-                    RentalStatus::Confirmed,
-                    RentalStatus::Paid,
-                    RentalStatus::InUse,
+                    RentalStatus::Confirmed->value,
+                    RentalStatus::Paid->value,
+                    RentalStatus::InUse->value,
                 ])
                 ->get(['start_date', 'end_date'])
                 ->toArray(),
@@ -42,8 +42,9 @@ class EquipmentAvailabilityService
 
         $rented = RentalOperation::where('equipment_id', $equipmentId)
             ->whereIn('status', [
-                RentalStatus::Confirmed,
-                RentalStatus::InUse,
+                RentalStatus::Confirmed->value,
+                RentalStatus::Paid->value,
+                RentalStatus::InUse->value,
             ])
             ->where('start_date', '<=', $to)
             ->where('end_date', '>=', $from)

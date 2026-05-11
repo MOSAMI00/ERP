@@ -8,6 +8,7 @@ use App\Domains\Compensation\Actions\CalculateLateFeeAction;
 use App\Domains\Compensation\Actions\CreateEquipmentHandoverAction;
 use App\Domains\Compensation\Actions\RequestCompensationAction;
 use App\Domains\Compensation\Enums\OwnerDecision;
+use App\Domains\Handover\Enums\HandoverPhase;
 use App\Domains\Payment\Services\PaymentWorkflowService;
 use App\Domains\Rental\Actions\UpdateRentalStatusAction;
 use App\Domains\Rental\Enums\RentalStatus;
@@ -43,6 +44,7 @@ class CompensationWorkflowService
     {
         $this->stateResolver->canRequestCompensation($rental);
         $this->mustNotHaveHandover($rental);
+        $this->mustHaveReturnReports($rental);
 
         $handover = DB::transaction(function () use ($rental) {
             // TODO: Define if late_fee is auto-deducted or added to proposed_deduction
@@ -110,6 +112,7 @@ class CompensationWorkflowService
     public function acceptCompensation(EquipmentHandover $handover): void
     {
         $this->mustBeWithinObjectionWindow($handover);
+        $this->mustBePendingTenantResponse($handover);
 
         DB::transaction(function () use ($handover) {
             // ✦ تسجيل القرار
@@ -173,6 +176,7 @@ class CompensationWorkflowService
 
         DB::transaction(function () use ($handover) {
             // ✦ تجميد الأموال تبقى في escrow
+            $handover->update(['objection_submitted_at' => now()]);
             $this->updateRentalStatus->handle($handover->rental, RentalStatus::Disputed);
             $this->audit->log('rental_escalated_to_dispute', $handover->rental);
         });
@@ -190,6 +194,23 @@ class CompensationWorkflowService
             throw new \DomainException(
                 "Rental [{$rental->id}] already has an equipment handover record."
             );
+        }
+    }
+
+    private function mustHaveReturnReports(RentalOperation $rental): void
+    {
+        $tenantSubmitted = $rental->handoverReports()
+            ->where('phase', HandoverPhase::Return->value)
+            ->where('submitted_by_id', $rental->tenant_id)
+            ->exists();
+
+        $ownerSubmitted = $rental->handoverReports()
+            ->where('phase', HandoverPhase::Return->value)
+            ->where('submitted_by_id', $rental->owner_id)
+            ->exists();
+
+        if (! $tenantSubmitted || ! $ownerSubmitted) {
+            throw new \DomainException('Both return handover reports are required before compensation evaluation.');
         }
     }
 
@@ -221,6 +242,13 @@ class CompensationWorkflowService
     {
         return $handover->owner_decision === null
             && $handover->proposed_deduction > 0;
+    }
+
+    private function mustBePendingTenantResponse(EquipmentHandover $handover): void
+    {
+        if (! $this->isPendingTenantResponse($handover)) {
+            throw new \DomainException('There is no pending tenant compensation response.');
+        }
     }
 
     private function validateDeductionAmount(

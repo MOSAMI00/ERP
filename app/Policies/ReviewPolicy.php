@@ -3,6 +3,7 @@
 
 namespace App\Policies;
 
+use App\Domains\Rental\Enums\RentalStatus;
 use App\Models\Review;
 use App\Models\RentalOperation;
 use App\Models\User;
@@ -13,7 +14,7 @@ class ReviewPolicy
     public function create(User $user, RentalOperation $rental): bool
     {
         return ($user->id === $rental->tenant_id || $user->id === $rental->owner_id)
-            && $rental->status === 'completed'
+            && $rental->status === RentalStatus::Completed
             && !Review::where('reviewer_id', $user->id)
                 ->where('rental_op_id', $rental->id)
                 ->exists();

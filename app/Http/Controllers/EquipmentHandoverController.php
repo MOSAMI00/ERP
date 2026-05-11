@@ -1,9 +1,9 @@
-
-<!-- TODO : delete -->
 <?php
 
 namespace App\Http\Controllers;
 
+use App\Domains\Compensation\Enums\OwnerDecision;
+use App\Domains\Compensation\Services\CompensationWorkflowService;
 use App\Models\EquipmentHandover;
 use App\Models\RentalOperation;
 use Illuminate\Http\Request;
@@ -12,11 +12,15 @@ use Inertia\Inertia;
 
 class EquipmentHandoverController extends Controller
 {
+    public function __construct(
+        private CompensationWorkflowService $workflow,
+    ) {}
+
     public function show(RentalOperation $rental)
     {
         $this->authorize('view', $rental);
 
-        $handover = $rental->finalHandover()->with(['decidedBy', 'dispute'])->first();
+        $handover = $rental->equipmentHandover()->with(['decidedBy', 'dispute'])->first();
 
         return Inertia::render('Handover/Show', [
             'rental'   => $rental->load(['equipment', 'tenant', 'owner']),
@@ -36,13 +40,23 @@ class EquipmentHandoverController extends Controller
         ]);
 
         $handover->update([
-            ...$data,
-            'decided_by_id' => Auth::id(),
-            'decided_at'    => now(),
-            'objection_deadline' => now()->addHours(
-                config('platform.objection_window_hours', 24)
-            ),
+            'final_condition' => $data['final_condition'],
+            'final_notes' => $data['final_notes'] ?? null,
         ]);
+
+        if ($data['owner_decision'] === OwnerDecision::FullRefund->value) {
+            $this->workflow->skipCompensation($handover);
+        } else {
+            $deduction = $data['owner_decision'] === OwnerDecision::NoRefund->value
+                ? (float) $handover->rental->insurance_amount
+                : (float) ($data['proposed_deduction'] ?? 0);
+
+            $this->workflow->requestCompensation(
+                $handover,
+                $deduction,
+                $data['final_notes'] ?? '',
+            );
+        }
 
         return back()->with('success', 'Decision submitted.');
     }

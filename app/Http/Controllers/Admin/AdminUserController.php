@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Domains\User\Services\UserStatusService;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -9,6 +10,10 @@ use Inertia\Inertia;
 
 class AdminUserController extends Controller
 {
+    public function __construct(
+        private UserStatusService $statusService,
+    ) {}
+
     public function index(Request $request)
     {
         $users = User::query()
@@ -34,7 +39,10 @@ class AdminUserController extends Controller
 
     public function suspend(Request $request, User $user)
     {
-        $user->update(['status' => 'suspended']);
+        $admin = auth()->guard('admin')->user();
+        abort_unless($admin, 403);
+
+        $this->statusService->suspend($user, $admin);
 
         return back()->with('success', 'User suspended.');
     }
@@ -45,17 +53,20 @@ class AdminUserController extends Controller
             'ban_reason' => ['required', 'string'],
         ]);
 
-        $user->update([
-            'status'     => 'banned',
-            'ban_reason' => $data['ban_reason'],
-        ]);
+        $admin = auth()->guard('admin')->user();
+        abort_unless($admin, 403);
+
+        $this->statusService->ban($user, $admin, $data['ban_reason']);
 
         return back()->with('success', 'User banned.');
     }
 
     public function activate(User $user)
     {
-        $user->update(['status' => 'active', 'ban_reason' => null]);
+        $admin = auth()->guard('admin')->user();
+        abort_unless($admin, 403);
+
+        $this->statusService->activate($user, $admin);
 
         return back()->with('success', 'User activated.');
     }

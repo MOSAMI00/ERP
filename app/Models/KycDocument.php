@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Models;
+use App\Domains\User\Enums\KycStatus;
 use App\Models\User;
 use App\Models\Admin;
 
@@ -22,6 +23,7 @@ class KycDocument extends Model
     ];
 
     protected $casts = [
+        'status' => KycStatus::class,
         'submitted_at' => 'datetime',
     ];
 

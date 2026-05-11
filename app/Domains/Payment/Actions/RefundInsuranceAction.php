@@ -11,14 +11,22 @@ class RefundInsuranceAction
 {
     public function handle(RentalOperation $rental, float $deduction): void
     {
-        $refundAmount = $rental->insurance_amount - $deduction;
+        if ($rental->payments()
+            ->where('type', PaymentType::InsuranceRefund->value)
+            ->where('status', PaymentStatus::Paid->value)
+            ->exists()
+        ) {
+            return;
+        }
+
+        $refundAmount = (float) $rental->insurance_amount - $deduction;
 
         Payment::create([
             'rental_op_id'   => $rental->id,
-            'type'           => PaymentType::InsuranceRefund,
+            'type'           => PaymentType::InsuranceRefund->value,
             'amount'         => $refundAmount,
             'platform_fee'   => 0,
-            'status'         => PaymentStatus::Paid,
+            'status'         => PaymentStatus::Paid->value,
             'escrow_status'  => null,
             'transferred_at' => now(),
         ]);
@@ -27,10 +35,10 @@ class RefundInsuranceAction
         if ($deduction > 0) {
             Payment::create([
                 'rental_op_id'   => $rental->id,
-                'type'           => PaymentType::Compensation,
+                'type'           => PaymentType::Compensation->value,
                 'amount'         => $deduction,
                 'platform_fee'   => 0,
-                'status'         => PaymentStatus::Paid,
+                'status'         => PaymentStatus::Paid->value,
                 'escrow_status'  => null,
                 'transferred_at' => now(),
             ]);

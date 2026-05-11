@@ -2,6 +2,7 @@
 
 namespace App\Shared\Settings;
 
+use App\Models\PlatformSetting;
 use Illuminate\Support\Facades\Cache;
 
 class PlatformSettingsService
@@ -20,8 +21,9 @@ class PlatformSettingsService
 
     public function getPlatformFeeRate(): float
     {
-        // يُعاد 0.05 ليُضرب مباشرة في المبلغ (5%)
-        return (float) $this->get('platform_fee_rate', 0.05);
+        $rate = (float) $this->get('platform_fee_rate', 0.05);
+
+        return $rate > 1 ? $rate / 100 : $rate;
     }
 
     public function getMaxRentalDays(): int
@@ -31,10 +33,12 @@ class PlatformSettingsService
 
     private function get(string $key, mixed $default = null): mixed
     {
-        return Cache::remember(
-            "platform_settings_{$key}",
+        $settings = Cache::remember(
+            'platform_settings',
             self::CACHE_TTL,
-            fn () => \App\Models\PlatformSetting::where('key', $key)->value('value') ?? $default,
+            fn () => PlatformSetting::query()->first(),
         );
+
+        return $settings?->{$key} ?? $default;
     }
 }

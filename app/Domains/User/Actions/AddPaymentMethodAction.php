@@ -13,9 +13,13 @@ class AddPaymentMethodAction
         $isDefault = ! $user->paymentMethods()->exists();
 
         return $user->paymentMethods()->create([
-            'type'       => $data['type'],
-            'details'    => $data['details'],
-            'is_default' => $isDefault,
+            'type'           => $data['type'],
+            'account_name'   => $data['account_name'] ?? null,
+            'account_number' => $data['account_number'] ?? null,
+            'bank_name'      => $data['bank_name'] ?? null,
+            'wallet_number'  => $data['wallet_number'] ?? null,
+            'token_ref'      => $data['token_ref'] ?? null,
+            'is_default'     => $isDefault || ! empty($data['is_default']),
         ]);
     }
 }

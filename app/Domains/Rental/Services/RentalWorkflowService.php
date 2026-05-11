@@ -38,7 +38,11 @@ class RentalWorkflowService
     // ══════════════════════════════════════════
     public function createRental(array $data, User $tenant): RentalOperation
     {
-        $this->availability->validateForSubmit($data);
+        $this->availability->validateForSubmit(
+            $data['equipment_id'],
+            $data['start_date'],
+            $data['end_date'],
+        );
 
         $rental = DB::transaction(function () use ($data, $tenant) {
             $rental = $this->createRental->handle($data, $tenant);
@@ -57,11 +61,17 @@ class RentalWorkflowService
     // ══════════════════════════════════════════
     public function approveRental(RentalOperation $rental): void
     {
-        $this->stateResolver->canApprove($rental);
-
         DB::transaction(function () use ($rental) {
+            $rental = RentalOperation::query()->whereKey($rental->id)->lockForUpdate()->firstOrFail();
+            $this->stateResolver->canApprove($rental);
+
             $hours = $this->settings->getPaymentDeadlineHours();
 
+            $this->availability->reserveForRental($rental);
+            if (! $rental->contract()->exists()) {
+                $this->createContract->handle($rental);
+                $rental->load('contract');
+            }
             $this->signOwnerContract->handle($rental);
             $this->updateStatus->handle($rental, RentalStatus::Confirmed);
             $this->setDeadline->handle($rental, $hours);
@@ -76,9 +86,10 @@ class RentalWorkflowService
     // ══════════════════════════════════════════
     public function rejectRental(RentalOperation $rental, string $reason): void
     {
-        $this->stateResolver->canApprove($rental);
-
         DB::transaction(function () use ($rental, $reason) {
+            $rental = RentalOperation::query()->whereKey($rental->id)->lockForUpdate()->firstOrFail();
+            $this->stateResolver->canApprove($rental);
+
             $this->cancelRental->handle($rental, $reason, RentalStatus::Cancelled);
             $this->audit->log('rental_rejected', $rental);
         });
@@ -91,9 +102,11 @@ class RentalWorkflowService
     // ══════════════════════════════════════════
     public function cancelByTenant(RentalOperation $rental, string $reason): void
     {
-        $this->stateResolver->canBeCancelledByTenant($rental);
-
         DB::transaction(function () use ($rental, $reason) {
+            $rental = RentalOperation::query()->whereKey($rental->id)->lockForUpdate()->firstOrFail();
+            $this->stateResolver->canBeCancelledByTenant($rental);
+
+            $this->availability->releaseForRental($rental);
             $this->cancelRental->handle($rental, $reason, RentalStatus::Cancelled);
             $this->audit->log('rental_cancelled_by_tenant', $rental);
         });
@@ -106,9 +119,11 @@ class RentalWorkflowService
     // ══════════════════════════════════════════
     public function cancelByOwner(RentalOperation $rental, string $reason): void
     {
-        $this->stateResolver->canBeCancelledByOwner($rental);
-
         DB::transaction(function () use ($rental, $reason) {
+            $rental = RentalOperation::query()->whereKey($rental->id)->lockForUpdate()->firstOrFail();
+            $this->stateResolver->canBeCancelledByOwner($rental);
+
+            $this->availability->releaseForRental($rental);
             $this->cancelRental->handle($rental, $reason, RentalStatus::Cancelled);
             $this->audit->log('rental_cancelled_by_owner', $rental);
         });
@@ -122,10 +137,11 @@ class RentalWorkflowService
     // [5D] انتهت مهلة الدفع — يستدعيها Cron
     public function cancelByTimeout(RentalOperation $rental): void
     {
-        // ✦ mustBeAwaitingPayment أوضح دلالياً من canPay هنا
-        $this->stateResolver->mustBeAwaitingPayment($rental);
-
         DB::transaction(function () use ($rental) {
+            $rental = RentalOperation::query()->whereKey($rental->id)->lockForUpdate()->firstOrFail();
+            $this->stateResolver->mustBeAwaitingPayment($rental);
+
+            $this->availability->releaseForRental($rental);
             $this->cancelRental->handle($rental, 'payment_timeout', RentalStatus::Cancelled);
             $this->audit->log('rental_cancelled_timeout', $rental);
         });
