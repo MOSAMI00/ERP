@@ -2,13 +2,15 @@
 
 namespace App\Domains\Review\Actions;
 
+use App\Domains\Review\Enums\ReviewStatus;
+use App\Models\Review;
+
 class UpdateReviewStatusAction
 {
-    /**
-     * Create a new class instance.
-     */
-    public function __construct()
+    public function __invoke(Review $review, ReviewStatus $status): Review
     {
-        //
+        $review->update(['status' => $status]);
+
+        return $review->refresh();
     }
 }

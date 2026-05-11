@@ -141,6 +141,8 @@ return new class extends Migration
 
             $table->timestamp('paid_at')->nullable();
             $table->timestamp('transferred_at')->nullable();
+            $table->timestamp('refunded_at')->nullable();   // ✦ جديد
+            $table->timestamp('cancelled_at')->nullable();
 
             $table->timestamps();
         });

@@ -2,13 +2,14 @@
 
 namespace App\Domains\Rental\Actions;
 
+use App\Models\RentalOperation;
+
 class SetPaymentDeadlineAction
 {
-    /**
-     * Create a new class instance.
-     */
-    public function __construct()
+    public function handle(RentalOperation $rental, int $hours): void
     {
-        //
+        $rental->update([
+            'payment_deadline' => now()->addHours($hours),
+        ]);
     }
 }

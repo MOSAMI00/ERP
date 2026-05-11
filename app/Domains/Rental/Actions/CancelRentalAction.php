@@ -2,13 +2,19 @@
 
 namespace App\Domains\Rental\Actions;
 
+use App\Domains\Rental\Enums\RentalStatus;
+use App\Models\RentalOperation;
+
 class CancelRentalAction
 {
-    /**
-     * Create a new class instance.
-     */
-    public function __construct()
-    {
-        //
+    public function handle(
+        RentalOperation $rental,
+        string $reason,
+        RentalStatus $status = RentalStatus::Cancelled
+    ): void {
+        $rental->update([
+            'status'              => $status,
+            'cancellation_reason' => $reason,
+        ]);
     }
 }

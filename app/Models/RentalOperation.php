@@ -1,6 +1,8 @@
 <?php
 
 namespace App\Models;
+
+use App\Domains\Rental\Enums\RentalStatus;
 use App\Models\User;
 use App\Models\Equipment;
 use App\Models\Contract;
@@ -35,13 +37,34 @@ class RentalOperation extends Model
         'return_confirmed_at',
     ];
 
-    protected $casts = [
-        'start_date' => 'date',
-        'end_date' => 'date',
-        'delivery_time' => 'datetime',
-        'delivery_confirmed_at' => 'datetime',
-        'return_confirmed_at' => 'datetime',
-    ];
+    // protected $casts = [
+    //     'start_date' => 'date',
+    //     'end_date' => 'date',
+    //     'delivery_time' => 'datetime',
+    //     'delivery_confirmed_at' => 'datetime',
+    //     'return_confirmed_at' => 'datetime',
+    // ];
+    protected function casts(): array
+    {
+        return [
+            'status'               => RentalStatus::class,
+            'start_date'           => 'date',
+            'end_date'             => 'date',
+            'payment_deadline'     => 'datetime',
+            'delivery_time'        => 'datetime',
+            'delivery_confirmed_at' => 'datetime',
+            'return_confirmed_at'  => 'datetime',
+            'rental_amount'        => 'decimal:2',
+            'insurance_amount'     => 'decimal:2',
+            'total_amount'         => 'decimal:2',
+            'start_date' => 'date',
+            'end_date' => 'date',
+            'delivery_time' => 'datetime',
+            'delivery_confirmed_at' => 'datetime',
+            'return_confirmed_at' => 'datetime',
+        ];
+    }
+
 
     public function tenant()
     {
@@ -73,7 +96,7 @@ class RentalOperation extends Model
         return $this->hasMany(HandoverReport::class, 'rental_op_id');
     }
 
-    public function finalHandover()
+    public function equipmentHandover()
     {
         return $this->hasOne(EquipmentHandover::class, 'rental_op_id');
     }
