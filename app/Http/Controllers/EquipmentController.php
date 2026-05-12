@@ -84,7 +84,7 @@ class EquipmentController extends Controller
         $equipment->update(['status' => EquipmentStatus::Deleted->value]);
         $equipment->delete();
 
-        return redirect()->route('owner.equipment.index')
+        return redirect()->route('equipment.index')
             ->with('success', 'Equipment deleted.');
     }
 }

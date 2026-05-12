@@ -53,7 +53,16 @@ class RentalOperationController extends Controller
     {
         $this->authorize('view', $rental);
 
-        $rental->load(['equipment.images', 'tenant', 'owner', 'contract', 'payments']);
+        $rental->load([
+            'equipment.images',
+            'tenant',
+            'owner',
+            'contract',
+            'payments',
+            'handoverReports',
+            'equipmentHandover',
+            'reviews',
+        ]);
 
         return Inertia::render('Rentals/Show', [
             'rental' => $rental,
