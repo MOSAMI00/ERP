@@ -20,19 +20,19 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $credentials = $request->validate([
-            'email'    => ['required', 'email'],
+            'phone'    => ['required', 'string'],
             'password' => ['required'],
         ]);
 
-        if (!Auth::attempt(['email' => $credentials['email'], 'password' => $credentials['password']])) {
+        if (!Auth::attempt(['phone' => $credentials['phone'], 'password' => $credentials['password']])) {
             return back()->withErrors([
-                'email' => 'The provided credentials are incorrect.',
+                'phone' => 'The provided credentials are incorrect.',
             ]);
         }
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard'));
+        return redirect()->intended(route('dashboard.index'));
     }
 
     public function showRegister()
@@ -44,20 +44,20 @@ class AuthController extends Controller
     {
         $data = $request->validated();
 
+        $data['phone'] = preg_replace('/[^0-9+]/', '', $data['phone']);
+        $data['email'] = $data['email'] ?: 'phone-'.$data['phone'].'@local.erp';
+
         $password = $data['password'];
         unset($data['password'], $data['password_confirmation']);
 
         $user = User::create([
             ...$data,
-            'phone' => $data['phone'] ?? 'pending-'.Str::lower(Str::random(12)),
-            'type' => $data['type'] ?? 'tenant',
-            'governorate' => $data['governorate'] ?? 'unknown',
             'password_hash' => Hash::make($password),
         ]);
 
         Auth::login($user);
 
-        return redirect()->route('dashboard');
+        return redirect()->route('dashboard.index');
     }
 
     public function logout(Request $request)

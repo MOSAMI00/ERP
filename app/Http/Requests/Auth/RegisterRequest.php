@@ -15,11 +15,11 @@ class RegisterRequest extends FormRequest
     {
         return [
             'full_name'  => ['required', 'string', 'max:255'],
-            'email'      => ['required', 'email', 'unique:users'],
-            'phone'      => ['nullable', 'string', 'unique:users'],
+            'email'      => ['nullable', 'email', 'unique:users'],
+            'phone'      => ['required', 'string', 'unique:users'],
             'password'   => ['required', 'confirmed', 'min:8'],
-            'type'       => ['nullable', 'in:tenant,owner'],
-            'governorate'=> ['nullable', 'string'],
+            'type'       => ['required', 'in:tenant,owner'],
+            'governorate'=> ['required', 'string'],
         ];
     }
 }

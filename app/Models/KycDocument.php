@@ -19,6 +19,7 @@ class KycDocument extends Model
         'back_url',
         'status',
         'reviewed_by',
+        'rejection_reason',
         'submitted_at',
     ];
 

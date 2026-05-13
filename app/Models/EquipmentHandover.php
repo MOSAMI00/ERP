@@ -14,6 +14,8 @@ class EquipmentHandover extends Model
 {
     use HasFactory;
 
+    protected $table = 'equipment_handover';
+
     protected $fillable = [
         'rental_op_id',
         'actual_return_date',

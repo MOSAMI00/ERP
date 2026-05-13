@@ -9,45 +9,40 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rules;
-use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class RegisteredUserController extends Controller
 {
-    /**
-     * Display the registration view.
-     */
     public function create(): Response
     {
-        return Inertia::render('Auth/Register');
+        return Inertia::render('features/auth/register/RegisterPage');
     }
 
-    /**
-     * Handle an incoming registration request.
-     *
-     * @throws ValidationException
-     */
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
-            'full_name' => 'required_without:name|string|max:255',
-            'name' => 'nullable|string|max:255',
-            'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
-            'phone' => 'nullable|string|max:30|unique:'.User::class,
-            'type' => 'nullable|in:tenant,owner',
-            'governorate' => 'nullable|string|max:255',
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'full_name'    => ['required', 'string', 'max:255'],
+            'phone'        => ['required', 'string', 'max:30', 'unique:users,phone'],
+            'email'        => ['nullable', 'string', 'lowercase', 'email', 'max:255', 'unique:users,email'],
+            'type'         => ['required', 'in:tenant,owner'],
+            'governorate'  => ['required', 'string', 'max:255'],
+            'password'     => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
+        // Normalise phone to digits only
+        $phone = preg_replace('/[^0-9+]/', '', $request->phone);
+
+        // Generate a placeholder email when the user leaves it blank
+        $email = $request->email ?: 'phone-' . $phone . '@local.erp';
+
         $user = User::create([
-            'full_name' => $request->input('full_name', $request->input('name')),
-            'email' => $request->email,
-            'phone' => $request->phone ?? 'pending-'.Str::lower(Str::random(12)),
-            'type' => $request->type ?? 'tenant',
-            'governorate' => $request->governorate ?? 'unknown',
+            'full_name'     => $request->full_name,
+            'email'         => $email,
+            'phone'         => $phone,
+            'type'          => $request->type,
+            'governorate'   => $request->governorate,
             'password_hash' => Hash::make($request->password),
         ]);
 
@@ -55,6 +50,11 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
-        return redirect(route('dashboard', absolute: false));
+        // Redirect based on user type
+        if ($user->type === 'owner') {
+            return redirect()->route('owner.overview');
+        }
+
+        return redirect()->route('dashboard.index');
     }
 }

@@ -23,6 +23,7 @@ class HandleInertiaRequests extends Middleware
                     'id'          => $request->user()->id,
                     'full_name'   => $request->user()->full_name,
                     'email'       => $request->user()->email,
+                    'phone'       => $request->user()->phone,
                     'type'        => $request->user()->type,
                     'status'      => $request->user()->status?->value,
                     'kyc_status'  => $request->user()->kyc_status,
@@ -37,6 +38,12 @@ class HandleInertiaRequests extends Middleware
                 'warning' => $request->session()->get('warning'),
             ],
             'notifications_count' => $request->user()
+                ? \App\Models\Notification::where('recipient_id', $request->user()->id)
+                    ->where('recipient_type', 'user')
+                    ->where('is_read', false)
+                    ->count()
+                : 0,
+            'unread_notifications_count' => $request->user()
                 ? \App\Models\Notification::where('recipient_id', $request->user()->id)
                     ->where('recipient_type', 'user')
                     ->where('is_read', false)

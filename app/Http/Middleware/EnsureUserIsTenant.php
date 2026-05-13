@@ -11,7 +11,7 @@ class EnsureUserIsTenant
     public function handle(Request $request, Closure $next)
     {
         if (!$request->user() || $request->user()->type !== 'tenant') {
-            return redirect()->route('dashboard')
+            return redirect()->route('dashboard.index')
                 ->with('error', 'Access denied. Tenant account required.');
         }
 

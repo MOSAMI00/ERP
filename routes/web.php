@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
+
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\EquipmentController;
 use App\Http\Controllers\EquipmentImageController;
@@ -17,6 +17,15 @@ use App\Http\Controllers\UserPaymentMethodController;
 use App\Http\Controllers\NotificationController;
 
 use App\Http\Controllers\UserController;
+use App\Models\Category as CategoryModel;
+use App\Models\Contract as ContractModel;
+use App\Models\Dispute as DisputeModel;
+use App\Models\Equipment as EquipmentModel;
+use App\Models\HandoverReport as HandoverReportModel;
+use App\Models\Notification as NotificationModel;
+use App\Models\Payment as PaymentModel;
+use App\Models\RentalOperation as RentalOperationModel;
+use App\Models\Review as ReviewModel;
 
 use App\Http\Controllers\Admin\AdminAuthController;
 use App\Http\Controllers\Admin\AdminUserController;
@@ -31,24 +40,165 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::get('/', function () {
-    return Inertia::render('Welcome', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
+$equipmentCard = function (EquipmentModel $equipment): array {
+    $primaryImage = $equipment->images->firstWhere('is_primary', true) ?? $equipment->images->first();
+
+    return [
+        'id' => $equipment->id,
+        'name' => $equipment->name,
+        'description' => $equipment->description,
+        'category' => $equipment->category?->name_ar,
+        'price' => (float) $equipment->price_per_day,
+        'price_per_day' => (float) $equipment->price_per_day,
+        'insurance' => (float) $equipment->insurance_amount,
+        'insurance_amount' => (float) $equipment->insurance_amount,
+        'location' => $equipment->governorate,
+        'address' => $equipment->address,
+        'status' => $equipment->status?->value ?? $equipment->status,
+        'rating' => (float) $equipment->rating,
+        'image' => $primaryImage?->image_url,
+        'images' => $equipment->images->pluck('image_url')->values(),
+        'owner' => $equipment->owner,
+    ];
+};
+
+Route::get('/', function () use ($equipmentCard) {
+    $products = EquipmentModel::with(['category', 'images', 'owner'])
+        ->where('status', 'active')
+        ->latest()
+        ->take(12)
+        ->get()
+        ->map($equipmentCard)
+        ->values();
+
+    return Inertia::render('features/home/HomePage', [
+        'products' => $products,
     ]);
+})->name('home');
+
+Route::get('/product', function () {
+    return Inertia::render('features/product-details/ProductDetailPage');
+})->name('product.index');
+
+Route::get('/product/{id}', function ($id) use ($equipmentCard) {
+    $equipment = EquipmentModel::with(['category', 'images', 'owner'])
+        ->where('status', 'active')
+        ->findOrFail($id);
+
+    return Inertia::render('features/product-details/ProductDetailPage', [
+        'product' => $equipmentCard($equipment),
+    ]);
+})->name('product.show');
+
+Route::get('/cart', function () {
+    return Inertia::render('features/cart/CartPage');
+})->name('cart');
+
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::prefix('dashboard')->name('dashboard.')->group(function () {
+        Route::get('/', function () {
+            $rentals = request()->user()->rentalsAsTenant()
+                ->with(['equipment.images', 'equipment.owner', 'owner', 'contract', 'payments'])
+                ->latest()
+                ->get();
+
+            return Inertia::render('Tenant/Orders/MyOrders/MyOrdersPage', ['rentals' => $rentals]);
+        })->name('index');
+        Route::get('/order/{id}', function ($id) {
+            $rental = request()->user()->rentalsAsTenant()
+                ->with(['equipment.images', 'owner', 'contract', 'payments', 'handoverReports', 'equipmentHandover'])
+                ->findOrFail($id);
+
+            return Inertia::render('Tenant/Orders/OrderDetails/OrderDetailsPage', [
+                'rental' => $rental,
+                'handover_reports' => $rental->handoverReports,
+            ]);
+        })->name('order');
+        Route::get('/order/{id}/delivery', function ($id) {
+            return redirect()->route('dashboard.delivery', ['id' => $id]);
+        })->name('order.delivery');
+        Route::get('/delivery', function () {
+            $rentals = request()->user()->rentalsAsTenant()
+                ->with(['equipment.images', 'equipmentHandover', 'tenant', 'owner'])
+                ->latest()
+                ->get();
+
+            return Inertia::render('Tenant/Delivery/DeliveryPage', [
+                'rentals' => $rentals,
+                'handover_reports' => HandoverReportModel::whereIn('rental_op_id', $rentals->pluck('id'))->latest()->get(),
+                'disputes' => DisputeModel::whereIn('rental_op_id', $rentals->pluck('id'))->latest()->get(),
+            ]);
+        })->name('delivery');
+        Route::get('/contracts', function () {
+            $rentalIds = request()->user()->rentalsAsTenant()->pluck('id');
+            return Inertia::render('Tenant/Contracts/ContractsPage', [
+                'contracts' => ContractModel::whereIn('rental_op_id', $rentalIds)->with('rental.equipment')->latest()->get(),
+            ]);
+        })->name('contracts');
+        Route::get('/notifications', function () {
+            return Inertia::render('Tenant/Notifications/NotificationsPage', [
+                'notifications' => NotificationModel::where('recipient_type', 'user')->where('recipient_id', request()->user()->id)->latest()->get(),
+            ]);
+        })->name('notifications');
+        Route::get('/ratings', function () {
+            return Inertia::render('Tenant/Reviews/ReviewsPage', [
+                'reviews' => ReviewModel::where('reviewer_id', request()->user()->id)->with('rental.equipment')->latest()->get(),
+            ]);
+        })->name('ratings');
+        Route::get('/insurance', function () {
+            $rentals = request()->user()->rentalsAsTenant()->with(['equipment', 'payments'])->latest()->get();
+            return Inertia::render('Tenant/Insurance/InsurancePage', ['rentals' => $rentals]);
+        })->name('insurance');
+        Route::get('/settings', function () {
+            return Inertia::render('Tenant/Settings/SettingsPage', [
+                'kyc_documents' => request()->user()->kycDocuments()->latest()->get(),
+                'payment_methods' => request()->user()->paymentMethods()->latest()->get(),
+            ]);
+        })->name('settings');
+    });
+
+    Route::prefix('owner')->name('owner.')->group(function () {
+        Route::get('/', function () { return redirect()->route('owner.overview'); });
+        Route::get('/overview', function () {
+            $rentals = request()->user()->rentalsAsOwner()->with(['equipment', 'tenant', 'payments'])->latest()->get();
+            return Inertia::render('Owner/Overview/OverviewPage', [
+                'rentals' => $rentals,
+                'stats' => [
+                    'equipment_count' => request()->user()->equipment()->count(),
+                    'pending_requests' => $rentals->where('status', 'pending')->count(),
+                    'active_rentals' => $rentals->whereIn('status', ['confirmed', 'paid', 'in_use'])->count(),
+                    'earnings' => (float) PaymentModel::whereIn('rental_op_id', $rentals->pluck('id'))->where('status', 'paid')->sum('amount'),
+                ],
+            ]);
+        })->name('overview');
+        Route::get('/equipment', function () { return Inertia::render('Owner/Equipment/EquipmentPage', ['equipment' => request()->user()->equipment()->with(['category', 'images'])->latest()->get()]); })->name('equipment');
+        Route::get('/equipment/add', function () { return Inertia::render('Owner/AddEquipment/AddEquipmentPage', ['categories' => CategoryModel::orderBy('sort_order')->get()]); })->name('equipment.add');
+        Route::get('/requests', function () { return Inertia::render('Owner/Requests/RequestsPage', ['rentals' => request()->user()->rentalsAsOwner()->with(['equipment.images', 'tenant'])->where('status', 'pending')->latest()->get()]); })->name('requests');
+        Route::get('/rentals', function () { return Inertia::render('Owner/Rentals/RentalsPage', ['rentals' => request()->user()->rentalsAsOwner()->with(['equipment.images', 'tenant', 'contract', 'payments'])->latest()->get()]); })->name('rentals');
+        Route::get('/delivery', function () {
+            $rentals = request()->user()->rentalsAsOwner()->with(['equipment.images', 'equipmentHandover', 'tenant', 'owner'])->latest()->get();
+            return Inertia::render('Owner/Delivery/DeliveryPage', [
+                'rentals' => $rentals,
+                'handover_reports' => HandoverReportModel::whereIn('rental_op_id', $rentals->pluck('id'))->latest()->get(),
+                'disputes' => DisputeModel::whereIn('rental_op_id', $rentals->pluck('id'))->latest()->get(),
+            ]);
+        })->name('delivery');
+        Route::get('/insurance', function () { return Inertia::render('Owner/Insurance/InsurancePage', ['rentals' => request()->user()->rentalsAsOwner()->with(['equipment', 'payments'])->latest()->get()]); })->name('insurance');
+        Route::get('/earnings', function () {
+            $rentalIds = request()->user()->rentalsAsOwner()->pluck('id');
+            return Inertia::render('Owner/Earnings/EarningsPage', ['payments' => PaymentModel::whereIn('rental_op_id', $rentalIds)->with('rental.equipment')->latest()->get()]);
+        })->name('earnings');
+        Route::get('/contracts', function () {
+            $rentalIds = request()->user()->rentalsAsOwner()->pluck('id');
+            return Inertia::render('Owner/Contracts/ContractsPage', ['contracts' => ContractModel::whereIn('rental_op_id', $rentalIds)->with('rental.equipment')->latest()->get()]);
+        })->name('contracts');
+        Route::get('/notifications', function () { return Inertia::render('Owner/Notifications/NotificationsPage', ['notifications' => NotificationModel::where('recipient_type', 'user')->where('recipient_id', request()->user()->id)->latest()->get()]); })->name('notifications');
+        Route::get('/reviews', function () { return Inertia::render('Owner/Reviews/ReviewsPage', ['reviews' => ReviewModel::whereIn('rental_op_id', request()->user()->rentalsAsOwner()->pluck('id'))->with(['reviewer', 'rental.equipment'])->latest()->get()]); })->name('reviews');
+        Route::get('/profile', function () { return Inertia::render('Owner/Settings/SettingsPage', ['kyc_documents' => request()->user()->kycDocuments()->latest()->get(), 'payment_methods' => request()->user()->paymentMethods()->latest()->get()]); })->name('profile');
+    });
 });
 
-Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
 
-Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-});
 
 require __DIR__.'/auth.php';
 
