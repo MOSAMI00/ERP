@@ -8,9 +8,9 @@ import EquipmentToolbar from './components/EquipmentToolbar';
 import { useOwnerEquipmentCatalog } from './useOwnerEquipmentCatalog';
 
 const MyEquipment = () => {
-  const { props } = usePage();
+  const { props } = usePage() as any;
   const user = props.auth?.user ?? null;
-  const { rentals } = useOwnerPageProps();
+  const { rentals, equipment } = useOwnerPageProps();
   const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('all');
@@ -23,6 +23,7 @@ const MyEquipment = () => {
 
   const { categories, filteredEquipment } = useOwnerEquipmentCatalog({
     ownerId: user?.id,
+    equipment,
     rentals,
     search,
     category,

@@ -94,7 +94,8 @@ Route::get('/cart', function () {
     return Inertia::render('features/cart/CartPage');
 })->name('cart');
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth'])->group(function () {
+
     Route::prefix('dashboard')->name('dashboard.')->group(function () {
         Route::get('/', function () {
             $rentals = request()->user()->rentalsAsTenant()

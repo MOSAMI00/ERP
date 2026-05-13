@@ -1,8 +1,14 @@
 import { Menu, X, Bell, ShoppingCart } from 'lucide-react';
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 
 
 export function MainBar({ mobileMenuOpen, setMobileMenuOpen, notificationCount }) {
+  const { auth } = usePage().props;
+  const user = auth?.user;
+  
+  const dashboardHref = user?.type === 'owner' ? '/owner/overview' : '/dashboard';
+  const firstLetter = user?.full_name?.charAt(0) || user?.fullName?.charAt(0) || 'م';
+
   return (
     <div className="flex items-center justify-between h-14 px-4 border-b border-border">
       <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="p-2">
@@ -31,12 +37,18 @@ export function MainBar({ mobileMenuOpen, setMobileMenuOpen, notificationCount }
             1
           </span>
         </Link>
-        <Link href="/dashboard" className="p-1">
+        <Link 
+          href={dashboardHref} 
+          className="p-1"
+          title={user?.type === 'owner' ? 'لوحة تحكم المؤجر' : 'لوحة تحكم المستأجر'}
+        >
           <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm">
-            أ
+            {firstLetter}
           </div>
         </Link>
+
       </div>
     </div>
   );
 }
+

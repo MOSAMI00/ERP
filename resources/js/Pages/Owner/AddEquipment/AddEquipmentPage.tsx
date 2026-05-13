@@ -69,10 +69,13 @@ export default function AddEquipmentPage() {
         data.min_rental ? `Minimum rental: ${data.min_rental}` : '',
         data.max_rental ? `Maximum rental days: ${data.max_rental}` : '',
       ].filter(Boolean).join('\n'),
-    })).post('/equipment', {
+    }));
+
+    form.post('/equipment', {
       onSuccess: () => visit('/owner/equipment'),
     });
   };
+
 
   const renderStep = () => {
     if (step === 0) {

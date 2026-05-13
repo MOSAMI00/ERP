@@ -4,10 +4,6 @@ import { FormSection } from './FormSection/FormSection';
 import { InfoSection } from './InfoSection/InfoSection';
 
 export function RegisterPage() {
-  const [userType, setUserType] = useState('tenant');
-  const [selectedCategories, setSelectedCategories] = useState([]);
-  const [agreeToTerms, setAgreeToTerms] = useState(false);
-
   const form = useForm({
     full_name: '',
     phone: '',
@@ -18,6 +14,11 @@ export function RegisterPage() {
     district: '',
     type: 'tenant',
   });
+
+  const userType = form.data.type;
+  const setUserType = (type) => form.setData('type', type);
+  const [selectedCategories, setSelectedCategories] = useState([]);
+  const [agreeToTerms, setAgreeToTerms] = useState(false);
 
   const toggleCategory = (category) => {
     setSelectedCategories((prev) =>
@@ -30,21 +31,21 @@ export function RegisterPage() {
   const handleSubmit = (e) => {
     e.preventDefault();
     form.post('/register', {
-      data: { ...form.data, type: userType },
       preserveScroll: true,
     });
   };
 
+
+
   // Adapter so child components can call setFormData({key: value}) or setFormData(fn)
   const formData = form.data;
-  const setFormData = (updater) => {
-    if (typeof updater === 'function') {
-      const updated = updater(form.data);
-      Object.keys(updated).forEach((key) => form.setData(key, updated[key]));
-    } else {
-      Object.keys(updater).forEach((key) => form.setData(key, updater[key]));
-    }
+  const setFormData = (updater: any) => {
+    const updated = typeof updater === 'function' ? updater(form.data) : updater;
+    Object.keys(updated).forEach((key) => {
+      form.setData(key as any, updated[key as keyof typeof updated]);
+    });
   };
+
 
   return (
     <main className="min-h-screen flex flex-col md:flex-row" dir="rtl">

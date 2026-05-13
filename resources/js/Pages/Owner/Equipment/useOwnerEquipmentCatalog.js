@@ -1,57 +1,65 @@
 import { useMemo } from 'react';
 
 const getDisplayStatus = (latestRental) => {
-  if (latestRental?.status === 'confirmed') return 'confirmed';
-  if (latestRental?.status === 'in_use') return 'in_use';
-  if (latestRental?.status === 'cancelled') return 'hidden';
+  if (!latestRental) return 'available';
+  if (latestRental.status === 'in_use') return 'in_use';
+  if (['confirmed', 'paid'].includes(latestRental.status)) return 'confirmed';
   return 'available';
 };
 
 export const useOwnerEquipmentCatalog = ({
   ownerId,
-  rentals,
-  search,
-  category,
-  status,
+  equipment = [],
+  rentals = [],
+  search = '',
+  category = 'all',
+  status = 'all',
 }) => {
-  const ownerEquipment = useMemo(
-    () => getOwnerEquipmentSnapshots(ownerId),
-    [ownerId],
-  );
-
   const latestRentalByEquipmentId = useMemo(() => {
     const latestByEquipment = {};
     rentals.forEach((rental) => {
-      const existing = latestByEquipment[rental.equipmentId];
-      if (!existing || new Date(rental.createdAt).getTime() > new Date(existing.createdAt).getTime()) {
-        latestByEquipment[rental.equipmentId] = rental;
+      const equipId = rental.equipment_id;
+      const existing = latestByEquipment[equipId];
+      if (!existing || new Date(rental.created_at).getTime() > new Date(existing.created_at).getTime()) {
+        latestByEquipment[equipId] = rental;
       }
     });
     return latestByEquipment;
   }, [rentals]);
 
-  const equipmentWithMeta = useMemo(() => ownerEquipment.map((equipment) => ({
-    ...equipment,
-    displayStatus: getDisplayStatus(latestRentalByEquipmentId[equipment.equipmentId]),
-    rentalCount: rentals.filter((item) => item.equipmentId === equipment.equipmentId).length,
-  })), [latestRentalByEquipmentId, ownerEquipment, rentals]);
+  const equipmentWithMeta = useMemo(() => equipment.map((item) => {
+    const primaryImage = item.images?.find(img => img.is_primary) || item.images?.[0];
+    const categoryName = item.category?.name_ar || item.category?.name || item.category;
+
+    return {
+      ...item,
+      equipmentId: item.id,
+      name: item.name,
+      image: primaryImage?.image_url,
+      location: item.governorate,
+      dailyRate: parseFloat(item.price_per_day),
+      displayStatus: getDisplayStatus(latestRentalByEquipmentId[item.id]),
+      rentalCount: rentals.filter((r) => r.equipment_id === item.id).length,
+      category: categoryName,
+    };
+  }), [latestRentalByEquipmentId, equipment, rentals]);
 
   const categories = useMemo(
-    () => Array.from(new Set(ownerEquipment.map((equipment) => equipment.category))).filter(Boolean),
-    [ownerEquipment],
+    () => Array.from(new Set(equipmentWithMeta.map((item) => item.category))).filter(Boolean),
+    [equipmentWithMeta],
   );
 
   const filteredEquipment = useMemo(() => {
     const term = search.toLowerCase();
     return equipmentWithMeta
-      .filter((equipment) => category === 'all' || equipment.category === category)
-      .filter((equipment) => status === 'all' || equipment.displayStatus === status)
-      .filter((equipment) => equipment.name.toLowerCase().includes(term));
+      .filter((item) => category === 'all' || item.category === category)
+      .filter((item) => status === 'all' || item.displayStatus === status)
+      .filter((item) => (item.name || '').toLowerCase().includes(term));
   }, [category, equipmentWithMeta, search, status]);
 
   return {
     categories,
     filteredEquipment,
-    ownerEquipment,
+    ownerEquipment: equipmentWithMeta,
   };
 };

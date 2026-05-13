@@ -21,6 +21,7 @@ export function useOwnerPageProps() {
 
   return useMemo(() => ({
     rentals: props.rentals ?? [],
+    equipment: props.equipment ?? [],
     reviews: props.reviews ?? [],
     disputes: props.disputes ?? [],
     handoverReports: props.handover_reports ?? [],

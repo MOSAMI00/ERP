@@ -33,8 +33,15 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        $user = Auth::user();
+
+        if ($user->type === 'owner') {
+            return redirect()->intended(route('owner.overview', absolute: false));
+        }
+
         return redirect()->intended(route('dashboard.index', absolute: false));
     }
+
 
     /**
      * Destroy an authenticated session.
