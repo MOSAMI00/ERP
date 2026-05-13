@@ -10,20 +10,20 @@ const BasicDetailsFields = ({ draft, updateDraft }) => {
     <>
       <div className="owner-grid-2">
         <div className="mb-4">
-          <label className="owner-label">Ø§Ø³Ù… Ø§Ù„Ù…Ø¹Ø¯Ø© *</label>
+          <label className="owner-label">اسم المعدة *</label>
           <input
             type="text"
             className="owner-input"
-            placeholder="Ù…Ø«Ø§Ù„: Ù…ÙˆÙ„Ø¯ ÙƒÙ‡Ø±Ø¨Ø§Ø¡ 10KVA"
+            placeholder="مثال: مولد كهرباء 10KVA"
             value={draft.name}
             onChange={updateDraft('name')}
           />
         </div>
 
         <div className="mb-4">
-          <label className="owner-label">Ø§Ù„ÙØ¦Ø© *</label>
+          <label className="owner-label">الفئة *</label>
           <select className="owner-input" value={draft.category_id} onChange={updateDraft('category_id')}>
-            <option value="">Ø§Ø®ØªØ± Ø§Ù„ÙØ¦Ø©</option>
+            <option value="">اختر الفئة</option>
             {categories.map((category) => (
               <option key={category.id} value={category.id}>
                 {category.name_ar}
@@ -34,11 +34,11 @@ const BasicDetailsFields = ({ draft, updateDraft }) => {
       </div>
 
       <div className="mb-4">
-        <label className="owner-label">Ø§Ù„ÙˆØµÙ *</label>
+        <label className="owner-label">الوصف *</label>
         <textarea
           className="owner-input"
           rows={4}
-          placeholder="ÙˆØµÙ ØªÙØµÙŠÙ„ÙŠ Ù„Ù„Ù…Ø¹Ø¯Ø© ÙˆÙ…Ù…ÙŠØ²Ø§ØªÙ‡Ø§..."
+          placeholder="وصف تفصيلي للمعدة ومميزاتها..."
           value={draft.description}
           onChange={updateDraft('description')}
         />

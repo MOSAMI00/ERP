@@ -14,13 +14,13 @@ class UpdateEquipmentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name'             => ['required', 'string', 'max:255'],
-            'description'      => ['required', 'string'],
-            'governorate'      => ['required', 'string'],
-            'address'          => ['required', 'string'],
-            'price_per_day'    => ['required', 'numeric', 'min:0'],
-            'insurance_amount' => ['required', 'numeric', 'min:0'],
-            'rental_terms'     => ['required', 'string'],
+            'name'             => ['sometimes', 'required', 'string', 'max:255'],
+            'description'      => ['sometimes', 'required', 'string'],
+            'governorate'      => ['sometimes', 'required', 'string'],
+            'address'          => ['sometimes', 'required', 'string'],
+            'price_per_day'    => ['sometimes', 'required', 'numeric', 'min:0'],
+            'insurance_amount' => ['sometimes', 'required', 'numeric', 'min:0'],
+            'rental_terms'     => ['sometimes', 'required', 'string'],
             'status'           => ['nullable', 'in:active,hidden'],
         ];
     }

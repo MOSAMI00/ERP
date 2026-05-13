@@ -91,8 +91,7 @@ class EquipmentController extends Controller
 
         $equipment->update($data);
 
-        return redirect()->route('equipment.show', $equipment)
-            ->with('success', 'Equipment updated.');
+        return back()->with('success', 'تم تحديث المعدة بنجاح.');
     }
 
     public function destroy(Equipment $equipment)
@@ -102,7 +101,6 @@ class EquipmentController extends Controller
         $equipment->update(['status' => EquipmentStatus::Deleted->value]);
         $equipment->delete();
 
-        return redirect()->route('equipment.index')
-            ->with('success', 'Equipment deleted.');
+        return back()->with('success', 'تم حذف المعدة بنجاح.');
     }
 }

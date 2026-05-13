@@ -164,6 +164,7 @@ Route::middleware(['auth'])->group(function () {
             $rentals = request()->user()->rentalsAsOwner()->with(['equipment', 'tenant', 'payments'])->latest()->get();
             return Inertia::render('Owner/Overview/OverviewPage', [
                 'rentals' => $rentals,
+                'equipment' => request()->user()->equipment()->with(['category', 'images'])->latest()->get(),
                 'stats' => [
                     'equipment_count' => request()->user()->equipment()->count(),
                     'pending_requests' => $rentals->where('status', 'pending')->count(),
