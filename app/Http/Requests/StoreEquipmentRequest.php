@@ -22,6 +22,8 @@ class StoreEquipmentRequest extends FormRequest
             'price_per_day'    => ['required', 'numeric', 'min:0'],
             'insurance_amount' => ['required', 'numeric', 'min:0'],
             'rental_terms'     => ['required', 'string'],
+            'images'           => ['nullable', 'array'],
+            'images.*'         => ['image', 'mimes:jpeg,png,jpg,webp', 'max:5120'],
         ];
     }
 }

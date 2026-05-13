@@ -39,11 +39,29 @@ class EquipmentController extends Controller
         $user = Auth::user();
 
         $data = $request->validated();
+        $data['status'] = EquipmentStatus::Active->value;
 
         $equipment = $user->equipment()->create($data);
 
-        return redirect()->route('equipment.show', $equipment)
-            ->with('success', 'Equipment created successfully.');
+        \Illuminate\Support\Facades\Log::info('Equipment created', ['id' => $equipment->id]);
+        \Illuminate\Support\Facades\Log::info('Request files', ['files' => $request->allFiles()]);
+
+        if ($request->hasFile('images')) {
+            \Illuminate\Support\Facades\Log::info('Images found in request', ['count' => count($request->file('images'))]);
+            foreach ($request->file('images') as $index => $image) {
+                $path = $image->store('equipment', 'public');
+                $equipment->images()->create([
+                    'image_url' => '/storage/' . $path,
+                    'is_primary' => $index === 0,
+                    'sort_order' => $index,
+                ]);
+            }
+        } else {
+            \Illuminate\Support\Facades\Log::warning('No images found in request');
+        }
+
+        return redirect()->route('owner.equipment')
+            ->with('success', 'تمت إضافة المعدة بنجاح.');
     }
 
     public function show(Equipment $equipment)

@@ -24,13 +24,11 @@ const BasicDetailsFields = ({ draft, updateDraft }) => {
           <label className="owner-label">Ø§Ù„ÙØ¦Ø© *</label>
           <select className="owner-input" value={draft.category_id} onChange={updateDraft('category_id')}>
             <option value="">Ø§Ø®ØªØ± Ø§Ù„ÙØ¦Ø©</option>
-            {categories.length > 0
-              ? categories.map((category) => (
-                <option key={category.id} value={category.id}>{category.name_ar ?? category.name}</option>
-              ))
-              : categoryOptions.map((category) => (
-                <option key={category} value={category}>{category}</option>
-              ))}
+            {categories.map((category) => (
+              <option key={category.id} value={category.id}>
+                {category.name_ar}
+              </option>
+            ))}
           </select>
         </div>
       </div>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { useForm, usePage } from '@inertiajs/react';
+import { useForm } from '@inertiajs/react';
 import { ArrowRight, ArrowLeft, X, Check } from 'lucide-react';
 import { visit } from '../../../inertia/navigation';
 import BasicInfoStep from './components/BasicInfoStep';
@@ -30,25 +30,25 @@ export default function AddEquipmentPage() {
     max_rental: '',
     discount: '',
     specs: [{ key: '', value: '' }],
-    images: [],
+    images: [] as File[],
   });
 
   const addSpec = () => {
     form.setData('specs', [...form.data.specs, { key: '', value: '' }]);
   };
 
-  const removeSpec = (index) => {
+  const removeSpec = (index: number) => {
     form.setData('specs', form.data.specs.filter((_, i) => i !== index));
   };
 
-  const updateSpec = (index, key) => (event) => {
+  const updateSpec = (index: number, key: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
     form.setData('specs', form.data.specs.map((spec, i) =>
       i === index ? { ...spec, [key]: event.target.value } : spec
     ));
   };
 
-  const updateDraft = (key) => (event) => {
-    form.setData(key, event.target.value);
+  const updateDraft = (key: string) => (event: any) => {
+    form.setData(key as any, event.target.value);
   };
 
   const goNext = () => setStep((s) => Math.min(s + 1, EQUIPMENT_STEPS.length - 1));
@@ -56,43 +56,49 @@ export default function AddEquipmentPage() {
 
   const handleSubmit = () => {
     form.transform((data) => ({
-      category_id: data.category_id,
-      name: data.name,
-      description: data.description,
-      governorate: data.governorate,
-      address: data.address,
-      price_per_day: data.price_per_day,
-      insurance_amount: data.insurance_amount,
+      ...data,
       rental_terms: data.rental_terms || [
         data.condition ? `Condition: ${data.condition}` : '',
         data.delivery_method ? `Delivery: ${data.delivery_method}` : '',
         data.min_rental ? `Minimum rental: ${data.min_rental}` : '',
         data.max_rental ? `Maximum rental days: ${data.max_rental}` : '',
+        ...data.specs.filter(s => s.key && s.value).map(s => `${s.key}: ${s.value}`)
       ].filter(Boolean).join('\n'),
     }));
 
     form.post('/equipment', {
       onSuccess: () => visit('/owner/equipment'),
+      forceFormData: true,
     });
   };
 
-
   const renderStep = () => {
-    if (step === 0) {
-      return (
-        <BasicInfoStep
-          draft={form.data}
-          specs={form.data.specs}
-          addSpec={addSpec}
-          removeSpec={removeSpec}
-          updateDraft={updateDraft}
-          updateSpec={updateSpec}
-        />
-      );
+    switch (step) {
+      case 0:
+        return (
+          <BasicInfoStep
+            draft={form.data}
+            specs={form.data.specs}
+            addSpec={addSpec}
+            removeSpec={removeSpec}
+            updateDraft={updateDraft}
+            updateSpec={updateSpec}
+          />
+        );
+      case 1:
+        return (
+          <PhotosStep 
+            images={form.data.images} 
+            setImages={(imgs) => form.setData('images', imgs)} 
+          />
+        );
+      case 2:
+        return <PricingStep draft={form.data} updateDraft={updateDraft} />;
+      case 3:
+        return <ReviewStep draft={form.data} images={form.data.images} />;
+      default:
+        return null;
     }
-    if (step === 1) return <PhotosStep />;
-    if (step === 2) return <PricingStep draft={form.data} updateDraft={updateDraft} />;
-    return <ReviewStep draft={form.data} images={form.data.images} />;
   };
 
   return (
@@ -123,7 +129,7 @@ export default function AddEquipmentPage() {
         {form.errors && Object.keys(form.errors).length > 0 && (
           <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600">
             {Object.values(form.errors).map((error, i) => (
-              <p key={i}>{error}</p>
+              <p key={i}>{error as string}</p>
             ))}
           </div>
         )}
@@ -134,10 +140,11 @@ export default function AddEquipmentPage() {
             className="owner-btn owner-btn-outline"
             onClick={() => (step === 0 ? visit('/owner/equipment') : goBack())}
           >
-            <ArrowRight size={16} /> {step === 0 ? 'إلغاء' : 'السابق'}
+            {step === 0 ? <X size={16} /> : <ArrowRight size={16} />} 
+            {step === 0 ? 'إلغاء' : 'السابق'}
           </button>
 
-          {step < 3 ? (
+          {step < EQUIPMENT_STEPS.length - 1 ? (
             <button className="owner-btn owner-btn-primary" onClick={goNext}>
               التالي <ArrowLeft size={16} />
             </button>
@@ -156,4 +163,4 @@ export default function AddEquipmentPage() {
   );
 }
 
-AddEquipmentPage.layout = (page) => <OwnerLayout>{page}</OwnerLayout>;
+AddEquipmentPage.layout = (page: React.ReactNode) => <OwnerLayout>{page}</OwnerLayout>;
