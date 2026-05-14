@@ -149,6 +149,9 @@ class HandoverWorkflowService
 
             $rental->update(['return_confirmed_at' => now()]);
             
+            // ✦ Update status to ReturnDone
+            $this->updateRentalStatus->handle($rental, RentalStatus::ReturnDone);
+            
             // ✦ Trigger compensation evaluation to create EquipmentHandover record
             $this->compensationWorkflow->evaluate($rental);
             

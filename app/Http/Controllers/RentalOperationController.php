@@ -48,7 +48,15 @@ class RentalOperationController extends Controller
             $data['delivery_location'] = $equipment->location ?? 'صنعاء';
         }
 
-        $rental = $this->workflow->createRental($data, $request->user());
+        try {
+            $rental = $this->workflow->createRental($data, $request->user());
+        } catch (\App\Domains\Shared\Exceptions\InvalidStateTransitionException $e) {
+            return back()->withErrors(['equipment_id' => $e->getMessage()]);
+        } catch (\App\Domains\Shared\Exceptions\UnauthorizedDomainActionException $e) {
+            return back()->withErrors(['equipment_id' => $e->getMessage()]);
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => 'حدث خطأ غير متوقع: ' . $e->getMessage()]);
+        }
 
         return redirect()->route('rentals.show', $rental)
             ->with('success', 'Rental request sent.');

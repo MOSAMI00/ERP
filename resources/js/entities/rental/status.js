@@ -6,17 +6,20 @@
 
 /** @type {Record<string, {label: string, color: string, bg: string}>} */
 export const STATUS_CONFIG = {
-  pending:   { label: 'معلق',            color: '#F39C12', bg: '#FEF9E7' },
-  confirmed: { label: 'مؤكد',            color: '#3498DB', bg: '#EBF5FB' },
+  pending:   { label: 'بانتظار الموافقة', color: '#F39C12', bg: '#FEF9E7' },
+  confirmed: { label: 'بانتظار الدفع',    color: '#3498DB', bg: '#EBF5FB' },
+  paid:      { label: 'بانتظار التسليم', color: '#27AE60', bg: '#EAFAF1' },
   in_use:    { label: 'قيد الاستخدام',   color: '#E67E22', bg: '#FEF5EC' },
+  return_done: { label: 'تم الإرجاع',    color: '#2D5A27', bg: '#EAF3E9' },
+  compensation_requested: { label: 'طلب تعويض', color: '#E67E22', bg: '#FEF5EC' },
   completed: { label: 'مكتمل',           color: '#27AE60', bg: '#EAFAF1' },
   cancelled: { label: 'ملغي',            color: '#95A5A6', bg: '#F2F3F4' },
-  disputed:  { label: 'متنازع عليه',     color: '#E74C3C', bg: '#FDEDEC' },
+  disputed:  { label: 'نزاع مفتوح',     color: '#E74C3C', bg: '#FDEDEC' },
 };
 
 /** All possible rental status values. */
 export const RENTAL_STATUSES = /** @type {const} */ ([
-  'pending', 'confirmed', 'paid', 'in_use', 'completed', 'cancelled', 'disputed',
+  'pending', 'confirmed', 'paid', 'in_use', 'return_done', 'compensation_requested', 'completed', 'cancelled', 'disputed',
 ]);
 
 /**

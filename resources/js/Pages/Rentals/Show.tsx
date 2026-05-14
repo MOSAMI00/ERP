@@ -17,7 +17,17 @@ const StatusTimeline = ({ status }) => {
   ];
 
   const getStatusIndex = (s) => {
-    const map = { pending: 0, confirmed: 1, paid: 2, in_use: 3, completed: 4, cancelled: -1 };
+    const map = {
+      pending: 0,
+      confirmed: 1,
+      paid: 2,
+      in_use: 3,
+      return_done: 4,
+      compensation_requested: 4,
+      disputed: 4,
+      completed: 4,
+      cancelled: -1
+    };
     return map[s] ?? 0;
   };
 
@@ -97,7 +107,10 @@ export default function RentalDetailsPage() {
                     {rental.status === 'pending' ? 'بانتظار الموافقة' :
                       rental.status === 'confirmed' ? 'بانتظار الدفع' :
                         rental.status === 'paid' ? 'بانتظار التسليم' :
-                          rental.status === 'in_use' ? 'قيد الاستخدام' : 'مكتمل'}
+                          rental.status === 'in_use' ? 'قيد الاستخدام' :
+                            rental.status === 'return_done' ? 'تم الإرجاع' :
+                              rental.status === 'compensation_requested' ? 'طلب تعويض' :
+                                rental.status === 'disputed' ? 'نزاع مفتوح' : 'مكتمل'}
                   </span>
                 </div>
               </div>

@@ -108,6 +108,7 @@ class CompensationWorkflowService
 
         DB::transaction(function () use ($handover, $decision, $proposedDeduction, $notes, $windowHours) {
             $this->requestCompensation->handle($handover, $decision, $proposedDeduction, $notes, $windowHours);
+            $this->updateRentalStatus->handle($handover->rental, RentalStatus::CompensationRequested);
             $this->audit->log('compensation_requested', $handover->rental);
         });
 

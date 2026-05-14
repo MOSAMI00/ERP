@@ -69,8 +69,15 @@ export function ContractSigning({
         </label>
       </div>
 
-      {errors?.agree_to_contract && (
-        <p className="text-red-500 text-sm font-medium">{errors.agree_to_contract}</p>
+      {errors && Object.keys(errors).length > 0 && (
+        <div className="p-4 bg-danger/10 border border-danger/20 rounded-xl">
+          <p className="text-danger font-bold mb-2">توجد أخطاء في الطلب:</p>
+          <ul className="list-disc list-inside text-sm text-danger/80">
+            {Object.entries(errors).map(([field, msg]) => (
+              <li key={field}>{String(msg)}</li>
+            ))}
+          </ul>
+        </div>
       )}
 
       <div className="flex gap-3">

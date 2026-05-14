@@ -39,8 +39,12 @@ function getStageFeedback({ role, stage }) {
     return: isOwner
       ? 'المستأجر أرسل تقرير الإرجاع. راجع الصور والملاحظات ثم أكد الإرجاع.'
       : 'تم إرسال تقرير الإرجاع. يرجى الانتظار حتى يؤكد المؤجر استلام المعدة.',
-    disputes: 'يوجد نزاع على هذه العملية. تابع التفاصيل والردود قبل إكمال أي إجراء.',
-    completed: 'اكتملت عملية التسليم والإرجاع ولا توجد إجراءات مطلوبة.',
+    return_done: 'تم تأكيد الإرجاع بنجاح.',
+    compensation_requested: isOwner
+      ? 'لقد طلبت تعويضاً. بانتظار رد المستأجر.'
+      : 'طلب المؤجر تعويضاً عن أضرار. يرجى المراجعة والرد.',
+    disputes: 'يوجد نزاع مفتوح على هذه العملية.',
+    completed: 'اكتملت العملية بنجاح.',
   };
 
   return messages[stage] || 'لا يوجد إجراء مطلوب منك في هذه المرحلة.';
@@ -52,7 +56,7 @@ function normalizeDeliveryRows({ rentals, role, userId }) {
       if (role === 'owner') return (rental.owner_id ?? rental.ownerId) === userId;
       return (rental.tenant_id ?? rental.tenantId) === userId;
     })
-    .filter((rental) => ['confirmed', 'paid', 'in_use', 'disputed', 'completed'].includes(rental.status))
+    .filter((rental) => ['confirmed', 'paid', 'in_use', 'return_done', 'compensation_requested', 'disputed', 'completed'].includes(rental.status))
     .map((rental) => {
       return {
         ...rental,
@@ -64,17 +68,9 @@ function normalizeDeliveryRows({ rentals, role, userId }) {
 
 function getWorkflowStage(rental, reports, handover) {
   if (rental.status === 'disputed') return 'disputes';
-  
-  // A rental is in 'disputes' stage if there's an active compensation request or a formal dispute
-  const hasCompensation = handover && (
-    handover.owner_decision || 
-    handover.ownerDecision || 
-    (handover.status && handover.status !== 'none' && handover.status !== 'requested') || // 'requested' is often a placeholder
-    (Number(handover.proposed_deduction || handover.proposedDeduction || handover.requestedAmount || 0) > 0)
-  );
-
-  if (hasCompensation && rental.status !== 'completed') return 'disputes';
   if (rental.status === 'completed') return 'completed';
+  if (rental.status === 'return_done') return 'return_done';
+  if (rental.status === 'compensation_requested') return 'compensation_requested';
 
   const ownerDelivery = reports.some((report) => report.phase === 'delivery' && (report.submitted_by_role ?? report.submittedByRole) === 'owner');
   const tenantDelivery = reports.some((report) => report.phase === 'delivery' && (report.submitted_by_role ?? report.submittedByRole) === 'tenant');
