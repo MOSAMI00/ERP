@@ -1,5 +1,6 @@
 import { Edit, Trash2, ShoppingCart } from 'lucide-react';
 import { Link } from '@inertiajs/react';
+import { formatRentalDateRange } from '../../../utils/formatters';
 
 
 

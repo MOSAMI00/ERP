@@ -18,9 +18,9 @@ class StoreHandoverReportRequest extends FormRequest
             'phase'            => ['required', 'in:delivery,return'],
             'notes'            => ['nullable', 'string'],
             'has_issues'       => ['required', 'boolean'],
-            'condition_status' => ['required', 'in:good,damaged,partially_damaged'],
+            'condition_status' => ['required', 'string', 'in:excellent,good,fair,damaged,partially_damaged'],
             'images'           => ['nullable', 'array'],
-            'images.*'         => ['image', 'max:4096'],
+            'images.*'         => ['image', 'max:10240'],
         ];
     }
 }

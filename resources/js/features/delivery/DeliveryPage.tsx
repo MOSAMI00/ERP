@@ -26,6 +26,7 @@ const DEFAULT_FORM = {
 function getStageFeedback({ role, stage }) {
   const isOwner = role === 'owner';
   const messages = {
+    awaiting_payment: 'بانتظار قيام المستأجر بالدفع وتوقيع العقد حتى تتمكن من تسليم المعدة.',
     delivery: isOwner
       ? 'يرجى توثيق تسليم المعدة بالصور وتعبئة حالة المعدة حتى ينتقل الطلب إلى قيد التسليم.'
       : 'يرجى الانتظار حتى يقوم المؤجر بتسليم المعدة وتوثيقها أولًا.',
@@ -51,11 +52,11 @@ function normalizeDeliveryRows({ rentals, role, userId }) {
       if (role === 'owner') return (rental.owner_id ?? rental.ownerId) === userId;
       return (rental.tenant_id ?? rental.tenantId) === userId;
     })
-    .filter((rental) => ['confirmed', 'in_use', 'disputed', 'completed'].includes(rental.status))
+    .filter((rental) => ['confirmed', 'paid', 'in_use', 'disputed', 'completed'].includes(rental.status))
     .map((rental) => {
       return {
         ...rental,
-        partnerName: role === 'owner' ? (rental.tenant?.name ?? 'المستأجر') : (rental.equipment?.owner_name ?? rental.equipment?.ownerName ?? 'المؤجر'),
+        partnerName: role === 'owner' ? (rental.tenant?.full_name ?? rental.tenant?.name ?? 'المستأجر') : (rental.equipment?.owner?.full_name ?? rental.equipment?.owner_name ?? 'المؤجر'),
         partnerLabel: role === 'owner' ? 'المستأجر' : 'المؤجر',
       };
     });
@@ -71,8 +72,10 @@ function getWorkflowStage(rental, reports) {
   const tenantReturn = reports.some((report) => report.phase === 'return' && (report.submitted_by_role ?? report.submittedByRole) === 'tenant');
   const ownerReturn = reports.some((report) => report.phase === 'return' && (report.submitted_by_role ?? report.submittedByRole) === 'owner');
 
-  if (rental.status === 'confirmed' && !ownerDelivery) return 'delivery';
-  if (rental.status === 'confirmed' && ownerDelivery && !tenantDelivery) return 'handover';
+  if (rental.status === 'confirmed') return 'awaiting_payment';
+  
+  if (rental.status === 'paid' && !ownerDelivery) return 'delivery';
+  if (rental.status === 'paid' && ownerDelivery && !tenantDelivery) return 'handover';
   if (rental.status === 'in_use' && !tenantReturn) return 'in_use';
   if (rental.status === 'in_use' && tenantReturn && !ownerReturn) return 'return';
 
@@ -99,15 +102,16 @@ function getFormSpec({ role, stage }) {
 
 export default function DeliveryPage({ role: roleProp }) {
   const { props } = usePage();
-  const user = props.auth?.user ?? null;
+  const user = (props.auth as any)?.user ?? null;
   const role = roleProp || user?.type || 'tenant';
   const config = getDeliveryConfig(role);
   const userId = user?.id;
 
-  const rentals = props.rentals ?? [];
-  const handoverReports = props.handover_reports ?? [];
-  const allDisputes = props.disputes ?? [];
-  const allCompensations = props.compensations ?? [];
+  const rentals = (props.rentals as any[]) ?? [];
+  const handoverReports = (props.handover_reports as any[]) ?? [];
+  const allDisputes = (props.disputes as any[]) ?? [];
+  const allCompensations = (props.compensations as any[]) ?? [];
+  const allReviews = (props.reviews as any[]) ?? [];
 
   const routeRentalId = new URLSearchParams(window.location.search).get('id');
 
@@ -127,7 +131,7 @@ export default function DeliveryPage({ role: roleProp }) {
     userId,
   }).map((rental) => ({
     ...rental,
-    workflowStage: getWorkflowStage(rental, handoverReports.filter(h => (h.rental_id ?? h.rentalId) === rental.id)),
+    workflowStage: getWorkflowStage(rental, handoverReports.filter(h => (h.rental_op_id ?? h.rentalId) === rental.id)),
   })), [rentals, role, userId, handoverReports]);
 
   const filteredRows = useMemo(() => rows.filter((row) => {
@@ -140,9 +144,9 @@ export default function DeliveryPage({ role: roleProp }) {
     return filteredRows[0];
   }, [filteredRows, rows, selectedRentalId]);
 
-  const reports = selectedRental ? handoverReports.filter(h => (h.rental_id ?? h.rentalId) === selectedRental.id) : [];
-  const disputes = selectedRental ? allDisputes.filter(d => (d.rental_id ?? d.rentalId) === selectedRental.id) : [];
-  const compensation = selectedRental ? allCompensations.find(c => (c.rental_id ?? c.rentalId) === selectedRental.id) : undefined;
+  const reports = selectedRental ? handoverReports.filter(h => (h.rental_op_id ?? h.rentalId) === selectedRental.id) : [];
+  const disputes = selectedRental ? allDisputes.filter(d => (d.rental_op_id ?? d.rentalId) === selectedRental.id) : [];
+  const compensation = selectedRental ? allCompensations.find(c => (c.rental_op_id ?? c.rentalId) === selectedRental.id) : undefined;
   
   const ownerReturnReport = reports.find((report) => report.phase === 'return' && (report.submitted_by_role ?? report.submittedByRole) === 'owner');
   const selectedStage = selectedRental?.workflowStage || 'delivery';
@@ -176,12 +180,13 @@ export default function DeliveryPage({ role: roleProp }) {
     router.post('/handover-reports', {
       rental_op_id: selectedRental.id,
       phase: formSpec.phase,
-      condition_status: formSpec.phase === 'delivery' ? activeForm.conditionStatus : undefined,
-      has_issues: formSpec.phase === 'return' ? activeForm.hasDamage === 'true' : activeForm.conditionStatus === 'damaged',
+      condition_status: activeForm.conditionStatus || 'good',
+      has_issues: activeForm.hasDamage === 'true' || activeForm.conditionStatus === 'damaged',
       notes: activeForm.notes,
       images: activeForm.evidencePhotos,
     }, {
       preserveScroll: true,
+      forceFormData: true,
       onSuccess: () => {
         setForms((current) => ({ ...current, [selectedRental.id]: DEFAULT_FORM }));
       }
@@ -303,6 +308,7 @@ export default function DeliveryPage({ role: roleProp }) {
                 onOpenCompensationDispute={openCompensationDispute}
                 onSelectReport={setSelectedReport}
                 onSubmitRating={handleSubmitRating}
+                hasReview={allReviews.some(r => (r.rental_op_id ?? r.rentalId) === selectedRental.id)}
               />
             ) : (
               <OwnerDeliveryDetails
@@ -321,6 +327,7 @@ export default function DeliveryPage({ role: roleProp }) {
                 onRequestCompensation={handleRequestCompensation}
                 onSelectReport={setSelectedReport}
                 onSubmitRating={handleSubmitRating}
+                hasReview={allReviews.some(r => (r.rental_op_id ?? r.rentalId) === selectedRental.id)}
               />
             )
           ) : null}

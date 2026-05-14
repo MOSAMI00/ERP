@@ -146,6 +146,7 @@ class HandoverWorkflowService
             }
 
             $rental->update(['return_confirmed_at' => now()]);
+            $this->updateRentalStatus->handle($rental, RentalStatus::Completed);
             $this->audit->log('owner_return_report_submitted', $rental);
         });
 

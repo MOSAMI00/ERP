@@ -17,7 +17,7 @@ class StoreRentalRequest extends FormRequest
             'equipment_id'      => ['required', 'exists:equipment,id'],
             'start_date'        => ['required', 'date', 'after:today'],
             'end_date'          => ['required', 'date', 'after:start_date'],
-            'delivery_location' => ['required', 'string'],
+            'delivery_location' => ['nullable', 'string'],
         ];
     }
 }

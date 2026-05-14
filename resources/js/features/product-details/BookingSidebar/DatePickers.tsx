@@ -28,24 +28,6 @@ export function DatePickers({ startDate, setStartDate, endDate, setEndDate, days
         </div>
       )}
 
-      <div className="space-y-2">
-        <label className="block text-sm font-medium">📍 المحافظة</label>
-        <select className="w-full h-11 px-4 rounded-lg border border-border bg-white focus:outline-none focus:border-primary">
-          <option>صنعاء</option>
-          <option>عدن</option>
-          <option>تعز</option>
-        </select>
-      </div>
-
-      <div className="space-y-2">
-        <label className="block text-sm font-medium">ملاحظات (اختياري)</label>
-        <textarea
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-          placeholder="أي تفاصيل إضافية..."
-          className="w-full h-20 px-4 py-2 rounded-lg border border-border bg-white focus:outline-none focus:border-primary resize-none"
-        />
-      </div>
     </div>
   );
 }

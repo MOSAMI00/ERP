@@ -8,14 +8,16 @@ const OwnerProfileSummary = ({ user, ownerInitial }) => (
         {ownerInitial}
       </div>
     </div>
-    <h3 style={{ margin: '8px 0 2px', fontSize: '16px' }}>{user?.fullName ?? 'أحمد المؤجر'}</h3>
+    <h3 style={{ margin: '8px 0 2px', fontSize: '16px' }}>{user?.full_name ?? user?.fullName ?? 'المؤجر'}</h3>
     <span style={{ fontSize: '13px', color: 'var(--color-text-muted)', display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'center' }}>
-      متجر المعدات
+      {user?.email ?? 'متجر المعدات'}
     </span>
     <span style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginTop: 4 }}>
-      صنعاء | مؤجر <span style={{ color: 'var(--color-completed)' }}>معتمد</span>
+      {user?.governorate ?? 'صنعاء'} | مؤجر <span style={{ color: 'var(--color-completed)' }}>{user?.kyc_status === 'approved' ? 'معتمد' : 'مسجل'}</span>
     </span>
-    <span style={{ fontSize: '13px', color: 'var(--color-text-muted)', marginTop: 4 }}>4.8 | 102 عملية</span>
+    <span style={{ fontSize: '13px', color: 'var(--color-text-muted)', marginTop: 4 }}>
+      {Number(user?.rating ?? 0).toFixed(1)} | {user?.operations_count ?? 0} عملية
+    </span>
   </div>
 );
 

@@ -42,6 +42,11 @@ class RentalOperationController extends Controller
     public function store(StoreRentalRequest $request)
     {
         $data = $request->validated();
+        
+        if (empty($data['delivery_location'])) {
+            $equipment = Equipment::findOrFail($data['equipment_id']);
+            $data['delivery_location'] = $equipment->location ?? 'صنعاء';
+        }
 
         $rental = $this->workflow->createRental($data, $request->user());
 

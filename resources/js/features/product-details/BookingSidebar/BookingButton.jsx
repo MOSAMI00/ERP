@@ -1,5 +1,17 @@
 
-export function BookingButton({ days, dailyRate, totalRental, deposit, serviceFee, grandTotal, startDate, endDate, onBook }) {
+export function BookingButton({ 
+  days, 
+  dailyRate, 
+  totalRental, 
+  deposit, 
+  serviceFee, 
+  grandTotal, 
+  startDate, 
+  endDate, 
+  onBook,
+  disabled,
+  loading 
+}) {
   return (
     <>
       {days > 0 && (
@@ -25,10 +37,17 @@ export function BookingButton({ days, dailyRate, totalRental, deposit, serviceFe
 
       <button
         onClick={onBook}
-        disabled={!startDate || !endDate || days === 0}
-        className="w-full h-13 bg-primary text-white rounded-lg font-semibold hover:bg-primary/90 transition-colors disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed"
+        disabled={disabled || !startDate || !endDate || days === 0}
+        className="w-full h-13 bg-primary text-white rounded-lg font-semibold hover:bg-primary/90 transition-colors disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed flex items-center justify-center gap-2"
       >
-        إرسال طلب الحجز ←
+        {loading ? (
+          <>
+            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            جاري التحقق...
+          </>
+        ) : (
+          <>متابعة الحجز ←</>
+        )}
       </button>
     </>
   );

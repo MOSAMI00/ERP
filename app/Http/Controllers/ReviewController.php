@@ -34,8 +34,7 @@ class ReviewController extends Controller
 
         $this->reviews->submitReview($rental, $request->user(), $data);
 
-        return redirect()->route('rentals.show', $data['rental_op_id'])
-            ->with('success', 'Review submitted.');
+        return back()->with('success', 'Review submitted.');
     }
 
 }

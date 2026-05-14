@@ -54,8 +54,7 @@ class HandoverReportController extends Controller
             abort(403);
         }
 
-        return redirect()->route('rentals.show', $data['rental_op_id'])
-            ->with('success', 'Handover report submitted.');
+        return back()->with('success', 'Handover report submitted.');
     }
 
     public function confirm(Request $request, HandoverReport $report)

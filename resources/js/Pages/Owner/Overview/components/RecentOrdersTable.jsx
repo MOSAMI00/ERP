@@ -1,5 +1,6 @@
 import React from 'react';
 import { CheckCircle, Eye, XCircle } from 'lucide-react';
+import { router } from '@inertiajs/react';
 import { formatCurrency } from '../../../../utils/formatters';
 import { AppButton, DataTable, StatusBadge } from '../../../../components/shared';
 
@@ -7,11 +8,28 @@ const fallbackEquipment = (rental) => rental?.equipment ?? { name: 'معدة غ�
 const fallbackTenant = (rental) => rental?.tenant ?? { name: 'مستخدم غير معروف', phone: '—' };
 
 const RecentOrdersTable = ({ rentals, isLoading }) => {
+  const handleApprove = (rental) => {
+    if (confirm('هل أنت متأكد من الموافقة على هذا الطلب؟ سيتم توقيع العقد آلياً.')) {
+      router.post(`/rentals/${rental.id}/confirm`);
+    }
+  };
+
+  const handleReject = (rental) => {
+    const reason = prompt('يرجى ذكر سبب الرفض:');
+    if (reason) {
+      router.post(`/rentals/${rental.id}/cancel`, { cancellation_reason: reason });
+    }
+  };
+
+  const handleView = (rental) => {
+    router.visit(`/rentals/${rental.id}`);
+  };
+
   const columns = [
     {
       key: 'order',
       header: '#',
-      cell: (rental) => rental.orderNum ?? '—',
+      cell: (rental) => rental.id ?? '—',
     },
     {
       key: 'tenant',
@@ -19,15 +37,11 @@ const RecentOrdersTable = ({ rentals, isLoading }) => {
       cell: (rental) => {
         const tenant = fallbackTenant(rental);
         return (
-          <div className="flex-center gap-2" style={{ justifyContent: 'flex-start' }}>
-            {tenant.avatarUrl ? (
-              <img src={tenant.avatarUrl} alt={tenant.name ?? ''} style={{ borderRadius: '50%', width: 28, height: 28 }} />
-            ) : (
-              <div className="flex-center" style={{ borderRadius: '50%', width: 28, height: 28, backgroundColor: 'var(--color-page-bg)', fontSize: 12 }}>
-                {(tenant.name ?? '?').charAt(0)}
-              </div>
-            )}
-            {tenant.name ?? 'مستخدم غير معروف'}
+          <div className="flex items-center gap-2">
+            <div className="flex items-center justify-center rounded-full w-8 h-8 bg-muted text-xs font-bold">
+              {(tenant.full_name || tenant.name || '?').charAt(0)}
+            </div>
+            <span className="text-sm font-medium">{tenant.full_name || tenant.name || 'مستخدم غير معروف'}</span>
           </div>
         );
       },
@@ -40,12 +54,12 @@ const RecentOrdersTable = ({ rentals, isLoading }) => {
     {
       key: 'period',
       header: 'الفترة',
-      cell: (rental) => `${rental.startDate ?? '—'} - ${rental.endDate ?? '—'}`,
+      cell: (rental) => `${rental.start_date || rental.startDate || '—'} - ${rental.end_date || rental.endDate || '—'}`,
     },
     {
       key: 'total',
       header: 'المبلغ',
-      cell: (rental) => `${formatCurrency(rental.totalAmount ?? 0)} ر.ي`,
+      cell: (rental) => `${formatCurrency(rental.total_amount || rental.totalAmount || 0)} ر.ي`,
     },
     {
       key: 'status',
@@ -57,22 +71,45 @@ const RecentOrdersTable = ({ rentals, isLoading }) => {
       header: 'الإجراء',
       cell: (rental) => (
         rental.status === 'pending' ? (
-          <div className="flex-center gap-2">
-            <AppButton variant="success" size="sm"><CheckCircle size={14} /> قبول</AppButton>
-            <AppButton variant="danger" size="icon"><XCircle size={14} /></AppButton>
+          <div className="flex items-center gap-2">
+            <AppButton 
+              variant="success" 
+              size="sm"
+              onClick={() => handleApprove(rental)}
+            >
+              <CheckCircle size={14} /> قبول
+            </AppButton>
+            <AppButton 
+              variant="danger" 
+              size="icon"
+              onClick={() => handleReject(rental)}
+            >
+              <XCircle size={14} />
+            </AppButton>
           </div>
         ) : (
-          <AppButton variant="outline" size="sm"><Eye size={14} /> عرض</AppButton>
+          <AppButton 
+            variant="outline" 
+            size="sm"
+            onClick={() => handleView(rental)}
+          >
+            <Eye size={14} /> عرض
+          </AppButton>
         )
       ),
     },
   ];
 
   return (
-    <div className="owner-card">
-      <div className="flex-between mb-6">
-        <h4 style={{ margin: 0 }}>آخر 5 طلبات واردة</h4>
-        <button className="owner-btn owner-btn-outline" style={{ fontSize: 13 }}>عرض الكل</button>
+    <div className="owner-card bg-white p-6 rounded-xl border border-border">
+      <div className="flex items-center justify-between mb-6">
+        <h4 className="font-bold text-lg">آخر 5 طلبات واردة</h4>
+        <button 
+          onClick={() => router.visit('/rentals')}
+          className="text-primary text-sm font-bold hover:underline"
+        >
+          عرض الكل
+        </button>
       </div>
       <DataTable
         columns={columns}

@@ -44,14 +44,14 @@ class RentalStateResolver
     // المؤجر يطلبه والعملية لا تزال InUse
     public function canRequestCompensation(RentalOperation $rental): void
     {
-        $this->mustBe($rental, RentalStatus::InUse);
+        $this->mustBeIn($rental, [RentalStatus::InUse, RentalStatus::Completed]);
     }
 
     // ✦ النزاع يُفتح داخل نافذة الاعتراض — يُحوّل الحالة إلى Disputed
     // وليس بعد أن تصبح Disputed
     public function canOpenDispute(RentalOperation $rental): void
     {
-        $this->mustBe($rental, RentalStatus::InUse);
+        $this->mustBeIn($rental, [RentalStatus::InUse, RentalStatus::Completed]);
     }
 
     public function canBeCancelledByTenant(RentalOperation $rental): void

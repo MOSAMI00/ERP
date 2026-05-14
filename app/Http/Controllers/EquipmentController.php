@@ -12,8 +12,30 @@ use App\Http\Requests\UpdateEquipmentRequest;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
+use App\Domains\Equipment\Services\EquipmentAvailabilityService;
+
 class EquipmentController extends Controller
 {
+    public function __construct(
+        private EquipmentAvailabilityService $availabilityService
+    ) {}
+
+    public function checkAvailability(Request $request, Equipment $equipment)
+    {
+        $startDate = $request->query('start_date');
+        $endDate = $request->query('end_date');
+
+        if (!$startDate || !$endDate) {
+            return response()->json(['available' => false, 'reason' => 'يرجى تحديد التواريخ']);
+        }
+
+        $available = $this->availabilityService->isAvailable($equipment->id, $startDate, $endDate);
+
+        return response()->json([
+            'available' => $available,
+            'reason' => $available ? 'المعدة متاحة للحجز' : 'المعدة غير متاحة في هذه التواريخ'
+        ]);
+    }
     public function index()
     {
         $equipment = Equipment::with(['category', 'images'])

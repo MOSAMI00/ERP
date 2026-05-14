@@ -4,7 +4,7 @@ import { Check } from 'lucide-react';
 const STEPS = [
   { step: 1, label: 'مراجعة الطلب' },
   { step: 2, label: 'بيانات التسليم' },
-  { step: 3, label: 'الدفع والتأكيد' },
+  { step: 3, label: 'العقد الالكتروني و التأكيد' },
 ];
 
 export function Stepper({ currentStep }) {

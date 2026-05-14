@@ -21,6 +21,7 @@ export function TenantDeliveryDetails({
   onOpenCompensationDispute,
   onSelectReport,
   onSubmitRating,
+  hasReview,
 }) {
   return (
     <div className="rounded-2xl border border-[#E0E0E0] bg-white p-5 shadow-sm">
@@ -45,15 +46,15 @@ export function TenantDeliveryDetails({
       <div className="grid grid-cols-1 gap-3 text-sm md:grid-cols-3">
         <div className="rounded-xl bg-[#F8FAFC] p-4">
           <p className="m-0 text-[#888888]">تاريخ البداية</p>
-          <p className="m-0 mt-1 font-bold text-[#222222]">{formatRentalDate(rental.startDate)}</p>
+          <p className="m-0 mt-1 font-bold text-[#222222]">{formatRentalDate(rental.start_date)}</p>
         </div>
         <div className="rounded-xl bg-[#F8FAFC] p-4">
           <p className="m-0 text-[#888888]">تاريخ النهاية</p>
-          <p className="m-0 mt-1 font-bold text-[#222222]">{formatRentalDate(rental.endDate)}</p>
+          <p className="m-0 mt-1 font-bold text-[#222222]">{formatRentalDate(rental.end_date)}</p>
         </div>
         <div className="rounded-xl bg-[#F8FAFC] p-4">
           <p className="m-0 text-[#888888]">موقع التسليم</p>
-          <p className="m-0 mt-1 font-bold text-[#222222]">{rental.deliveryInfo?.address || rental.equipment.location}</p>
+          <p className="m-0 mt-1 font-bold text-[#222222]">{rental.delivery_location || [rental.equipment?.governorate, rental.equipment?.address].filter(Boolean).join(' - ') || '—'}</p>
         </div>
       </div>
 
@@ -72,7 +73,7 @@ export function TenantDeliveryDetails({
                 <span className="font-semibold text-[#222222]">
                   {report.phase === 'delivery' ? 'تقرير التسليم' : 'تقرير الإرجاع'}
                 </span>
-                <span className="text-[#888888]">{formatRentalDate(report.createdAt)}</span>
+                <span className="text-[#888888]">{formatRentalDate(report.created_at)}</span>
               </button>
             ))}
           </div>
@@ -121,8 +122,8 @@ export function TenantDeliveryDetails({
         )
       )}
 
-      {/* Post-Rental Rating (shown after completion) */}
-      {stage === 'completed' ? (
+      {/* Post-Rental Rating (shown after completion if not reviewed) */}
+      {stage === 'completed' && !hasReview ? (
         <PostRentalRating
           rental={rental}
           onSubmit={({ rating, comment }) => onSubmitRating({ rental, rating, comment })}

@@ -9,9 +9,13 @@ class AuditLogService
 {
     public function log(string $event, Model $subject, ?Model $actor = null): void
     {
+        if (!$actor instanceof \App\Models\Admin) {
+            return;
+        }
+
         AuditLog::create([
-            'admin_id'    => $actor instanceof \App\Models\Admin ? $actor->getKey() : null,
-            'admin_role'  => $actor instanceof \App\Models\Admin ? $actor->role?->role_name : null,
+            'admin_id'    => $actor->getKey(),
+            'admin_role'  => $actor->role?->role_name,
             'event_type'  => $event,
             'target_type' => $subject->getMorphClass(),
             'target_id'   => $subject->getKey(),

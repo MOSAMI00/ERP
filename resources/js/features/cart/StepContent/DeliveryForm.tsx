@@ -89,7 +89,7 @@ export function DeliveryForm({ deliveryInfo, setDeliveryInfo, timeSlot, setTimeS
           → رجوع
         </button>
         <button onClick={onNext} className="flex-1 h-12 bg-primary text-white rounded-lg font-semibold hover:bg-primary/90 transition-colors">
-          متابعة للدفع ←
+          متابعة للعقد ←
         </button>
       </div>
     </div>

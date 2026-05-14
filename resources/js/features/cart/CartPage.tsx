@@ -4,13 +4,34 @@ import { CartHeader } from './ui/Header';
 import { Stepper } from './ui/Stepper';
 import { ReviewItems } from './StepContent/ReviewItems';
 import { DeliveryForm } from './StepContent/DeliveryForm';
-import { PaymentMethods } from './StepContent/PaymentMethods';
+import { ContractSigning } from './StepContent/ContractSigning';
 import { SummarySidebar } from './SummarySidebar/SummarySidebar';
 
 export default function CartPage() {
-  const { props } = usePage();
-  const [removedIds, setRemovedIds] = useState([]);
-  const cartItems = (props.cart_items ?? []).filter((item) => !removedIds.includes(item.id));
+  const { props } = usePage<any>();
+  const [removedIds, setRemovedIds] = useState<any[]>([]);
+
+  const queryParams = new URLSearchParams(window.location.search);
+  const queryItem = queryParams.get('equipment_id') ? {
+    id: queryParams.get('equipment_id'),
+    equipment_id: queryParams.get('equipment_id'),
+    startDate: queryParams.get('start_date'),
+    endDate: queryParams.get('end_date'),
+    days: Number(queryParams.get('days')),
+    dailyRate: Number(queryParams.get('daily_rate')),
+    deposit: Number(queryParams.get('deposit')),
+    serviceFee: Number(queryParams.get('service_fee')),
+    totalAmount: Number(queryParams.get('total_amount')),
+    name: queryParams.get('equipment_name'),
+    image: queryParams.get('equipment_image'),
+    location: queryParams.get('location'),
+    owner: queryParams.get('owner_name'),
+  } : null;
+
+  const cartItems = (props.cart_items && props.cart_items.length > 0
+    ? props.cart_items
+    : (queryItem ? [queryItem] : [])
+  ).filter((item) => !removedIds.includes(item.id));
   const [currentStep, setCurrentStep] = useState(1);
 
   const form = useForm({
@@ -40,15 +61,14 @@ export default function CartPage() {
 
   const handleConfirm = () => {
     form.transform((data) => ({
-      equipment_id: data.equipment_id,
-      start_date: data.start_date,
-      end_date: data.end_date,
+      ...data,
       delivery_location: data.delivery_location || [
         data.delivery_info?.governorate,
         data.delivery_info?.district,
         data.delivery_info?.address,
       ].filter(Boolean).join(' - '),
-    })).post('/rentals');
+    }));
+    form.post('/rentals');
   };
 
   return (
@@ -78,14 +98,11 @@ export default function CartPage() {
                 />
               )}
               {currentStep === 3 && (
-                <PaymentMethods
-                  paymentMethod={form.data.payment_method}
-                  setPaymentMethod={(method) => form.setData('payment_method', method)}
+                <ContractSigning
                   agreeToContract={form.data.agree_to_contract}
                   setAgreeToContract={(agree) => form.setData('agree_to_contract', agree)}
                   onBack={() => setCurrentStep(2)}
                   onConfirm={handleConfirm}
-                  requestOnly
                   processing={form.processing}
                   errors={form.errors}
                 />

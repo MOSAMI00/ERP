@@ -37,7 +37,7 @@ export function DeliveryStageForm({ form, onChange, onSubmit, spec }) {
             type="file"
             accept="image/*"
             multiple
-            onChange={(event) => onChange('evidencePhotos', Array.from(event.target.files || []).map((file) => file.name))}
+            onChange={(event) => onChange('evidencePhotos', Array.from(event.target.files || []))}
             className="mt-2 block w-full rounded-xl border border-dashed border-[#C8D6C5] bg-white px-3 py-2 text-sm"
           />
           <span className="mt-1 block text-xs font-normal text-[#888888]">

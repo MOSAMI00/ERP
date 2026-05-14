@@ -39,7 +39,7 @@ const OwnerTopbar = ({
         <div className="flex-center" style={{ width: 32, height: 32, borderRadius: '50%', backgroundColor: 'var(--color-page-bg)', fontWeight: 700 }}>
           {ownerInitial}
         </div>
-        <span>{user?.fullName?.split(' ')[0] ?? 'أحمد'}</span>
+        <span>{(user?.full_name ?? user?.fullName)?.split(' ')[0] ?? 'المؤجر'}</span>
         <ChevronDown size={16} />
         {isProfileOpen ? (
           <div className="topbar-dropdown">
