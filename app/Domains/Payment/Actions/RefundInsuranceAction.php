@@ -2,6 +2,7 @@
 
 namespace App\Domains\Payment\Actions;
 
+use App\Domains\Payment\Enums\EscrowStatus;
 use App\Domains\Payment\Enums\PaymentStatus;
 use App\Domains\Payment\Enums\PaymentType;
 use App\Models\Payment;
@@ -19,7 +20,7 @@ class RefundInsuranceAction
             return;
         }
 
-        $refundAmount = (float) $rental->insurance_amount - $deduction;
+        $refundAmount = max(0, (float) $rental->insurance_amount - $deduction);
 
         Payment::create([
             'rental_op_id'   => $rental->id,
@@ -27,7 +28,7 @@ class RefundInsuranceAction
             'amount'         => $refundAmount,
             'platform_fee'   => 0,
             'status'         => PaymentStatus::Paid->value,
-            'escrow_status'  => null,
+            'escrow_status'  => EscrowStatus::Refunded->value,
             'transferred_at' => now(),
         ]);
 
@@ -39,7 +40,7 @@ class RefundInsuranceAction
                 'amount'         => $deduction,
                 'platform_fee'   => 0,
                 'status'         => PaymentStatus::Paid->value,
-                'escrow_status'  => null,
+                'escrow_status'  => EscrowStatus::Released->value,
                 'transferred_at' => now(),
             ]);
         }

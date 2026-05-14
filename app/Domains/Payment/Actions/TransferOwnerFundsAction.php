@@ -2,6 +2,7 @@
 
 namespace App\Domains\Payment\Actions;
 
+use App\Domains\Payment\Enums\EscrowStatus;
 use App\Domains\Payment\Enums\PaymentStatus;
 use App\Domains\Payment\Enums\PaymentType;
 use App\Models\Payment;
@@ -34,7 +35,7 @@ class TransferOwnerFundsAction
             'amount'         => $ownerAmount,
             'platform_fee'   => 0,
             'status'         => PaymentStatus::Paid->value,
-            'escrow_status'  => null,
+            'escrow_status'  => EscrowStatus::Released->value,
             'transferred_at' => now(),
         ]);
     }

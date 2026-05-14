@@ -197,6 +197,7 @@ class PaymentWorkflowService
                 'type'           => PaymentType::InsuranceRefund->value,
                 'payment_method' => $payment->payment_method,
                 'status'         => PaymentStatus::Paid->value,
+                'escrow_status'  => EscrowStatus::Refunded->value,
                 'transferred_at' => now(),
             ]);
 
@@ -218,8 +219,8 @@ class PaymentWorkflowService
             throw PaymentException::invalidAmount('Deduction amount cannot be negative.');
         }
 
-        if ($deductionAmount > $rental->insurance_amount) {
-            throw PaymentException::deductionExceedsInsurance($deductionAmount, $rental->insurance_amount);
+        if ($rental->insurance_amount > 0 && $deductionAmount > (float)$rental->insurance_amount) {
+            throw PaymentException::deductionExceedsInsurance($deductionAmount, (float)$rental->insurance_amount);
         }
     }
 }

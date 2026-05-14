@@ -8,6 +8,7 @@ use App\Domains\Handover\Enums\HandoverPhase;
 use App\Domains\Rental\Actions\UpdateRentalStatusAction;
 use App\Domains\Rental\Enums\RentalStatus;
 use App\Domains\Rental\Services\RentalStateResolver;
+use App\Domains\Compensation\Services\CompensationWorkflowService;
 use App\Domains\Shared\Exceptions\InvalidStateTransitionException;
 use App\Domains\Shared\Exceptions\UnauthorizedDomainActionException;
 use App\Domains\Shared\Exceptions\DuplicateOperationException;
@@ -25,6 +26,7 @@ class HandoverWorkflowService
         private UploadHandoverImagesAction  $uploadImages,
         private UpdateRentalStatusAction    $updateRentalStatus,
         private RentalStateResolver         $stateResolver,
+        private CompensationWorkflowService $compensationWorkflow,
         private NotificationService         $notifications,
         private AuditLogService             $audit,
     ) {}
@@ -146,7 +148,10 @@ class HandoverWorkflowService
             }
 
             $rental->update(['return_confirmed_at' => now()]);
-            $this->updateRentalStatus->handle($rental, RentalStatus::Completed);
+            
+            // ✦ Trigger compensation evaluation to create EquipmentHandover record
+            $this->compensationWorkflow->evaluate($rental);
+            
             $this->audit->log('owner_return_report_submitted', $rental);
         });
 

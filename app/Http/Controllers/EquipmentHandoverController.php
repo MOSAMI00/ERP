@@ -43,9 +43,7 @@ class EquipmentHandoverController extends Controller
         if ($data['owner_decision'] === OwnerDecision::FullRefund->value) {
             $this->workflow->skipCompensation($handover);
         } else {
-            $deduction = $data['owner_decision'] === OwnerDecision::NoRefund->value
-                ? (float) $handover->rental->insurance_amount
-                : (float) ($data['proposed_deduction'] ?? 0);
+            $deduction = (float) ($data['proposed_deduction'] ?? 0);
 
             $this->workflow->requestCompensation(
                 $handover,
@@ -55,5 +53,16 @@ class EquipmentHandoverController extends Controller
         }
 
         return back()->with('success', 'Decision submitted.');
+    }
+    public function respond(Request $request, EquipmentHandover $handover)
+    {
+        $decision = $request->input('decision');
+
+        if ($decision === 'accepted') {
+            $this->workflow->acceptCompensation($handover);
+            return back()->with('success', 'Compensation accepted.');
+        }
+
+        return back()->with('info', 'Action recorded.');
     }
 }

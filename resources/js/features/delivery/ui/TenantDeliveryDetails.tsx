@@ -99,12 +99,6 @@ export function TenantDeliveryDetails({
         </div>
       ) : null}
 
-      {/* Disputes Notice */}
-      {disputes.length > 0 ? (
-        <div className="mt-4 rounded-2xl border border-[#F5B7B1] bg-[#FDEDEC] p-4 text-sm text-[#C0392B]">
-          يوجد نزاع مفتوح على هذه العملية. تابع تفاصيله من نفس السجل عند ربط backend النزاعات.
-        </div>
-      ) : null}
 
       {/* Stage Form or Idle */}
       {formSpec ? (

@@ -15,7 +15,32 @@ export function CompensationResponseCard({
   const [disputeAmount, setDisputeAmount] = useState('');
   const [showDisputeForm, setShowDisputeForm] = useState(false);
 
-  if (compensation.status !== 'requested') return null;
+  const isCompleted = compensation.rentalStatus === 'completed';
+  const isDisputed = compensation.rentalStatus === 'disputed' || !!compensation.dispute;
+  const isPendingTenant = 
+    compensation.status === 'requested' || 
+    compensation.status === 'partial_refund' || 
+    compensation.status === 'no_refund';
+
+  if (isCompleted) {
+    return (
+      <div className="mb-4 rounded-xl border-2 border-[#27AE60] bg-[#F4FAF6] p-5">
+        <h4 className="m-0 text-base font-bold text-[#27AE60]">✅ تم قبول التعويض وتسوية العملية</h4>
+        <p className="m-0 mt-2 text-sm text-[#555555]">المبلغ الذي تم خصمه: {formatCurrency(compensation.requestedAmount)} ر.ي</p>
+      </div>
+    );
+  }
+
+  if (isDisputed) {
+    return (
+      <div className="mb-4 rounded-xl border-2 border-[#E74C3C] bg-[#FDEDEC] p-5">
+        <h4 className="m-0 text-base font-bold text-[#E74C3C]">⚖️ تم رفض التعويض وفتح نزاع</h4>
+        <p className="m-0 mt-2 text-sm text-[#555555]">حالة النزاع: {compensation.dispute?.status === 'resolved' ? 'تم الحل' : 'قيد المراجعة الإدارية'}</p>
+      </div>
+    );
+  }
+
+  if (!isPendingTenant) return null;
 
   return (
     <div className="mb-4 rounded-xl border-2 border-[#E67E22] bg-white p-5">
@@ -59,13 +84,6 @@ export function CompensationResponseCard({
             onClick={onAccept}
           >
             ✅ قبول التعويض
-          </button>
-          <button
-            type="button"
-            className="rounded-xl bg-[#E74C3C] px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-[#C0392B]"
-            onClick={onReject}
-          >
-            ❌ رفض
           </button>
           <button
             type="button"

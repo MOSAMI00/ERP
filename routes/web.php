@@ -129,6 +129,7 @@ Route::middleware(['auth'])->group(function () {
                 'handover_reports' => HandoverReportModel::whereIn('rental_op_id', $rentals->pluck('id'))->with('images')->latest()->get(),
                 'disputes' => DisputeModel::whereIn('rental_op_id', $rentals->pluck('id'))->latest()->get(),
                 'reviews' => ReviewModel::whereIn('rental_op_id', $rentals->pluck('id'))->where('reviewer_id', request()->user()->id)->get(),
+                'compensations' => \App\Models\EquipmentHandover::whereIn('rental_op_id', $rentals->pluck('id'))->with('dispute')->get(),
             ]);
         })->name('delivery');
         Route::get('/contracts', function () {
@@ -268,6 +269,7 @@ Route::middleware(['auth'])->group(function () {
     // Equipment Handover & Compensation
     Route::get('rentals/{rental}/handover', [EquipmentHandoverController::class, 'show'])->name('equipment-handovers.show');
     Route::post('equipment-handovers/{handover}/decide', [EquipmentHandoverController::class, 'decide'])->name('equipment-handovers.decide');
+    Route::post('equipment-handovers/{handover}/respond', [EquipmentHandoverController::class, 'respond'])->name('equipment-handovers.respond');
 
     // Disputes
     Route::get('handovers/{handover}/dispute', [DisputeController::class, 'create'])->name('disputes.create');

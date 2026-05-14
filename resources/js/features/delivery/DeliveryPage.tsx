@@ -62,9 +62,18 @@ function normalizeDeliveryRows({ rentals, role, userId }) {
     });
 }
 
-function getWorkflowStage(rental, reports) {
-  if (!rental) return 'delivery';
+function getWorkflowStage(rental, reports, handover) {
   if (rental.status === 'disputed') return 'disputes';
+  
+  // A rental is in 'disputes' stage if there's an active compensation request or a formal dispute
+  const hasCompensation = handover && (
+    handover.owner_decision || 
+    handover.ownerDecision || 
+    (handover.status && handover.status !== 'none' && handover.status !== 'requested') || // 'requested' is often a placeholder
+    (Number(handover.proposed_deduction || handover.proposedDeduction || handover.requestedAmount || 0) > 0)
+  );
+
+  if (hasCompensation && rental.status !== 'completed') return 'disputes';
   if (rental.status === 'completed') return 'completed';
 
   const ownerDelivery = reports.some((report) => report.phase === 'delivery' && (report.submitted_by_role ?? report.submittedByRole) === 'owner');
@@ -120,19 +129,32 @@ export default function DeliveryPage({ role: roleProp }) {
   const [selectedReport, setSelectedReport] = useState(null);
   const [forms, setForms] = useState({});
   const [compensationForms, setCompensationForms] = useState({});
+  const [isSubmittingCompensation, setIsSubmittingCompensation] = useState(false);
 
   useEffect(() => {
     if (routeRentalId) setSelectedRentalId(routeRentalId);
   }, [routeRentalId]);
 
-  const rows = useMemo(() => normalizeDeliveryRows({
-    rentals,
-    role,
-    userId,
-  }).map((rental) => ({
-    ...rental,
-    workflowStage: getWorkflowStage(rental, handoverReports.filter(h => (h.rental_op_id ?? h.rentalId) === rental.id)),
-  })), [rentals, role, userId, handoverReports]);
+  const rows = useMemo(() => {
+    const normalizedRentals = normalizeDeliveryRows({ rentals, role, userId });
+    return normalizedRentals.map((rental) => {
+      const rentalReports = handoverReports.filter(h => (h.rental_op_id ?? h.rentalId) === rental.id);
+      const rawComp = allCompensations.find(c => (c.rental_op_id ?? c.rentalId) === rental.id) || (rental.equipment_handover ?? rental.equipmentHandover);
+      
+      const comp = rawComp ? {
+        ...rawComp,
+        status: rawComp.owner_decision ?? rawComp.ownerDecision ?? rawComp.status,
+        proposed_deduction: rawComp.proposed_deduction ?? rawComp.proposedDeduction ?? rawComp.requestedAmount,
+        rentalStatus: rental.status,
+        dispute: rawComp.dispute,
+      } : null;
+      
+      return {
+        ...rental,
+        workflowStage: getWorkflowStage(rental, rentalReports, comp),
+      };
+    });
+  }, [rentals, role, userId, handoverReports, allCompensations]);
 
   const filteredRows = useMemo(() => rows.filter((row) => {
     if (activeTab === 'all') return true;
@@ -146,7 +168,24 @@ export default function DeliveryPage({ role: roleProp }) {
 
   const reports = selectedRental ? handoverReports.filter(h => (h.rental_op_id ?? h.rentalId) === selectedRental.id) : [];
   const disputes = selectedRental ? allDisputes.filter(d => (d.rental_op_id ?? d.rentalId) === selectedRental.id) : [];
-  const compensation = selectedRental ? allCompensations.find(c => (c.rental_op_id ?? c.rentalId) === selectedRental.id) : undefined;
+  
+  const rawCompensation = selectedRental 
+    ? (allCompensations.find(c => (c.rental_op_id ?? c.rentalId) === selectedRental.id) 
+       || (selectedRental.equipment_handover ?? selectedRental.equipmentHandover)) 
+    : undefined;
+
+  const compensation = useMemo(() => {
+    if (!rawCompensation || !selectedRental) return undefined;
+    return {
+      ...rawCompensation,
+      id: rawCompensation.id,
+      requestedAmount: rawCompensation.proposed_deduction ?? rawCompensation.proposedDeduction ?? rawCompensation.requestedAmount,
+      status: rawCompensation.owner_decision ?? rawCompensation.ownerDecision ?? rawCompensation.status,
+      notes: rawCompensation.final_notes ?? rawCompensation.finalNotes ?? rawCompensation.notes,
+      rentalStatus: selectedRental.status,
+      dispute: rawCompensation.dispute,
+    };
+  }, [rawCompensation, selectedRental]);
   
   const ownerReturnReport = reports.find((report) => report.phase === 'return' && (report.submitted_by_role ?? report.submittedByRole) === 'owner');
   const selectedStage = selectedRental?.workflowStage || 'delivery';
@@ -208,14 +247,16 @@ export default function DeliveryPage({ role: roleProp }) {
   };
 
   const handleRequestCompensation = () => {
-    if (!selectedRental || !ownerReturnReport) return;
+    if (!selectedRental || !ownerReturnReport || isSubmittingCompensation) return;
     const amount = Number(activeCompensationForm.amount || 0);
     if (!amount || !activeCompensationForm.notes.trim()) return;
     const handover = selectedRental.equipment_handover ?? selectedRental.equipmentHandover;
     if (!handover?.id) return;
 
+    setIsSubmittingCompensation(true);
+    const insuranceAmount = Number(selectedRental.insurance_amount ?? selectedRental.insuranceAmount ?? 0);
     router.post(`/equipment-handovers/${handover.id}/decide`, {
-      owner_decision: amount >= Number(selectedRental.insurance_amount ?? selectedRental.insuranceAmount ?? 0)
+      owner_decision: (insuranceAmount > 0 && amount >= insuranceAmount)
         ? 'no_refund'
         : 'partial_refund',
       proposed_deduction: amount,
@@ -228,6 +269,9 @@ export default function DeliveryPage({ role: roleProp }) {
           ...current,
           [selectedRental.id]: { amount: '', notes: '', photos: [] },
         }));
+      },
+      onFinish: () => {
+        setIsSubmittingCompensation(false);
       }
     });
   };
@@ -235,13 +279,13 @@ export default function DeliveryPage({ role: roleProp }) {
   const respondToCompensation = (compensationId, action) => {
     if (!selectedRental) return;
     const handover = selectedRental.equipment_handover ?? selectedRental.equipmentHandover;
-    if (!handover?.id || action !== 'rejected') return;
-    router.post('/disputes', {
-      rental_op_id: selectedRental.id,
-      equipment_handover_id: handover.id,
-      tenant_claim: 'Tenant rejected the proposed deduction.',
-      requested_amount: compensation?.requested_amount ?? compensation?.requestedAmount ?? 0,
-    }, { preserveScroll: true });
+    if (!handover?.id) return;
+
+    if (action === 'accepted') {
+      router.post(`/equipment-handovers/${handover.id}/respond`, {
+        decision: 'accepted',
+      }, { preserveScroll: true });
+    }
   };
 
   const openCompensationDispute = (compensationId, claim = '', amount = 0) => {
@@ -321,6 +365,7 @@ export default function DeliveryPage({ role: roleProp }) {
                 activeForm={activeForm}
                 activeCompensationForm={activeCompensationForm}
                 stageFeedback={stageFeedback}
+                isSubmitting={isSubmittingCompensation}
                 onUpdateForm={updateForm}
                 onSubmitStage={handleSubmitStage}
                 onUpdateCompensationForm={updateCompensationForm}

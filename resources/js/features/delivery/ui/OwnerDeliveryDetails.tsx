@@ -23,6 +23,7 @@ export function OwnerDeliveryDetails({
   onSelectReport,
   onSubmitRating,
   hasReview,
+  isSubmitting,
 }) {
   const ownerReturnReport = reports.find((report) => report.phase === 'return' && report.submitted_by_role === 'owner');
 
@@ -97,15 +98,10 @@ export function OwnerDeliveryDetails({
           form={activeCompensationForm}
           onChange={onUpdateCompensationForm}
           onSubmit={onRequestCompensation}
+          loading={isSubmitting}
         />
       ) : null}
 
-      {/* Disputes Notice */}
-      {disputes.length > 0 ? (
-        <div className="mt-4 rounded-2xl border border-[#F5B7B1] bg-[#FDEDEC] p-4 text-sm text-[#C0392B]">
-          يوجد نزاع مفتوح على هذه العملية. تابع تفاصيله من نفس السجل عند ربط backend النزاعات.
-        </div>
-      ) : null}
 
       {/* Stage Form or Idle */}
       {formSpec ? (
