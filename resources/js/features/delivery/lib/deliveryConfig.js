@@ -36,6 +36,8 @@ export const STAGE_META = {
   handover: { label: 'قيد التسليم', status: 'confirmed' },
   in_use: { label: 'قيد الاستخدام', status: 'in_use' },
   return: { label: 'بانتظار الإرجاع', status: 'in_use' },
+  return_done: { label: 'تم الإرجاع', status: 'return_done' },
+  compensation_requested: { label: 'طلب تعويض', status: 'compensation_requested' },
   disputes: { label: 'نزاع مفتوح', status: 'disputed' },
   completed: { label: 'مكتمل', status: 'completed' },
 };
@@ -43,6 +45,8 @@ export const STAGE_META = {
 export const STATUS_META = {
   confirmed: { label: 'بانتظار التسليم', color: '#2D5A27', bg: '#EAF3E9' },
   in_use: { label: 'قيد الاستخدام', color: '#E67E22', bg: 'rgba(230,126,34,0.12)' },
+  return_done: { label: 'تم الإرجاع', color: '#2D5A27', bg: '#EAF3E9' },
+  compensation_requested: { label: 'طلب تعويض', color: '#E67E22', bg: 'rgba(230,126,34,0.12)' },
   disputed: { label: 'نزاع مفتوح', color: '#E74C3C', bg: 'rgba(231,76,60,0.12)' },
   completed: { label: 'مكتمل', color: '#27AE60', bg: 'rgba(39,174,96,0.12)' },
 };

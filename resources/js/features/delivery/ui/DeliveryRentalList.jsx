@@ -1,5 +1,5 @@
 import React from 'react';
-import { StatusBadge } from '../../components/shared';
+import { StatusBadge } from '../../../components/shared';
 
 const STATUS_META = {
   confirmed: { label: 'بانتظار التسليم', color: '#2D5A27', bg: '#EAF3E9' },
@@ -30,8 +30,8 @@ export function DeliveryRentalList({ rentals, selectedRental, onSelect }) {
           type="button"
           onClick={() => onSelect(rental.id)}
           className={`w-full rounded-2xl border bg-white p-4 text-right transition-all ${selectedRental?.id === rental.id
-              ? 'border-[#2D5A27] shadow-md'
-              : 'border-[#E0E0E0] hover:border-[#B8CDB4]'
+            ? 'border-[#2D5A27] shadow-md'
+            : 'border-[#E0E0E0] hover:border-[#B8CDB4]'
             }`}
         >
           <div className="flex items-center gap-3">
