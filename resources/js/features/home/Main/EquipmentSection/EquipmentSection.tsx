@@ -5,31 +5,14 @@ import { Link } from '@inertiajs/react';
 import { motion } from 'motion/react';
 import { Tag } from 'lucide-react';
 
-export function EquipmentSection({ products = [], onDetailsClick, activeCategory, searchQuery }) {
+export function EquipmentSection({ products = [], onDetailsClick, activeCategory, searchQuery, selectedCity }) {
   const filteredProducts = products.filter((product) => {
-    // 1. Category Filter
-    const matchesCategory = (() => {
-      if (activeCategory === 'الكل') return true;
-      const categoryMap = {
-        'مولدات كهرباء': 'كهرباء',
-        'بناء وأعمال': 'بناء',
-        'زراعة': 'زراعة',
-        'تصوير': 'تصوير',
-        'رياضة': 'رياضة',
-        'فعاليات': 'فعاليات',
-        'طبي': 'طبي',
-        'أخرى': 'أخرى'
-      };
-      const targetCategory = categoryMap[activeCategory] || activeCategory;
-      return product.category === targetCategory;
-    })();
-
-    // 2. Search Filter
+    // Search Filter (Client-side)
     const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          product.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          product.location.toLowerCase().includes(searchQuery.toLowerCase());
 
-    return matchesCategory && matchesSearch;
+    return matchesSearch;
   });
   
   return (
@@ -48,30 +31,10 @@ export function EquipmentSection({ products = [], onDetailsClick, activeCategory
           </Link>
         </div>
 
-        <motion.div 
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true, margin: "-100px" }}
-          variants={{
-            hidden: { opacity: 0 },
-            show: {
-              opacity: 1,
-              transition: {
-                staggerChildren: 0.1
-              }
-            }
-          }}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
-        >
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
           {filteredProducts.length > 0 ? (
             filteredProducts.map((product) => (
-              <motion.div
-                key={product.id}
-                variants={{
-                  hidden: { opacity: 0, y: 30 },
-                  show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } }
-                }}
-              >
+              <div key={product.id}>
                 <Link href={`/product/${product.id}`} className="block h-full">
                   <ProductCard
                     {...product}
@@ -87,22 +50,18 @@ export function EquipmentSection({ products = [], onDetailsClick, activeCategory
                     }}
                   />
                 </Link>
-              </motion.div>
+              </div>
             ))
           ) : (
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="col-span-full py-24 text-center bg-white rounded-3xl border border-dashed border-gray-200"
-            >
+            <div className="col-span-full py-24 text-center bg-white rounded-3xl border border-dashed border-gray-200">
               <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gray-50 text-gray-300 mb-6">
                 <Tag size={40} />
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-2">لم نجد أي معدات</h3>
               <p className="text-gray-500 max-w-xs mx-auto">جرب تغيير الفئة أو البحث عن شيء آخر لتجد ما تبحث عنه.</p>
-            </motion.div>
+            </div>
           )}
-        </motion.div>
+        </div>
       </div>
     </section>
   );

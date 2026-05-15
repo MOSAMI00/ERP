@@ -75,6 +75,7 @@ export function BookingSidebar({ product }) {
       <PriceCard product={product} dailyRate={dailyRate} deposit={deposit} />
       
       <DatePickers 
+        productId={product.id}
         startDate={startDate} 
         setStartDate={setStartDate} 
         endDate={endDate} 

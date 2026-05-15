@@ -8,7 +8,7 @@ import { OwnerReviewsList } from './ui/OwnerReviewsList';
 import { PageHeader, FilterTabs } from '../../components/shared';
 
 export default function ReviewsPage({ role: roleProp }) {
-  const { props } = usePage();
+  const { props } = usePage<any>();
   const user = props.auth?.user ?? null;
   const role = roleProp || user?.type || 'tenant';
   const config = getReviewsConfig(role);

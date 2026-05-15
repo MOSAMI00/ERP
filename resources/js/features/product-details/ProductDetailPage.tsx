@@ -7,8 +7,44 @@ import { BookingSidebar } from './BookingSidebar';
 import { OwnerCard } from './ui/OwnerCard';
 import { MobileBottomBar } from './ui/MobileBottomBar';
 
+interface Owner {
+  id?: number;
+  full_name?: string;
+  avatar?: string | null;
+  rating?: number | null;
+  operations_count?: number | null;
+  governorate?: string | null;
+  kyc_status?: string | null;
+  created_at?: string | null;
+}
+
+interface Product {
+  id: number;
+  name: string;
+  description?: string;
+  category?: string;
+  price: number;
+  price_per_day?: number;
+  insurance?: number;
+  insurance_amount?: number;
+  location?: string;
+  address?: string;
+  rental_terms?: string;
+  status?: string;
+  rating?: number;
+  discount?: number;
+  image?: string | null;
+  images?: string[];
+  owner?: Owner | null;
+}
+
+interface PageProps {
+  product?: Product;
+  [key: string]: unknown;
+}
+
 export default function ProductDetailPage() {
-  const { props } = usePage();
+  const { props } = usePage<PageProps>();
   const product = props.product ?? null;
 
   if (!product) {
@@ -24,7 +60,7 @@ export default function ProductDetailPage() {
     );
   }
 
-  const images = product.images || [product.image];
+  const images = product.images ?? (product.image ? [product.image] : []);
 
   return (
     <div className="min-h-screen bg-white">

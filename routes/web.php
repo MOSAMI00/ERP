@@ -43,6 +43,8 @@ use Inertia\Inertia;
 $equipmentCard = function (EquipmentModel $equipment): array {
     $primaryImage = $equipment->images->firstWhere('is_primary', true) ?? $equipment->images->first();
 
+    $owner = $equipment->owner;
+
     return [
         'id' => $equipment->id,
         'name' => $equipment->name,
@@ -54,25 +56,56 @@ $equipmentCard = function (EquipmentModel $equipment): array {
         'insurance_amount' => (float) $equipment->insurance_amount,
         'location' => $equipment->governorate,
         'address' => $equipment->address,
+        'rental_terms' => $equipment->rental_terms,
         'status' => $equipment->status?->value ?? $equipment->status,
         'rating' => (float) $equipment->rating,
         'image' => $primaryImage?->image_url,
         'images' => $equipment->images->pluck('image_url')->values(),
-        'owner' => $equipment->owner,
+        'owner' => $owner ? [
+            'id'               => $owner->id,
+            'full_name'        => $owner->full_name,
+            'avatar'           => $owner->avatar,
+            'rating'           => $owner->rating,
+            'operations_count' => $owner->operations_count,
+            'governorate'      => $owner->governorate,
+            'kyc_status'       => $owner->kyc_status,
+            'created_at'       => $owner->created_at?->toIso8601String(),
+        ] : null,
     ];
 };
 
 Route::get('/', function () use ($equipmentCard) {
-    $products = EquipmentModel::with(['category', 'images', 'owner'])
-        ->where('status', 'active')
-        ->latest()
+    $query = EquipmentModel::with(['category', 'images', 'owner'])
+        ->where('status', 'active');
+
+    if (request()->filled('category') && request('category') !== 'الكل') {
+        $query->whereHas('category', function ($q) {
+            $q->where('name_ar', request('category'));
+        });
+    }
+
+    if (request()->filled('city') && request('city') !== 'الكل') {
+        $query->where('governorate', request('city'));
+    }
+
+    $products = $query->latest()
         ->take(12)
         ->get()
         ->map($equipmentCard)
         ->values();
 
+    $categories = CategoryModel::orderBy('sort_order')->get();
+    $cities = EquipmentModel::where('status', 'active')
+        ->whereNotNull('governorate')
+        ->distinct()
+        ->pluck('governorate')
+        ->values();
+
     return Inertia::render('features/home/HomePage', [
         'products' => $products,
+        'categories' => $categories,
+        'cities' => $cities,
+        'filters' => request()->all(['category', 'city']),
     ]);
 })->name('home');
 
@@ -93,6 +126,34 @@ Route::get('/product/{id}', function ($id) use ($equipmentCard) {
 Route::get('/cart', function () {
     return Inertia::render('features/cart/CartPage');
 })->name('cart');
+
+// Public JSON endpoint – no auth required
+Route::get('/product/{id}/unavailable-dates', function ($id) {
+    $equipment = EquipmentModel::findOrFail($id);
+
+    // Owner-blocked windows
+    $blocked = \App\Models\EquipmentAvailability::where('equipment_id', $id)
+        ->get(['unavailable_from', 'unavailable_to', 'reason'])
+        ->map(fn ($r) => [
+            'from'   => $r->unavailable_from?->format('Y-m-d'),
+            'to'     => $r->unavailable_to?->format('Y-m-d'),
+            'reason' => $r->reason?->value ?? $r->reason,
+        ]);
+
+    // Active rental windows
+    $rented = \App\Models\RentalOperation::where('equipment_id', $id)
+        ->whereIn('status', ['confirmed', 'paid', 'in_use'])
+        ->get(['start_date', 'end_date'])
+        ->map(fn ($r) => [
+            'from'   => $r->start_date instanceof \Carbon\Carbon ? $r->start_date->format('Y-m-d') : $r->start_date,
+            'to'     => $r->end_date   instanceof \Carbon\Carbon ? $r->end_date->format('Y-m-d')   : $r->end_date,
+            'reason' => 'rented',
+        ]);
+
+    return response()->json([
+        'unavailable' => $blocked->concat($rented)->values(),
+    ]);
+})->name('product.unavailable-dates');
 
 Route::middleware(['auth'])->group(function () {
 
