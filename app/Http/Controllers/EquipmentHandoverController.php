@@ -57,6 +57,8 @@ class EquipmentHandoverController extends Controller
     public function respond(Request $request, EquipmentHandover $handover)
     {
         $decision = $request->input('decision');
+        $this->authorize('view', $handover->rental);
+        abort_unless((int) Auth::id() === (int) $handover->rental->tenant_id, 403);
 
         if ($decision === 'accepted') {
             $this->workflow->acceptCompensation($handover);

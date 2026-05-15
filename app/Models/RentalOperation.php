@@ -29,6 +29,7 @@ class RentalOperation extends Model
         'rental_amount',
         'insurance_amount',
         'total_amount',
+        
         'status',
         'cancellation_reason',
         'payment_deadline',
