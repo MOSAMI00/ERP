@@ -46,7 +46,6 @@ export default function CartPage() {
       governorate: 'صنعاء',
       district: '',
       address: '',
-      phone: '',
     },
   });
 

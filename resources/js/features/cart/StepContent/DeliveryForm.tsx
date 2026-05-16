@@ -47,22 +47,6 @@ export function DeliveryForm({ deliveryInfo, setDeliveryInfo, timeSlot, setTimeS
           />
         </div>
 
-        <div className="space-y-2">
-          <label className="block text-sm font-medium">رقم الجوال</label>
-          <div className="relative">
-            <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2 text-sm text-muted-foreground">
-              <span>🇾🇪</span>
-              <span>+967</span>
-            </div>
-            <input
-              type="tel"
-              value={deliveryInfo.phone}
-              onChange={(e) => setDeliveryInfo({ ...deliveryInfo, phone: e.target.value })}
-              placeholder="777 123 456"
-              className="w-full h-12 pr-24 pl-4 rounded-lg border border-border bg-white focus:outline-none focus:border-primary"
-            />
-          </div>
-        </div>
 
         <div className="space-y-2">
           <label className="block text-sm font-medium">الوقت المفضل للاستلام</label>

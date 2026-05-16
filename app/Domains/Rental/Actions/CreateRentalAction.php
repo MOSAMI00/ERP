@@ -24,6 +24,12 @@ class CreateRentalAction
         $durationDays = max(1, $start->diffInDays($end));
         $rentalAmount = (float) $equipment->price_per_day * $durationDays;
 
+        $timeSlot = $data['time_slot'] ?? null;
+        $deliveryTime = null;
+        if ($timeSlot === 'morning') $deliveryTime = '8ص - 12م';
+        elseif ($timeSlot === 'afternoon') $deliveryTime = '12م - 4م';
+        elseif ($timeSlot === 'evening') $deliveryTime = '4م - 8م';
+
         return RentalOperation::create([
             'tenant_id'        => $tenant->id,
             'owner_id'         => $equipment->owner_id,
@@ -35,6 +41,8 @@ class CreateRentalAction
             'insurance_amount' => $equipment->insurance_amount,
             'total_amount'     => $rentalAmount + (float) $equipment->insurance_amount,
             'delivery_location' => $data['delivery_location'],
+            'preferred_time_slot' => $timeSlot,
+            'delivery_time'    => $deliveryTime,
             'status'           => RentalStatus::Pending,
         ]);
     }
