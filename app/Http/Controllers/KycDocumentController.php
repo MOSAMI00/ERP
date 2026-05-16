@@ -35,17 +35,7 @@ class KycDocumentController extends Controller
 
         $request->validated();
 
-        $frontPath = $request->file('front_image')
-            ->store("kyc/{$user->id}", 'public');
-
-        $backPath = $request->hasFile('back_image')
-            ? $request->file('back_image')->store("kyc/{$user->id}", 'public')
-            : null;
-
-        $selfiePath = $request->file('selfie_image')
-            ->store("kyc/{$user->id}", 'public');
-
-        // منع رفع وثائق جديدة إذا كانت هناك وثيقة pending أو approved
+        // منع رفع وثائق جديدة إذا كانت هناك وثيقة pending أو approved قبل تخزين الملفات.
         $existing = $user->kycDocuments()
             ->whereIn('status', ['pending', 'approved'])
             ->exists();
@@ -55,6 +45,16 @@ class KycDocumentController extends Controller
                 'doc_type' => 'لديك وثائق قيد المراجعة أو معتمدة مسبقاً.',
             ]);
         }
+
+        $frontPath = $request->file('front_image')
+            ->store("kyc/{$user->id}", 'public');
+
+        $backPath = $request->hasFile('back_image')
+            ? $request->file('back_image')->store("kyc/{$user->id}", 'public')
+            : null;
+
+        $selfiePath = $request->file('selfie_image')
+            ->store("kyc/{$user->id}", 'public');
 
         $user->kycDocuments()->create([
             'doc_type'     => $request->doc_type,
@@ -67,7 +67,7 @@ class KycDocumentController extends Controller
 
         $user->update(['kyc_status' => 'pending']);
 
-        return redirect()->route('kyc.index')
+        return back()
             ->with('success', 'تم رفع الوثائق بنجاح. في انتظار المراجعة.');
     }
 }

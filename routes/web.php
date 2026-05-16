@@ -225,6 +225,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/settings', function () {
             return Inertia::render('Tenant/Settings/SettingsPage', [
                 'kyc_documents' => request()->user()->kycDocuments()->latest()->get(),
+                'kyc_status' => request()->user()->kyc_status,
                 'payment_methods' => request()->user()->paymentMethods()->latest()->get(),
             ]);
         })->name('settings');
@@ -296,7 +297,11 @@ Route::middleware(['auth'])->group(function () {
             ]);
         })->name('reviews');
         Route::get('/profile', function () {
-            return Inertia::render('Owner/Settings/SettingsPage', ['kyc_documents' => request()->user()->kycDocuments()->latest()->get(), 'payment_methods' => request()->user()->paymentMethods()->latest()->get()]);
+            return Inertia::render('Owner/Settings/SettingsPage', [
+                'kyc_documents' => request()->user()->kycDocuments()->latest()->get(),
+                'kyc_status' => request()->user()->kyc_status,
+                'payment_methods' => request()->user()->paymentMethods()->latest()->get(),
+            ]);
         })->name('profile');
     });
 });

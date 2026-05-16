@@ -20,12 +20,20 @@ class AdminKycController extends Controller
     {
         $docs = KycDocument::with('user')
             ->when($request->status, fn($q) => $q->where('status', $request->status))
+            ->when($request->search, function ($q) use ($request) {
+                $term = "%{$request->search}%";
+
+                $q->whereHas('user', fn ($userQuery) => $userQuery
+                    ->where('full_name', 'like', $term)
+                    ->orWhere('email', 'like', $term));
+            })
             ->latest()
-            ->paginate(20);
+            ->paginate(20)
+            ->withQueryString();
 
         return Inertia::render('Admin/Kyc/Index', [
             'documents' => $docs,
-            'filters'   => $request->only('status'),
+            'filters'   => $request->only(['status', 'search']),
         ]);
     }
 

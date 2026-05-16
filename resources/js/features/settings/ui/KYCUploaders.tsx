@@ -6,10 +6,14 @@ import { Upload, CheckCircle, AlertCircle, Eye, Trash2 } from 'lucide-react';
 
 export function KYCUploaders() {
     const { props } = usePage();
-    const kyc_documents = props.kyc_documents || [];
-    const kyc_status = props.kyc_status || 'not_submitted';
+    const kyc_documents = Array.isArray(props.kyc_documents)
+        ? props.kyc_documents
+        : props.kyc_documents?.data || [];
+    const latestDocument = kyc_documents[0] || null;
+    const kyc_status = latestDocument?.status || props.kyc_status || props.auth?.user?.kyc_status || 'not_submitted';
+    const effectiveStatus = !latestDocument && kyc_status === 'pending' ? 'not_submitted' : kyc_status;
 
-    const [previews, setPreviews] = useState({
+    const [previews, setPreviews] = useState<Record<string, string | null>>({
         front: null,
         back: null,
         selfie: null
@@ -31,13 +35,20 @@ export function KYCUploaders() {
                 setPreviews(prev => ({ ...prev, [type]: reader.result }));
             };
             reader.readAsDataURL(file);
+        } else {
+            setPreviews(prev => ({ ...prev, [type]: null }));
         }
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         form.post(route('kyc.store'), {
             forceFormData: true,
+            preserveScroll: true,
+            onSuccess: () => {
+                form.reset('front_image', 'back_image', 'selfie_image');
+                setPreviews({ front: null, back: null, selfie: null });
+            },
         });
     };
 
@@ -48,9 +59,9 @@ export function KYCUploaders() {
         not_submitted: { label: 'لم يتم التقديم', color: 'text-[#888888]', bg: 'bg-[#F4F6F9]', border: 'border-[#E0E0E0]', icon: '📄' }
     };
 
-    const currentStatus = (statusMap[kyc_status as keyof typeof statusMap] || statusMap.not_submitted) as any;
+    const currentStatus = (statusMap[effectiveStatus as keyof typeof statusMap] || statusMap.not_submitted) as any;
 
-    if (kyc_status === 'approved') {
+    if (effectiveStatus === 'approved') {
         return (
             <div className="flex flex-col gap-5 text-center py-10">
                 <div className="w-20 h-20 bg-[#EAFAF1] rounded-full flex items-center justify-center mx-auto mb-4">
@@ -71,17 +82,21 @@ export function KYCUploaders() {
                 <div>
                     <p className={`font-bold ${currentStatus.color} text-sm`}>حالة التوثيق: {currentStatus.label}</p>
                     <p className="text-xs text-[#888888] mt-0.5">
-                        {kyc_status === 'rejected' ? 'يرجى إعادة رفع الوثائق بشكل صحيح.' : 'يرجى رفع المستندات المطلوبة لتفعيل حسابك بالكامل.'}
+                        {effectiveStatus === 'pending'
+                            ? 'تم استلام وثائقك وسيتم مراجعتها من فريق الإدارة.'
+                            : effectiveStatus === 'rejected'
+                                ? 'يرجى إعادة رفع الوثائق بشكل صحيح.'
+                                : 'يرجى رفع المستندات المطلوبة لتفعيل حسابك بالكامل.'}
                     </p>
                 </div>
             </div>
 
-            {kyc_status === 'rejected' && kyc_documents[0]?.rejection_reason && (
+            {effectiveStatus === 'rejected' && latestDocument?.rejection_reason && (
                 <div className="p-4 rounded-xl border border-red-200 bg-red-50 flex items-start gap-3">
                     <AlertCircle className="w-5 h-5 text-red-500 mt-0.5" />
                     <div>
                         <p className="font-bold text-red-700 text-sm">سبب الرفض:</p>
-                        <p className="text-sm text-red-600">{kyc_documents[0].rejection_reason}</p>
+                        <p className="text-sm text-red-600">{latestDocument.rejection_reason}</p>
                     </div>
                 </div>
             )}
@@ -124,7 +139,7 @@ export function KYCUploaders() {
                                         type="file"
                                         accept="image/*"
                                         className="absolute inset-0 opacity-0 cursor-pointer"
-                                        onChange={e => handleFileChange(step.id, e.target.files[0])}
+                                        onChange={e => handleFileChange(step.id, e.target.files?.[0] || null)}
                                     />
                                 </>
                             )}
@@ -134,14 +149,15 @@ export function KYCUploaders() {
                 ))}
             </div>
 
+            {form.errors.doc_type && <p className="text-xs text-red-500">{form.errors.doc_type}</p>}
+
             <button
                 type="submit"
-                disabled={form.processing || !form.data.front_image || !form.data.selfie_image}
+                disabled={form.processing || effectiveStatus === 'pending' || !form.data.front_image || !form.data.selfie_image}
                 className="h-12 bg-[#2D5A27] text-white rounded-xl font-bold text-sm hover:bg-[#3D7A35] transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-4"
             >
-                {form.processing ? 'جاري الإرسال...' : 'تقديم طلب التحقق'}
+                {form.processing ? 'جاري الإرسال...' : effectiveStatus === 'pending' ? 'طلبك قيد المراجعة' : 'تقديم طلب التحقق'}
             </button>
         </form>
     );
 }
-
