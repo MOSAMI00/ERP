@@ -18,8 +18,8 @@ class KycDocumentController extends Controller
         $user = Auth::user();
 
         return Inertia::render('Kyc/Index', [
-            'documents' => $user->kycDocuments()->latest()->get(),
-            'kycStatus' => $user->kyc_status,
+            'kyc_documents' => $user->kycDocuments()->latest()->get(),
+            'kyc_status'    => $user->kyc_status,
         ]);
     }
 
@@ -42,7 +42,10 @@ class KycDocumentController extends Controller
             ? $request->file('back_image')->store("kyc/{$user->id}", 'public')
             : null;
 
-        // منع رفع وثائق جديدة إذا كانت هناك وثيقة pending أو verified
+        $selfiePath = $request->file('selfie_image')
+            ->store("kyc/{$user->id}", 'public');
+
+        // منع رفع وثائق جديدة إذا كانت هناك وثيقة pending أو approved
         $existing = $user->kycDocuments()
             ->whereIn('status', ['pending', 'approved'])
             ->exists();
@@ -54,10 +57,11 @@ class KycDocumentController extends Controller
         }
 
         $user->kycDocuments()->create([
-            'doc_type'    => $request->doc_type,
-            'front_url'   => $frontPath,
-            'back_url'    => $backPath,
-            'status'      => 'pending',
+            'doc_type'     => $request->doc_type,
+            'front_url'    => $frontPath,
+            'back_url'     => $backPath,
+            'selfie_url'   => $selfiePath,
+            'status'       => 'pending',
             'submitted_at' => now(),
         ]);
 

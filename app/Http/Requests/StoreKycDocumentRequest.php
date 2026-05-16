@@ -14,9 +14,10 @@ class StoreKycDocumentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'doc_type'    => ['required', 'in:national_id,passport,military_id'],
-            'front_image' => ['required', 'image', 'mimes:jpg,jpeg,png', 'max:4096'],
-            'back_image'  => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:4096'],
+            'doc_type'     => ['required', 'in:national_id,passport,military_id'],
+            'front_image'  => ['required', 'image', 'mimes:jpg,jpeg,png', 'max:4096'],
+            'back_image'   => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:4096'],
+            'selfie_image' => ['required', 'image', 'mimes:jpg,jpeg,png', 'max:4096'],
         ];
     }
 }

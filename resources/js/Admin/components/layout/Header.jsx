@@ -1,6 +1,10 @@
 import { Bell, ChevronDown, Menu, Search } from 'lucide-react';
+import { usePage } from '@inertiajs/react';
 
 export default function Header({ currentTitle, onOpenSidebar }) {
+  const { props } = usePage();
+  const admin = props.auth.admin || { name: 'Admin', email: '' };
+
   return (
     <header className="h-16 bg-white border-b border-brand-border flex items-center justify-between px-4 lg:px-6 z-10 w-full">
       <div className="flex items-center space-x-4 space-x-reverse">
@@ -18,7 +22,7 @@ export default function Header({ currentTitle, onOpenSidebar }) {
           <input
             type="text"
             placeholder="بحث..."
-            className="pl-4 pr-10 py-2 rounded-lg border border-brand-border focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary w-48 lg:w-64 bg-brand-content"
+            className="pl-4 pr-10 py-2 rounded-lg border border-brand-border focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary w-48 lg:w-64 bg-brand-content text-sm"
           />
           <Search className="absolute right-3 top-2.5 text-brand-text-muted" size={20} />
         </div>
@@ -30,12 +34,14 @@ export default function Header({ currentTitle, onOpenSidebar }) {
 
         <div className="flex items-center space-x-3 space-x-reverse cursor-pointer border-r border-brand-border pr-4 lg:pr-6">
           <img
-            src="https://ui-avatars.com/api/?name=Admin+User&background=2D5A27&color=fff"
+            src={`https://ui-avatars.com/api/?name=${encodeURIComponent(admin.name)}&background=2D5A27&color=fff`}
             alt="Admin"
             className="w-10 h-10 rounded-full border-2 border-brand-primary/20"
           />
           <div className="hidden sm:block">
-            <p className="text-sm font-bold text-brand-text-primary flex items-center gap-1">أحمد علي <ChevronDown size={14} className="text-brand-text-muted" /></p>
+            <p className="text-sm font-bold text-brand-text-primary flex items-center gap-1">
+              {admin.name} <ChevronDown size={14} className="text-brand-text-muted" />
+            </p>
           </div>
         </div>
       </div>

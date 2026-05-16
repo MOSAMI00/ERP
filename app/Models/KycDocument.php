@@ -17,6 +17,7 @@ class KycDocument extends Model
         'doc_type',
         'front_url',
         'back_url',
+        'selfie_url',
         'status',
         'reviewed_by',
         'rejection_reason',

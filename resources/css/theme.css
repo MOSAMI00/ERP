@@ -45,6 +45,20 @@
   --warning: #F39C12;
   --footer-bg: #1A1A1A;
   --admin-sidebar: #1A1A2E;
+
+  /* Admin Brand Colors */
+  --brand-primary: #2D5A27;
+  --brand-success: #27AE60;
+  --brand-danger: #E74C3C;
+  --brand-warning: #F39C12;
+  --brand-info: #3498DB;
+  --brand-sidebar: #1A1A2E;
+  --brand-sidebar-hover: #24243e;
+  --brand-content: #F4F6F9;
+  --brand-card: #FFFFFF;
+  --brand-border: #E0E0E0;
+  --brand-text-primary: #222222;
+  --brand-text-muted: #888888;
 }
 
 .dark {

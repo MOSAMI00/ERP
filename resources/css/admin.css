@@ -1,0 +1,18 @@
+.font-cairo {
+  font-family: 'Cairo', sans-serif;
+}
+
+/* Custom Admin Transitions */
+.animate-in {
+  animation-duration: 0.5s;
+  animation-fill-mode: both;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.fade-in {
+  animation-name: fade-in;
+}

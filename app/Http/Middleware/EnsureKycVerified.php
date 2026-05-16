@@ -12,7 +12,7 @@ class EnsureKycVerified
     {
         $user = $request->user();
 
-        if ($user && $user->kyc_status !== 'verified') {
+        if ($user && $user->kyc_status !== 'approved') {
             return redirect()->route('kyc.index')
                 ->with('warning', 'You need to complete KYC verification first.');
         }

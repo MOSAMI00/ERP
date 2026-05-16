@@ -16,7 +16,7 @@ class UpdateKycStatusAction
 
         // ✦ تحديث حالة المستخدم بناءً على الوثيقة
         if ($status === KycStatus::Approved) {
-            $document->user->update(['kyc_status' => 'verified']);
+            $document->user->update(['kyc_status' => 'approved']);
         } elseif ($status === KycStatus::Rejected) {
             $document->user->update(['kyc_status' => 'rejected']);
         }

@@ -3,7 +3,8 @@ import { LogOut, X } from "lucide-react";
 import { route } from "../../../inertia/routes";
 
 export default function Sidebar({ isSidebarOpen, onClose, navItems }) {
-  const { url } = usePage();
+  const { url, props } = usePage();
+  const admin = props.auth.admin || { role: 'Admin' };
 
   return (
     <aside
@@ -18,8 +19,8 @@ export default function Sidebar({ isSidebarOpen, onClose, navItems }) {
           <h1 className="text-xl font-bold text-white tracking-wide">
             Admin Panel
           </h1>
-          <span className="text-xs text-brand-success mt-1 px-2 py-0.5 bg-brand-success/10 rounded w-fit">
-            Super Admin
+          <span className="text-xs text-brand-success mt-1 px-2 py-0.5 bg-brand-success/10 rounded w-fit uppercase font-bold">
+            {admin.role.replace('_', ' ')}
           </span>
         </div>
         <button

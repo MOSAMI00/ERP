@@ -31,6 +31,12 @@ class HandleInertiaRequests extends Middleware
                     'rating'      => $request->user()->rating,
                     'governorate' => $request->user()->governorate,
                 ] : null,
+                'admin' => $request->user('admin') ? [
+                    'id'    => $request->user('admin')->id,
+                    'name'  => $request->user('admin')->name,
+                    'email' => $request->user('admin')->email,
+                    'role'  => $request->user('admin')->role?->role_name ?? 'Admin',
+                ] : null,
             ],
             'flash' => [
                 'success' => $request->session()->get('success'),
