@@ -114,6 +114,16 @@ export const normalizeRental = (rental) => {
 export const normalizeDispute = (dispute) => {
     if (!dispute) return null;
     const status = enumValue(dispute.status, 'open');
+    const rental = dispute.rental ?? null;
+    const handoverReports = asArray(rental?.handover_reports ?? rental?.handoverReports);
+    const reports = handoverReports.map((report) => ({
+        ...report,
+        phase: enumValue(report.phase),
+        condition_status: enumValue(report.condition_status),
+        images: asArray(report.images)
+            .map((image) => assetUrl(image.image_url || image.url || image))
+            .filter(Boolean),
+    }));
 
     return {
         ...dispute,
@@ -126,10 +136,19 @@ export const normalizeDispute = (dispute) => {
         }),
         requestedAmount: Number(dispute.requested_amount ?? dispute.requested_compensation ?? dispute.final_compensation ?? 0),
         finalCompensation: Number(dispute.final_compensation ?? 0),
-        rental: dispute.rental ? {
-            ...dispute.rental,
-            tenant: dispute.rental.tenant ? normalizeUser(dispute.rental.tenant) : null,
-            owner: dispute.rental.owner ? normalizeUser(dispute.rental.owner) : null,
+        adminDecision: enumValue(dispute.admin_decision),
+        tenantClaim: dispute.tenant_claim || '',
+        ownerNotes: dispute.owner_notes || dispute.handover?.final_notes || '',
+        adminNote: dispute.admin_note || '',
+        raisedBy: dispute.raised_by ? normalizeUser(dispute.raised_by) : null,
+        resolvedBy: dispute.resolved_by || null,
+        resolvedAt: dispute.resolved_at || '',
+        handover: dispute.handover || null,
+        reports,
+        rental: rental ? {
+            ...rental,
+            tenant: rental.tenant ? normalizeUser(rental.tenant) : null,
+            owner: rental.owner ? normalizeUser(rental.owner) : null,
         } : null,
     };
 };

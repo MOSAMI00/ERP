@@ -1,6 +1,6 @@
 import { AlertCircle, Clock, CheckCircle } from 'lucide-react';
 
-export default function SummaryCards() {
+export default function SummaryCards({ summary = {} }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       <div className="bg-brand-card rounded-xl p-6 shadow-sm border border-brand-border flex items-center space-x-4 space-x-reverse relative overflow-hidden">
@@ -10,7 +10,7 @@ export default function SummaryCards() {
         </div>
         <div>
           <p className="text-brand-text-muted text-sm font-bold mb-1">نزاعات مفتوحة</p>
-          <p className="text-[32px] font-bold text-brand-text-primary leading-none">18</p>
+          <p className="text-[32px] font-bold text-brand-text-primary leading-none">{summary.open ?? 0}</p>
         </div>
       </div>
       <div className="bg-brand-card rounded-xl p-6 shadow-sm border border-brand-border flex items-center space-x-4 space-x-reverse relative overflow-hidden">
@@ -20,7 +20,7 @@ export default function SummaryCards() {
         </div>
         <div>
           <p className="text-brand-text-muted text-sm font-bold mb-1">قيد المراجعة</p>
-          <p className="text-[32px] font-bold text-brand-text-primary leading-none">7</p>
+          <p className="text-[32px] font-bold text-brand-text-primary leading-none">{summary.under_review ?? 0}</p>
         </div>
       </div>
       <div className="bg-brand-card rounded-xl p-6 shadow-sm border border-brand-border flex items-center space-x-4 space-x-reverse relative overflow-hidden">
@@ -30,7 +30,7 @@ export default function SummaryCards() {
         </div>
         <div>
           <p className="text-brand-text-muted text-sm font-bold mb-1">نزاعات محلولة</p>
-          <p className="text-[32px] font-bold text-brand-text-primary leading-none">143</p>
+          <p className="text-[32px] font-bold text-brand-text-primary leading-none">{summary.resolved ?? 0}</p>
         </div>
       </div>
     </div>

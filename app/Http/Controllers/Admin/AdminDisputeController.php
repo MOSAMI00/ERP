@@ -20,14 +20,40 @@ class AdminDisputeController extends Controller
 
     public function index(Request $request)
     {
-        $disputes = Dispute::with(['rental.equipment', 'raisedBy'])
+        $disputes = Dispute::with([
+                'raisedBy',
+                'resolvedBy',
+                'handover',
+                'rental.equipment',
+                'rental.tenant',
+                'rental.owner',
+                'rental.handoverReports.images',
+            ])
             ->when($request->status, fn($q) => $q->where('status', $request->status))
+            ->when($request->search, function ($q, $search) {
+                $q->where(function ($query) use ($search) {
+                    $query->where('id', $search)
+                        ->orWhere('tenant_claim', 'like', "%{$search}%")
+                        ->orWhere('owner_notes', 'like', "%{$search}%")
+                        ->orWhereHas('rental.equipment', fn($equipment) => $equipment->where('name', 'like', "%{$search}%"))
+                        ->orWhereHas('rental.tenant', fn($tenant) => $tenant->where('full_name', 'like', "%{$search}%")->orWhere('email', 'like', "%{$search}%"))
+                        ->orWhereHas('rental.owner', fn($owner) => $owner->where('full_name', 'like', "%{$search}%")->orWhere('email', 'like', "%{$search}%"));
+                });
+            })
             ->latest()
-            ->paginate(20);
+            ->paginate(20)
+            ->withQueryString();
+
+        $summary = [
+            'open' => Dispute::where('status', DisputeStatus::Open->value)->count(),
+            'under_review' => Dispute::where('status', DisputeStatus::UnderReview->value)->count(),
+            'resolved' => Dispute::where('status', DisputeStatus::Resolved->value)->count(),
+        ];
 
         return Inertia::render('Admin/Disputes/Index', [
             'disputes' => $disputes,
-            'filters'  => $request->only('status'),
+            'summary' => $summary,
+            'filters'  => $request->only('status', 'search'),
         ]);
     }
 

@@ -1,9 +1,20 @@
+import { router } from '@inertiajs/react';
 import Badge from '../../../components/ui/Badge';
 import Button from '../../../components/ui/Button';
+import Pagination from '../../../components/ui/Pagination';
+import SearchInput from '../../../components/ui/SearchInput';
 import Select from '../../../components/ui/Select';
 import Table from '../../../components/ui/Table';
 
-export default function DisputesTable({ disputes, onOpenReview }) {
+export default function DisputesTable({ disputes, pagination, filters = {}, onOpenReview }) {
+  const requestFilters = (nextFilters = {}) => {
+    router.get(route('admin.disputes.index'), nextFilters, {
+      preserveState: true,
+      preserveScroll: true,
+      replace: true,
+    });
+  };
+
   const columns = [
     { key: 'id', label: 'ID' },
     { key: 'tenant', label: 'المستأجر' },
@@ -19,8 +30,23 @@ export default function DisputesTable({ disputes, onOpenReview }) {
     <div className="bg-brand-card rounded-xl shadow-sm border border-brand-border overflow-hidden">
       <div className="p-4 border-b border-brand-border bg-brand-content/50 flex justify-between items-center">
         <h3 className="text-lg font-bold text-brand-text-primary">قائمة النزاعات</h3>
-        <div className="flex space-x-2 space-x-reverse">
-          <Select className="border border-brand-border bg-white rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-brand-primary" placeholder="الحالة: الكل" options={[{ value: 'open', label: 'مفتوحة' }, { value: 'review', label: 'قيد المراجعة' }]} />
+        <div className="flex flex-wrap gap-2">
+          <SearchInput
+            value={filters.search ?? ''}
+            onChange={(event) => requestFilters({ ...filters, search: event.target.value || undefined })}
+            placeholder="بحث عن نزاع..."
+          />
+          <Select
+            value={filters.status ?? ''}
+            onChange={(event) => requestFilters({ ...filters, status: event.target.value || undefined })}
+            className="border border-brand-border bg-white rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-brand-primary"
+            placeholder="الحالة: الكل"
+            options={[
+              { value: 'open', label: 'مفتوحة' },
+              { value: 'under_review', label: 'قيد المراجعة' },
+              { value: 'resolved', label: 'محلولة' },
+            ]}
+          />
         </div>
       </div>
       <Table
@@ -51,6 +77,19 @@ export default function DisputesTable({ disputes, onOpenReview }) {
               </tr>
         )}
       />
+      <div className="px-6 py-4 border-t border-brand-border bg-brand-content text-sm text-brand-text-muted flex justify-between items-center">
+        <span>
+          عرض {pagination?.from ?? 0} إلى {pagination?.to ?? disputes.length} من {pagination?.total ?? disputes.length} نزاع
+        </span>
+        <Pagination
+          currentPage={pagination?.currentPage ?? 1}
+          totalPages={pagination?.lastPage ?? 1}
+          onPageChange={(page) => {
+            if (!pagination?.path) return;
+            router.get(pagination.path, { ...filters, page }, { preserveState: true, preserveScroll: true });
+          }}
+        />
+      </div>
     </div>
   );
 }

@@ -3,13 +3,13 @@ import { router, usePage } from '@inertiajs/react';
 import SummaryCards from './components/SummaryCards';
 import DisputesTable from './components/DisputesTable';
 import DisputeReviewPage from './components/DisputeReviewPage';
-import { asArray, normalizeDispute } from '../../../utils/pageData';
+import { asArray, normalizeDispute, paginator } from '../../../utils/pageData';
 
 export default function DisputesPage() {
   const { props } = usePage();
   const [selectedDispute, setSelectedDispute] = useState(null);
   const [decision, setDecision] = useState('accept');
-  const [adjustedAmount, setAdjustedAmount] = useState('50000');
+  const [adjustedAmount, setAdjustedAmount] = useState('');
   const disputes = asArray(props.disputes).map((dispute) => {
     const normalized = normalizeDispute(dispute);
     return {
@@ -18,13 +18,15 @@ export default function DisputesPage() {
       owner: normalized.rental?.owner?.name ?? '—',
       eq: normalized.rental?.equipment?.name ?? '—',
       amount: normalized.requestedAmount,
-      date: normalized.created_at ?? normalized.createdAt ?? '',
+      date: String(normalized.created_at ?? normalized.createdAt ?? '').slice(0, 10),
       statusColor: normalized.status === 'resolved' ? 'success' : normalized.status === 'under_review' ? 'warning' : 'danger',
     };
   });
 
   const openReview = (dispute) => {
     setSelectedDispute(dispute);
+    setDecision('accept');
+    setAdjustedAmount(String(dispute.finalCompensation || dispute.amount || ''));
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -63,8 +65,13 @@ export default function DisputesPage() {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
-      <SummaryCards />
-      <DisputesTable disputes={disputes} onOpenReview={openReview} />
+      <SummaryCards summary={props.summary} />
+      <DisputesTable
+        disputes={disputes}
+        pagination={paginator(props.disputes)}
+        filters={props.filters ?? {}}
+        onOpenReview={openReview}
+      />
     </div>
   );
 }
