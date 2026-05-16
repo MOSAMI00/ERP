@@ -35,11 +35,13 @@ class AdminPaymentController extends Controller
             )
             ->when(
                 $request->search,
-                fn($q) => $q->where('transaction_ref', 'like', "%{$request->search}%")
+                fn($q) => $q->where(fn ($searchQuery) => $searchQuery
+                    ->where('transaction_ref', 'like', "%{$request->search}%")
                     ->orWhereHas(
                         'payer',
                         fn($q) => $q->where('full_name', 'like', "%{$request->search}%")
                     )
+                )
             )
             ->latest()
             ->paginate(20);

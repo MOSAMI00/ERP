@@ -23,8 +23,10 @@ class AdminEquipmentController extends Controller
             ->when($request->search, function ($query) use ($request) {
                 $term = "%{$request->search}%";
 
-                $query->where('name', 'like', $term)
-                    ->orWhereHas('owner', fn ($q) => $q->where('full_name', 'like', $term));
+                $query->where(fn ($q) => $q
+                    ->where('name', 'like', $term)
+                    ->orWhereHas('owner', fn ($ownerQuery) => $ownerQuery->where('full_name', 'like', $term))
+                );
             })
             ->latest()
             ->paginate(20)

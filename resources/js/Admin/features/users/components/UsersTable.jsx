@@ -1,4 +1,4 @@
-import { Eye, AlertTriangle, PauseCircle, Ban } from 'lucide-react';
+import { Eye, PauseCircle, Ban, CheckCircle } from 'lucide-react';
 import { router } from '@inertiajs/react';
 import Badge from '../../../components/ui/Badge';
 import Button from '../../../components/ui/Button';
@@ -51,15 +51,20 @@ export default function UsersTable({ users, pagination, onOpenDrawer, onOpenActi
                     <Button unstyled onClick={() => onOpenDrawer(user)} className="p-1.5 text-brand-text-muted hover:text-brand-info hover:bg-brand-info/10 rounded-lg transition-colors" title="عرض">
                       <Eye size={18} />
                     </Button>
-                    <Button unstyled onClick={() => onOpenActionModal(user, 'warn')} className="p-1.5 text-brand-text-muted hover:text-brand-warning hover:bg-brand-warning/10 rounded-lg transition-colors" title="تحذير">
-                      <AlertTriangle size={18} />
-                    </Button>
-                    <Button unstyled onClick={() => onOpenActionModal(user, 'suspend')} className="p-1.5 text-brand-text-muted hover:text-brand-warning hover:bg-brand-warning/10 rounded-lg transition-colors" title="تعليق">
-                      <PauseCircle size={18} />
-                    </Button>
-                    <Button unstyled onClick={() => onOpenActionModal(user, 'ban')} className="p-1.5 text-brand-text-muted hover:text-brand-danger hover:bg-brand-danger/10 rounded-lg transition-colors" title="حظر">
-                      <Ban size={18} />
-                    </Button>
+                    {user.status !== 'active' ? (
+                      <Button unstyled onClick={() => onOpenActionModal(user, 'activate')} className="p-1.5 text-brand-text-muted hover:text-brand-success hover:bg-brand-success/10 rounded-lg transition-colors" title="تفعيل">
+                        <CheckCircle size={18} />
+                      </Button>
+                    ) : (
+                      <Button unstyled onClick={() => onOpenActionModal(user, 'suspend')} className="p-1.5 text-brand-text-muted hover:text-brand-warning hover:bg-brand-warning/10 rounded-lg transition-colors" title="تعليق">
+                        <PauseCircle size={18} />
+                      </Button>
+                    )}
+                    {user.status !== 'banned' && (
+                      <Button unstyled onClick={() => onOpenActionModal(user, 'ban')} className="p-1.5 text-brand-text-muted hover:text-brand-danger hover:bg-brand-danger/10 rounded-lg transition-colors" title="حظر">
+                        <Ban size={18} />
+                      </Button>
+                    )}
                   </div>
                 </td>
               </tr>

@@ -18,8 +18,10 @@ class AdminUserController extends Controller
     public function index(Request $request)
     {
         $users = User::query()
-            ->when($request->search, fn($q) => $q->where('full_name', 'like', "%{$request->search}%")
-                ->orWhere('email', 'like', "%{$request->search}%"))
+            ->when($request->search, fn($q) => $q->where(fn ($searchQuery) => $searchQuery
+                ->where('full_name', 'like', "%{$request->search}%")
+                ->orWhere('email', 'like', "%{$request->search}%")
+            ))
             ->when($request->status, fn($q) => $q->where('status', $request->status))
             ->when($request->type, fn($q) => $q->where('type', $request->type))
             ->latest()

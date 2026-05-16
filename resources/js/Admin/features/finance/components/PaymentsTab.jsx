@@ -1,4 +1,4 @@
-import { Calendar, StopCircle } from 'lucide-react';
+import { Calendar, CheckCircle, RotateCcw, StopCircle } from 'lucide-react';
 import { router } from '@inertiajs/react';
 import Badge from '../../../components/ui/Badge';
 import Button from '../../../components/ui/Button';
@@ -12,6 +12,30 @@ export default function PaymentsTab({ payments = [], filters = {} }) {
       preserveState: true,
       replace: true,
     });
+  };
+
+  const approvePayment = (payment) => {
+    router.post(route('admin.payments.approve', payment.id), {}, { preserveScroll: true });
+  };
+
+  const rejectPayment = (payment) => {
+    const reason = window.prompt('اكتب سبب رفض/إيقاف الدفع:');
+    if (!reason) return;
+
+    router.post(route('admin.payments.reject', payment.id), { rejection_reason: reason }, { preserveScroll: true });
+  };
+
+  const refundPayment = (payment) => {
+    const amount = window.prompt('اكتب مبلغ الاسترداد:', String(payment.amount ?? ''));
+    if (!amount) return;
+
+    const reason = window.prompt('اكتب سبب الاسترداد:');
+    if (!reason) return;
+
+    router.post(route('admin.payments.refund', payment.id), {
+      refund_amount: amount,
+      refund_reason: reason,
+    }, { preserveScroll: true });
   };
 
   const columns = [
@@ -48,12 +72,30 @@ export default function PaymentsTab({ payments = [], filters = {} }) {
                 <td className="px-6 py-4 font-medium">{Number(payment.rental?.insurance_amount ?? 0).toLocaleString()} ر.ي</td>
                 <td className="px-6 py-4 text-brand-text-muted" dir="ltr">{payment.created_at ?? ''}</td>
                 <td className="px-6 py-4 text-center">
-                  <Badge unstyled className="px-2.5 py-1 bg-brand-success/10 text-brand-success rounded-md text-xs font-bold">{payment.status}</Badge>
+                  <Badge unstyled className={`px-2.5 py-1 rounded-md text-xs font-bold ${
+                    payment.status === 'paid' ? 'bg-brand-success/10 text-brand-success' :
+                    payment.status === 'pending' || payment.status === 'processing' ? 'bg-brand-warning/10 text-brand-warning' :
+                    'bg-brand-danger/10 text-brand-danger'
+                  }`}>{payment.status}</Badge>
                 </td>
                 <td className="px-6 py-4 text-center">
-                  <Button unstyled onClick={() => router.post(route('admin.payments.reject', payment.id), { rejection_reason: 'Rejected by admin.' }, { preserveScroll: true })} className="text-brand-danger hover:bg-brand-danger/10 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors inline-flex items-center">
-                    <StopCircle size={14} className="ml-1" /> إيقاف/مراجعة
-                  </Button>
+                  <div className="flex flex-wrap items-center justify-center gap-2">
+                    {payment.status !== 'paid' && (
+                      <Button unstyled onClick={() => approvePayment(payment)} className="text-brand-success hover:bg-brand-success/10 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors inline-flex items-center">
+                        <CheckCircle size={14} className="ml-1" /> اعتماد
+                      </Button>
+                    )}
+                    {payment.status === 'paid' && (
+                      <Button unstyled onClick={() => refundPayment(payment)} className="text-brand-info hover:bg-brand-info/10 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors inline-flex items-center">
+                        <RotateCcw size={14} className="ml-1" /> استرداد
+                      </Button>
+                    )}
+                    {payment.status !== 'failed' && payment.status !== 'refunded' && (
+                      <Button unstyled onClick={() => rejectPayment(payment)} className="text-brand-danger hover:bg-brand-danger/10 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors inline-flex items-center">
+                        <StopCircle size={14} className="ml-1" /> رفض
+                      </Button>
+                    )}
+                  </div>
                 </td>
               </tr>
         )}

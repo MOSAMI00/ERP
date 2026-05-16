@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { usePage } from '@inertiajs/react';
+import { router, usePage } from '@inertiajs/react';
 import EquipmentFilterBar from './components/EquipmentFilterBar';
 import EquipmentGrid from './components/EquipmentGrid';
 import EquipmentList from './components/EquipmentList';
@@ -19,6 +19,21 @@ export default function EquipmentPage() {
     drawer.open(equipment);
   };
 
+  const toggleVisibility = (item) => {
+    router.post(route('admin.equipment.toggle-visibility', item.id), {}, {
+      preserveScroll: true,
+    });
+  };
+
+  const deleteEquipment = (item) => {
+    if (!confirm(`هل أنت متأكد من حذف "${item.name}"؟`)) return;
+
+    router.delete(route('admin.equipment.destroy', item.id), {
+      preserveScroll: true,
+      onSuccess: drawer.close,
+    });
+  };
+
   const nextImage = () => {
     if (drawer.selectedItem) {
       setCurrentImageIndex((prev) => (prev + 1) % drawer.selectedItem.images.length);
@@ -35,9 +50,9 @@ export default function EquipmentPage() {
     <div className="space-y-6 animate-in fade-in duration-500 relative min-w-0">
       <EquipmentFilterBar viewMode={viewMode} setViewMode={setViewMode} />
       {viewMode === 'grid' ? (
-        <EquipmentGrid equipment={equipment} onOpenDrawer={openDrawer} />
+        <EquipmentGrid equipment={equipment} onOpenDrawer={openDrawer} onToggleVisibility={toggleVisibility} onDelete={deleteEquipment} />
       ) : (
-        <EquipmentList equipment={equipment} onOpenDrawer={openDrawer} />
+        <EquipmentList equipment={equipment} onOpenDrawer={openDrawer} onToggleVisibility={toggleVisibility} onDelete={deleteEquipment} />
       )}
       <EquipmentDrawer
         isOpen={drawer.isOpen}
@@ -46,6 +61,8 @@ export default function EquipmentPage() {
         onClose={drawer.close}
         nextImage={nextImage}
         prevImage={prevImage}
+        onToggleVisibility={toggleVisibility}
+        onDelete={deleteEquipment}
       />
     </div>
   );

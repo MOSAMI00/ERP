@@ -1,5 +1,4 @@
 import { Star, Eye, Trash2, Flag } from 'lucide-react';
-import { router } from '@inertiajs/react';
 import Badge from '../../../components/ui/Badge';
 import Button from '../../../components/ui/Button';
 import Table from '../../../components/ui/Table';
@@ -10,7 +9,7 @@ const renderStars = (rating) => {
   ));
 };
 
-export default function ReviewsTable({ reviews, onOpenDrawer }) {
+export default function ReviewsTable({ reviews, onOpenDrawer, onHide, onRestore, onDelete }) {
   const columns = [
     { key: 'id', label: '#' },
     { key: 'rater', label: 'المُقيِّم' },
@@ -61,10 +60,10 @@ export default function ReviewsTable({ reviews, onOpenDrawer }) {
                     <Button unstyled onClick={() => onOpenDrawer(rev)} className="p-1.5 text-brand-text-muted hover:text-brand-info hover:bg-brand-info/10 rounded-lg transition-colors" title="عرض التفاصيل">
                       <Eye size={18} />
                     </Button>
-                    <Button unstyled onClick={() => router.delete(route('admin.reviews.destroy', rev.id), { preserveScroll: true })} className="p-1.5 text-brand-text-muted hover:text-brand-danger hover:bg-brand-danger/10 rounded-lg transition-colors" title="حذف التقييم">
+                    <Button unstyled onClick={() => onDelete(rev)} className="p-1.5 text-brand-text-muted hover:text-brand-danger hover:bg-brand-danger/10 rounded-lg transition-colors" title="حذف التقييم">
                       <Trash2 size={18} />
                     </Button>
-                    <Button unstyled onClick={() => router.post(route('admin.reviews.hide', rev.id), {}, { preserveScroll: true })} className="p-1.5 text-brand-text-muted hover:text-brand-warning hover:bg-brand-warning/10 rounded-lg transition-colors" title="إبلاغ">
+                    <Button unstyled onClick={() => rev.rawStatus === 'hidden' ? onRestore(rev) : onHide(rev)} className="p-1.5 text-brand-text-muted hover:text-brand-warning hover:bg-brand-warning/10 rounded-lg transition-colors" title={rev.rawStatus === 'hidden' ? 'استرجاع' : 'إخفاء'}>
                       <Flag size={18} />
                     </Button>
                   </div>

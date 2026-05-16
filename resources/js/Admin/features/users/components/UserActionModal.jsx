@@ -1,4 +1,4 @@
-import { X, AlertTriangle, PauseCircle, Ban } from 'lucide-react';
+import { X, AlertTriangle, PauseCircle, Ban, CheckCircle } from 'lucide-react';
 import { useForm } from '@inertiajs/react';
 import Button from '../../../components/ui/Button';
 import Modal from '../../../components/ui/Modal';
@@ -25,6 +25,14 @@ export default function UserActionModal({ isOpen, user, actionType, setActionTyp
         preserveScroll: true,
         onSuccess: onClose,
       });
+      return;
+    }
+
+    if (actionType === 'activate') {
+      form.post(route('admin.users.activate', user.id), {
+        preserveScroll: true,
+        onSuccess: onClose,
+      });
     }
   };
 
@@ -38,7 +46,8 @@ export default function UserActionModal({ isOpen, user, actionType, setActionTyp
             {actionType === 'warn' && <AlertTriangle className="text-brand-warning ml-2" />}
             {actionType === 'suspend' && <PauseCircle className="text-brand-warning ml-2" />}
             {actionType === 'ban' && <Ban className="text-brand-danger ml-2" />}
-            {actionType === 'warn' ? 'تحذير' : actionType === 'suspend' ? 'تعليق مؤقت' : 'حظر دائم'} للمستخدم
+            {actionType === 'activate' && <CheckCircle className="text-brand-success ml-2" />}
+            {actionType === 'warn' ? 'تحذير' : actionType === 'suspend' ? 'تعليق مؤقت' : actionType === 'activate' ? 'إعادة تفعيل' : 'حظر دائم'} للمستخدم
           </h3>
           <Button unstyled onClick={onClose} className="text-brand-text-muted hover:text-brand-danger">
             <X size={20} />
@@ -57,6 +66,7 @@ export default function UserActionModal({ isOpen, user, actionType, setActionTyp
           <Button unstyled onClick={handleSubmit} disabled={actionType === 'warn' || form.processing} className={`px-5 py-2.5 text-white font-bold text-sm rounded-lg transition-colors shadow-sm
             ${actionType === 'warn' ? 'bg-brand-warning hover:bg-brand-warning/90' : 
               actionType === 'suspend' ? 'bg-brand-warning hover:bg-brand-warning/90' : 
+              actionType === 'activate' ? 'bg-brand-success hover:bg-brand-success/90' :
               'bg-brand-danger hover:bg-brand-danger/90'}`}
           >
             تأكيد الإجراء
@@ -88,17 +98,23 @@ export default function UserActionModal({ isOpen, user, actionType, setActionTyp
               <input type="radio" name="actionType" checked={actionType === 'ban'} onChange={() => setActionType('ban')} className="text-brand-danger focus:ring-brand-danger" />
               <span className="mr-2 text-sm">حظر دائم</span>
             </label>
+            {user.status !== 'active' && (
+              <label className="flex items-center">
+                <input type="radio" name="actionType" checked={actionType === 'activate'} onChange={() => setActionType('activate')} className="text-brand-success focus:ring-brand-success" />
+                <span className="mr-2 text-sm">تفعيل</span>
+              </label>
+            )}
           </div>
         </div>
         
         <div>
-          <label className="block text-sm font-bold text-brand-text-primary mb-2">السبب <span className="text-brand-danger">*</span></label>
+          <label className="block text-sm font-bold text-brand-text-primary mb-2">السبب {actionType === 'ban' && <span className="text-brand-danger">*</span>}</label>
           <textarea 
             className="w-full border border-brand-border bg-brand-content rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary h-24 resize-none"
             placeholder="اكتب سبب الإجراء بالتفصيل..."
             value={form.data.ban_reason}
             onChange={(event) => form.setData('ban_reason', event.target.value)}
-            required
+            required={actionType === 'ban'}
           ></textarea>
           {form.errors.ban_reason && <p className="mt-1 text-xs text-brand-danger">{form.errors.ban_reason}</p>}
         </div>

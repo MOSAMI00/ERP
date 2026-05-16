@@ -1,9 +1,9 @@
-import { Eye, Edit, Trash2 } from 'lucide-react';
+import { Eye, EyeOff, Trash2 } from 'lucide-react';
 import Badge from '../../../components/ui/Badge';
 import Button from '../../../components/ui/Button';
 import Table from '../../../components/ui/Table';
 
-export default function EquipmentList({ equipment, onOpenDrawer }) {
+export default function EquipmentList({ equipment, onOpenDrawer, onToggleVisibility, onDelete }) {
   const columns = [
     { key: 'equipment', label: 'المعدة' },
     { key: 'meta', label: 'الموقع والتصنيف' },
@@ -44,10 +44,10 @@ export default function EquipmentList({ equipment, onOpenDrawer }) {
                   <Button unstyled onClick={() => onOpenDrawer(item)} className="p-1.5 text-brand-info hover:bg-brand-info/10 rounded-lg transition-colors">
                     <Eye size={18} />
                   </Button>
-                  <Button unstyled className="p-1.5 text-brand-primary hover:bg-brand-primary/10 rounded-lg transition-colors">
-                    <Edit size={18} />
+                  <Button unstyled onClick={() => onToggleVisibility(item)} className="p-1.5 text-brand-warning hover:bg-brand-warning/10 rounded-lg transition-colors" title={item.status === 'hidden' ? 'إظهار' : 'إخفاء'}>
+                    <EyeOff size={18} />
                   </Button>
-                  <Button unstyled className="p-1.5 text-brand-danger hover:bg-brand-danger/10 rounded-lg transition-colors">
+                  <Button unstyled onClick={() => onDelete(item)} className="p-1.5 text-brand-danger hover:bg-brand-danger/10 rounded-lg transition-colors" title="حذف">
                     <Trash2 size={18} />
                   </Button>
                 </div>

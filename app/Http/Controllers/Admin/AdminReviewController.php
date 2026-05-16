@@ -28,13 +28,17 @@ class AdminReviewController extends Controller
             )
             ->when(
                 $request->search,
-                fn($q) => $q->whereHas(
-                    'reviewer',
-                    fn($q) => $q->where('full_name', 'like', "%{$request->search}%")
+                fn($q) => $q->where(fn ($searchQuery) => $searchQuery
+                    ->where('review_text', 'like', "%{$request->search}%")
+                    ->orWhereHas(
+                        'reviewer',
+                        fn($reviewerQuery) => $reviewerQuery->where('full_name', 'like', "%{$request->search}%")
+                    )
                 )
             )
             ->latest()
-            ->paginate(20);
+            ->paginate(20)
+            ->withQueryString();
 
         return Inertia::render('Admin/Reviews/Index', [
             'reviews' => $reviews,

@@ -1,11 +1,12 @@
 export const rentalsTabs = [
   { id: 'all', label: 'الكل', count: 1240 },
-  { id: 'pending', label: 'Pending', count: 45 },
-  { id: 'confirmed', label: 'Confirmed', count: 89 },
-  { id: 'inUse', label: 'In Use', count: 230 },
-  { id: 'completed', label: 'Completed', count: 850 },
-  { id: 'cancelled', label: 'Cancelled', count: 18 },
-  { id: 'disputed', label: 'Disputed', count: 8 },
+  { id: 'pending', label: 'قيد المراجعة', count: 45 },
+  { id: 'confirmed', label: 'بانتظار الدفع', count: 89 },
+  { id: 'paid', label: 'مدفوع', count: 0 },
+  { id: 'in_use', label: 'قيد الاستخدام', count: 230 },
+  { id: 'completed', label: 'مكتمل', count: 850 },
+  { id: 'cancelled', label: 'ملغي', count: 18 },
+  { id: 'disputed', label: 'نزاع', count: 8 },
 ];
 
 export const rentalsData = [

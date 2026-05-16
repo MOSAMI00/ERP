@@ -1,8 +1,8 @@
-import { MapPin, Tag, User, Eye, Edit, Trash2 } from 'lucide-react';
+import { MapPin, Tag, User, Eye, EyeOff, Trash2 } from 'lucide-react';
 import Badge from '../../../components/ui/Badge';
 import Button from '../../../components/ui/Button';
 
-export default function EquipmentGrid({ equipment, onOpenDrawer }) {
+export default function EquipmentGrid({ equipment, onOpenDrawer, onToggleVisibility, onDelete }) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-6 pb-8">
       {equipment.map(item => (
@@ -83,14 +83,16 @@ export default function EquipmentGrid({ equipment, onOpenDrawer }) {
                 </Button>
                 <Button
                   unstyled
-                  className="p-2 text-brand-primary hover:bg-brand-primary/10 rounded-lg transition-all" 
-                  title="تعديل"
+                  onClick={() => onToggleVisibility(item)}
+                  className="p-2 text-brand-warning hover:bg-brand-warning/10 rounded-lg transition-all" 
+                  title={item.status === 'hidden' ? 'إظهار' : 'إخفاء'}
                 >
-                  <Edit size={20} />
+                  <EyeOff size={20} />
                 </Button>
               </div>
               <Button
                 unstyled
+                onClick={() => onDelete(item)}
                 className="p-2 text-brand-danger hover:bg-brand-danger/10 rounded-lg transition-all" 
                 title="حذف"
               >

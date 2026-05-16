@@ -1,4 +1,4 @@
-import { Star, ChevronLeft, CheckCircle, Trash2, Flag } from 'lucide-react';
+import { Star, ChevronLeft, CheckCircle, Trash2 } from 'lucide-react';
 import Button from '../../../components/ui/Button';
 import Drawer from '../../../components/ui/Drawer';
 
@@ -8,7 +8,7 @@ const renderStars = (rating) => {
   ));
 };
 
-export default function ReviewDrawer({ isOpen, review, onClose }) {
+export default function ReviewDrawer({ isOpen, review, onClose, onHide, onRestore, onDelete }) {
   return (
     <Drawer
       isOpen={isOpen}
@@ -16,15 +16,12 @@ export default function ReviewDrawer({ isOpen, review, onClose }) {
       title="تفاصيل التقييم"
       bodyClassName="flex-1 overflow-y-auto p-6 space-y-6"
       footer={review && (
-        <div className="p-4 border-t border-brand-border bg-white flex space-x-3 space-x-reverse">
-          <Button unstyled className="flex-1 py-2.5 rounded-lg font-bold text-sm bg-brand-success/10 text-brand-success hover:bg-brand-success hover:text-white transition-colors border border-brand-success/20 flex items-center justify-center">
-            <CheckCircle size={18} className="ml-2" /> إبقاء التقييم
+        <div className="p-4 border-t border-brand-border bg-white flex flex-wrap gap-3">
+          <Button unstyled onClick={() => review.rawStatus === 'hidden' ? onRestore(review) : onHide(review)} className="flex-1 min-w-32 py-2.5 rounded-lg font-bold text-sm bg-brand-success/10 text-brand-success hover:bg-brand-success hover:text-white transition-colors border border-brand-success/20 flex items-center justify-center">
+            <CheckCircle size={18} className="ml-2" /> {review.rawStatus === 'hidden' ? 'استرجاع التقييم' : 'إخفاء التقييم'}
           </Button>
-          <Button unstyled className="flex-1 py-2.5 rounded-lg font-bold text-sm bg-brand-danger/10 text-brand-danger hover:bg-brand-danger hover:text-white transition-colors border border-brand-danger/20 flex items-center justify-center">
+          <Button unstyled onClick={() => onDelete(review)} className="flex-1 min-w-32 py-2.5 rounded-lg font-bold text-sm bg-brand-danger/10 text-brand-danger hover:bg-brand-danger hover:text-white transition-colors border border-brand-danger/20 flex items-center justify-center">
             <Trash2 size={18} className="ml-2" /> حذف
-          </Button>
-          <Button unstyled className="flex-1 py-2.5 rounded-lg font-bold text-sm bg-brand-warning/10 text-brand-warning hover:bg-brand-warning hover:text-white transition-colors border border-brand-warning/20 flex items-center justify-center">
-            <Flag size={18} className="ml-2" /> إبلاغ
           </Button>
         </div>
       )}

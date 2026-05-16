@@ -1,23 +1,21 @@
-import { ChevronRight, ChevronLeft, EyeOff, Edit, Trash2 } from 'lucide-react';
+import { ChevronRight, ChevronLeft, EyeOff, Eye, Trash2 } from 'lucide-react';
 import Badge from '../../../components/ui/Badge';
 import Button from '../../../components/ui/Button';
 import Drawer from '../../../components/ui/Drawer';
 
-export default function EquipmentDrawer({ isOpen, equipment, currentImageIndex, onClose, nextImage, prevImage }) {
+export default function EquipmentDrawer({ isOpen, equipment, currentImageIndex, onClose, nextImage, prevImage, onToggleVisibility, onDelete }) {
   return (
     <Drawer
       isOpen={isOpen}
       onClose={onClose}
       title="تفاصيل المعدة"
       footer={equipment && (
-        <div className="p-4 border-t border-brand-border bg-white flex space-x-3 space-x-reverse">
-          <Button unstyled className="flex-1 py-2.5 rounded-lg font-bold text-sm bg-brand-warning/10 text-brand-warning hover:bg-brand-warning hover:text-white transition-colors border border-brand-warning/20 flex items-center justify-center">
-            <EyeOff size={18} className="ml-2" /> إخفاء المعدة
+        <div className="p-4 border-t border-brand-border bg-white flex flex-wrap gap-3">
+          <Button unstyled onClick={() => onToggleVisibility(equipment)} className="flex-1 min-w-32 py-2.5 rounded-lg font-bold text-sm bg-brand-warning/10 text-brand-warning hover:bg-brand-warning hover:text-white transition-colors border border-brand-warning/20 flex items-center justify-center">
+            {equipment.status === 'hidden' ? <Eye size={18} className="ml-2" /> : <EyeOff size={18} className="ml-2" />}
+            {equipment.status === 'hidden' ? 'إظهار المعدة' : 'إخفاء المعدة'}
           </Button>
-          <Button unstyled className="flex-1 py-2.5 rounded-lg font-bold text-sm bg-brand-primary/10 text-brand-primary hover:bg-brand-primary hover:text-white transition-colors border border-brand-primary/20 flex items-center justify-center">
-            <Edit size={18} className="ml-2" /> تعديل
-          </Button>
-          <Button unstyled className="flex-1 py-2.5 rounded-lg font-bold text-sm bg-brand-danger/10 text-brand-danger hover:bg-brand-danger hover:text-white transition-colors border border-brand-danger/20 flex items-center justify-center">
+          <Button unstyled onClick={() => onDelete(equipment)} className="flex-1 min-w-32 py-2.5 rounded-lg font-bold text-sm bg-brand-danger/10 text-brand-danger hover:bg-brand-danger hover:text-white transition-colors border border-brand-danger/20 flex items-center justify-center">
             <Trash2 size={18} className="ml-2" /> حذف
           </Button>
         </div>

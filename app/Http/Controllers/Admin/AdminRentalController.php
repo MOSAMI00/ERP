@@ -25,9 +25,11 @@ class AdminRentalController extends Controller
             ->when($request->search, function ($query) use ($request) {
                 $term = "%{$request->search}%";
 
-                $query->whereHas('tenant', fn ($q) => $q->where('full_name', 'like', $term))
+                $query->where(fn ($q) => $q
+                    ->whereHas('tenant', fn ($tenantQuery) => $tenantQuery->where('full_name', 'like', $term))
                     ->orWhereHas('owner', fn ($q) => $q->where('full_name', 'like', $term))
-                    ->orWhereHas('equipment', fn ($q) => $q->where('name', 'like', $term));
+                    ->orWhereHas('equipment', fn ($equipmentQuery) => $equipmentQuery->where('name', 'like', $term))
+                );
             })
             ->latest()
             ->paginate(20)

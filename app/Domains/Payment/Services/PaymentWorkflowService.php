@@ -148,7 +148,7 @@ class PaymentWorkflowService
             $payment = Payment::query()->whereKey($payment->id)->lockForUpdate()->firstOrFail();
 
             // Idempotency guard — already approved
-            if ($payment->status === PaymentStatus::Paid->value) {
+            if (($payment->status?->value ?? $payment->status) === PaymentStatus::Paid->value) {
                 return $payment;
             }
 
@@ -157,7 +157,11 @@ class PaymentWorkflowService
             $this->updatePaymentStatus->handle($payment, PaymentStatus::Paid);
             $payment->update(['paid_at' => now()]);
 
-            if ($rental && $payment->type === PaymentType::Rental->value && $rental->status === RentalStatus::Confirmed->value) {
+            if (
+                $rental &&
+                ($payment->type?->value ?? $payment->type) === PaymentType::Rental->value &&
+                ($rental->status?->value ?? $rental->status) === RentalStatus::Confirmed->value
+            ) {
                 $this->updateRentalStatus->handle($rental, RentalStatus::Paid);
             }
 

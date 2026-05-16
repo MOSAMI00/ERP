@@ -11,16 +11,21 @@ export default function UserDrawer({ isOpen, user, onClose, onOpenActionModal })
       title="تفاصيل المستخدم"
       bodyClassName="flex-1 overflow-y-auto p-6 space-y-8"
       footer={user && (
-        <div className="p-4 border-t border-brand-border bg-white flex space-x-3 space-x-reverse">
-          <Button unstyled onClick={() => onOpenActionModal(user, 'warn')} className="flex-1 py-2.5 rounded-lg font-bold text-sm bg-brand-warning/10 text-brand-warning hover:bg-brand-warning hover:text-white transition-colors border border-brand-warning/20">
-            تحذير
-          </Button>
-          <Button unstyled onClick={() => onOpenActionModal(user, 'suspend')} className="flex-1 py-2.5 rounded-lg font-bold text-sm bg-brand-warning/10 text-brand-warning hover:bg-brand-warning hover:text-white transition-colors border border-brand-warning/20">
-            تعليق
-          </Button>
-          <Button unstyled onClick={() => onOpenActionModal(user, 'ban')} className="flex-1 py-2.5 rounded-lg font-bold text-sm bg-brand-danger/10 text-brand-danger hover:bg-brand-danger hover:text-white transition-colors border border-brand-danger/20">
-            حظر
-          </Button>
+        <div className="p-4 border-t border-brand-border bg-white flex flex-wrap gap-3">
+          {user.status !== 'active' ? (
+            <Button unstyled onClick={() => onOpenActionModal(user, 'activate')} className="flex-1 min-w-32 py-2.5 rounded-lg font-bold text-sm bg-brand-success/10 text-brand-success hover:bg-brand-success hover:text-white transition-colors border border-brand-success/20">
+              تفعيل
+            </Button>
+          ) : (
+            <Button unstyled onClick={() => onOpenActionModal(user, 'suspend')} className="flex-1 min-w-32 py-2.5 rounded-lg font-bold text-sm bg-brand-warning/10 text-brand-warning hover:bg-brand-warning hover:text-white transition-colors border border-brand-warning/20">
+              تعليق
+            </Button>
+          )}
+          {user.status !== 'banned' && (
+            <Button unstyled onClick={() => onOpenActionModal(user, 'ban')} className="flex-1 min-w-32 py-2.5 rounded-lg font-bold text-sm bg-brand-danger/10 text-brand-danger hover:bg-brand-danger hover:text-white transition-colors border border-brand-danger/20">
+              حظر
+            </Button>
+          )}
         </div>
       )}
     >

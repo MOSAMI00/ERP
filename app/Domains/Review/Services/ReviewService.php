@@ -13,6 +13,7 @@ use App\Shared\Audit\AuditLogService;
 use App\Models\Equipment;
 use App\Models\RentalOperation;
 use App\Models\Review;
+use App\Models\Admin;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
@@ -39,7 +40,7 @@ class ReviewService
         });
     }
 
-    public function hideReview(Review $review, User $admin): Review
+    public function hideReview(Review $review, Admin $admin): Review
     {
         DB::transaction(function () use ($review, $admin) {
             ($this->updateStatus)($review, ReviewStatus::Hidden);
@@ -50,7 +51,7 @@ class ReviewService
         return $review->refresh();
     }
 
-    public function restoreReview(Review $review, User $admin): Review
+    public function restoreReview(Review $review, Admin $admin): Review
     {
         DB::transaction(function () use ($review, $admin) {
             ($this->updateStatus)($review, ReviewStatus::Visible);
@@ -61,7 +62,7 @@ class ReviewService
         return $review->refresh();
     }
 
-    public function deleteReview(Review $review, User $admin): void
+    public function deleteReview(Review $review, Admin $admin): void
     {
         DB::transaction(function () use ($review, $admin) {
             $targetType = $review->target_type;
