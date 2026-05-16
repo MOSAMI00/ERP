@@ -257,8 +257,12 @@ Route::middleware(['auth'])->group(function () {
         })->name('delivery');
         Route::get('/insurance', function () { return Inertia::render('Owner/Insurance/InsurancePage', ['rentals' => request()->user()->rentalsAsOwner()->with(['equipment', 'payments'])->latest()->get()]); })->name('insurance');
         Route::get('/earnings', function () {
-            $rentalIds = request()->user()->rentalsAsOwner()->pluck('id');
-            return Inertia::render('Owner/Earnings/EarningsPage', ['payments' => PaymentModel::whereIn('rental_op_id', $rentalIds)->with('rental.equipment')->latest()->get()]);
+            $user = request()->user();
+            $rentalIds = $user->rentalsAsOwner()->pluck('id');
+            return Inertia::render('Owner/Earnings/EarningsPage', [
+                'payments' => PaymentModel::whereIn('rental_op_id', $rentalIds)->with('rental.equipment')->latest()->get(),
+                'payment_methods' => $user->paymentMethods()->latest()->get(),
+            ]);
         })->name('earnings');
         Route::get('/contracts', function () {
             $rentalIds = request()->user()->rentalsAsOwner()->pluck('id');

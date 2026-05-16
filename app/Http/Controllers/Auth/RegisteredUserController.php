@@ -23,12 +23,13 @@ class RegisteredUserController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
-            'full_name'    => ['required', 'string', 'max:255'],
-            'phone'        => ['required', 'string', 'max:30', 'unique:users,phone'],
-            'email'        => ['nullable', 'string', 'lowercase', 'email', 'max:255', 'unique:users,email'],
-            'type'         => ['required', 'in:tenant,owner'],
-            'governorate'  => ['required', 'string', 'max:255'],
-            'password'     => ['required', 'confirmed', Rules\Password::defaults()],
+            'full_name'     => ['required', 'string', 'max:255'],
+            'phone'         => ['required', 'string', 'max:30', 'unique:users,phone'],
+            'email'         => ['nullable', 'string', 'lowercase', 'email', 'max:255', 'unique:users,email'],
+            'type'          => ['required', 'in:tenant,owner'],
+            'governorate'   => ['required', 'string', 'max:255'],
+            'password'      => ['required', 'confirmed', Rules\Password::defaults()],
+            'paymentMethod' => ['nullable', 'string', 'max:255'],
         ]);
 
         // Normalise phone to digits only
@@ -45,6 +46,20 @@ class RegisteredUserController extends Controller
             'governorate'   => $request->governorate,
             'password_hash' => Hash::make($request->password),
         ]);
+
+        // Save payment method if owner
+        if ($user->type === 'owner' && $request->paymentMethod) {
+            $type = match ($request->paymentMethod) {
+                'محفظة إلكترونية' => 'e_wallet',
+                default => 'bank_account',
+            };
+
+            \App\Models\UserPaymentMethod::create([
+                'user_id' => $user->id,
+                'type' => $type,
+                'is_default' => true,
+            ]);
+        }
 
         event(new Registered($user));
 

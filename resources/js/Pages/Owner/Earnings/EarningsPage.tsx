@@ -13,7 +13,8 @@ const Earnings = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const { props } = usePage();
-  const user = props.auth?.user ?? null;
+  const user = (props.auth as any)?.user ?? null;
+  const paymentMethods = (props.payment_methods as any[]) ?? [];
   const { rentals } = useOwnerPageProps();
 
   useEffect(() => {
@@ -69,7 +70,10 @@ const Earnings = () => {
       />
 
       <div className="owner-grid-2">
-        <PayoutMethodCard onAddMethod={() => setIsModalOpen(true)} />
+        <PayoutMethodCard 
+          methods={paymentMethods}
+          onAddMethod={() => setIsModalOpen(true)} 
+        />
         <EarningsChart data={dataEarnings} isLoading={isLoading} />
       </div>
 

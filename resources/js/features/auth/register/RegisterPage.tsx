@@ -13,6 +13,7 @@ export function RegisterPage() {
     governorate: '',
     district: '',
     type: 'tenant',
+    paymentMethod: '',
   });
 
   const userType = form.data.type;
