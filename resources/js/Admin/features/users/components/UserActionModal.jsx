@@ -3,7 +3,6 @@ import { useForm } from '@inertiajs/react';
 import Button from '../../../components/ui/Button';
 import Modal from '../../../components/ui/Modal';
 import Select from '../../../components/ui/Select';
-import { route } from '../../../../inertia/routes';
 
 export default function UserActionModal({ isOpen, user, actionType, setActionType, onClose }) {
   const form = useForm({

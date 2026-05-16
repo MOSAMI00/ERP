@@ -6,12 +6,13 @@ import {
 } from 'lucide-react';
 import Sidebar from './Sidebar';
 import Header from './Header';
-import { route } from '../../../inertia/routes';
 import '../../../../css/admin.css';
 
 const navItems = [
   { path: route('admin.dashboard'), label: 'الرئيسية', icon: Home },
   { path: route('admin.users.index'), label: 'المستخدمون', icon: Users },
+  { path: route('admin.equipment.index'), label: 'المعدات', icon: Truck },
+  { path: route('admin.rentals.index'), label: 'الإيجارات', icon: ShoppingCart },
   { path: route('admin.kyc.index'), label: 'توثيق الهوية', icon: Truck },
   { path: route('admin.payments.index'), label: 'الإشراف المالي', icon: DollarSign },
   { path: route('admin.disputes.index'), label: 'النزاعات', icon: AlertTriangle },

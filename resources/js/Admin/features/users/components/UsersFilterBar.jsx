@@ -3,7 +3,6 @@ import { router, usePage } from '@inertiajs/react';
 import Button from '../../../components/ui/Button';
 import SearchInput from '../../../components/ui/SearchInput';
 import Select from '../../../components/ui/Select';
-import { route } from '../../../../inertia/routes';
 
 export default function UsersFilterBar() {
   const { props } = usePage();

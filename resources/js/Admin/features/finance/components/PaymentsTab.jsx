@@ -5,7 +5,6 @@ import Button from '../../../components/ui/Button';
 import SearchInput from '../../../components/ui/SearchInput';
 import Select from '../../../components/ui/Select';
 import Table from '../../../components/ui/Table';
-import { route } from '../../../../inertia/routes';
 
 export default function PaymentsTab({ payments = [], filters = {} }) {
   const requestFilters = (nextFilters) => {

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Domains\Payment\Enums\PaymentStatus;
 use App\Domains\Payment\Enums\PaymentType;
+use App\Domains\Payment\Enums\EscrowStatus;
 use App\Domains\Rental\Enums\RentalStatus;
 use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
@@ -48,8 +49,9 @@ class AdminPaymentController extends Controller
             'filters'  => $request->only(['status', 'type', 'search']),
             'summary'  => [
                 'total_completed' => Payment::where('status', PaymentStatus::Paid->value)->sum('amount'),
-                'total_pending'   => Payment::where('status', PaymentStatus::Pending->value)->sum('amount'),
+                'total_pending'   => Payment::where('escrow_status', EscrowStatus::Held->value)->sum('amount'),
                 'total_refunds'   => Payment::where('type', PaymentType::InsuranceRefund->value)->where('status', PaymentStatus::Paid->value)->sum('amount'),
+                'total_profits'   => Payment::where('type', PaymentType::OwnerTransfer->value)->where('status', PaymentStatus::Paid->value)->sum('amount'),
             ],
         ]);
     }

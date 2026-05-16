@@ -1,6 +1,8 @@
 import { ShoppingCart, DollarSign, AlertTriangle, Users, TrendingUp } from 'lucide-react';
 
-export default function KpiRow1() {
+export default function KpiRow1({ stats = {} }) {
+  const money = (value) => Number(value ?? 0).toLocaleString();
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
       <div className="bg-brand-card rounded-xl p-6 border border-brand-border shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
@@ -14,7 +16,7 @@ export default function KpiRow1() {
         </div>
         <div>
           <p className="text-brand-text-muted text-sm mb-1">عمليات التأجير</p>
-          <p className="text-[32px] font-bold text-brand-text-primary leading-none">1,240</p>
+          <p className="text-[32px] font-bold text-brand-text-primary leading-none">{money(stats.rentals_count)}</p>
         </div>
       </div>
 
@@ -29,7 +31,7 @@ export default function KpiRow1() {
         </div>
         <div>
           <p className="text-brand-text-muted text-sm mb-1">الأرباح</p>
-          <p className="text-[32px] font-bold text-brand-text-primary leading-none">4.2M <span className="text-base font-normal text-brand-text-muted">ر.ي</span></p>
+          <p className="text-[32px] font-bold text-brand-text-primary leading-none">{money(stats.profits)} <span className="text-base font-normal text-brand-text-muted">ر.ي</span></p>
         </div>
       </div>
 
@@ -44,7 +46,7 @@ export default function KpiRow1() {
         </div>
         <div>
           <p className="text-brand-text-muted text-sm mb-1">النزاعات</p>
-          <p className="text-[32px] font-bold text-brand-text-primary leading-none">18</p>
+          <p className="text-[32px] font-bold text-brand-text-primary leading-none">{money(stats.open_disputes)}</p>
         </div>
       </div>
 
@@ -59,7 +61,7 @@ export default function KpiRow1() {
         </div>
         <div>
           <p className="text-brand-text-muted text-sm mb-1">المستخدمون</p>
-          <p className="text-[32px] font-bold text-brand-text-primary leading-none">3,580</p>
+          <p className="text-[32px] font-bold text-brand-text-primary leading-none">{money(stats.users_count)}</p>
         </div>
       </div>
     </div>

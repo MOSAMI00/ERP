@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+// @ts-ignore
+declare var route: any;
 import { useForm, usePage } from '@inertiajs/react';
 import { Upload, CheckCircle, AlertCircle, Eye, Trash2 } from 'lucide-react';
 
@@ -20,8 +22,9 @@ export function KYCUploaders() {
         selfie_image: null,
     });
 
-    const handleFileChange = (type, file) => {
-        form.setData(`${type}_image`, file);
+    const handleFileChange = (type: string, file: File | null) => {
+        const fieldName = `${type}_image` as any;
+        form.setData(fieldName, file);
         if (file) {
             const reader = new FileReader();
             reader.onloadend = () => {
@@ -45,7 +48,7 @@ export function KYCUploaders() {
         not_submitted: { label: 'لم يتم التقديم', color: 'text-[#888888]', bg: 'bg-[#F4F6F9]', border: 'border-[#E0E0E0]', icon: '📄' }
     };
 
-    const currentStatus = statusMap[kyc_status] || statusMap.not_submitted;
+    const currentStatus = (statusMap[kyc_status as keyof typeof statusMap] || statusMap.not_submitted) as any;
 
     if (kyc_status === 'approved') {
         return (
@@ -141,3 +144,4 @@ export function KYCUploaders() {
         </form>
     );
 }
+

@@ -44,7 +44,7 @@ export default function EquipmentDrawer({ isOpen, equipment, currentImageIndex, 
             )}
             <div className="absolute top-4 left-4">
               <Badge unstyled className={`px-3 py-1 text-xs font-bold rounded-md shadow-sm bg-brand-${equipment.statusColor}/90 text-white backdrop-blur-sm`}>
-                {equipment.status}
+                {equipment.statusLabel ?? equipment.status}
               </Badge>
             </div>
           </div>

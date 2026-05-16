@@ -33,6 +33,9 @@ use App\Http\Controllers\Admin\AdminKycController;
 use App\Http\Controllers\Admin\AdminPaymentController;
 use App\Http\Controllers\Admin\AdminReviewController;
 use App\Http\Controllers\Admin\AdminDisputeController;
+use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\AdminEquipmentController;
+use App\Http\Controllers\Admin\AdminRentalController;
 use App\Http\Controllers\Admin\PlatformSettingController;
 use App\Http\Controllers\Admin\AuditLogController;
 
@@ -374,19 +377,23 @@ Route::middleware(['auth'])->group(function () {
 // ==========================================
 Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('login', [AdminAuthController::class, 'showLogin'])->name('login');
-    Route::post('login', [AdminAuthController::class, 'login']);
+    Route::post('login', [AdminAuthController::class, 'login'])->name('login.submit');
     Route::post('logout', [AdminAuthController::class, 'logout'])->name('logout');
 
     Route::middleware(['auth:admin'])->group(function () {
-        Route::get('dashboard', function () {
-            return Inertia::render('Admin/Dashboard');
-        })->name('dashboard');
+        Route::get('dashboard', AdminDashboardController::class)->name('dashboard');
 
         // Users
         Route::resource('users', AdminUserController::class)->only(['index', 'show']);
         Route::post('users/{user}/suspend', [AdminUserController::class, 'suspend'])->name('users.suspend');
         Route::post('users/{user}/ban', [AdminUserController::class, 'ban'])->name('users.ban');
         Route::post('users/{user}/activate', [AdminUserController::class, 'activate'])->name('users.activate');
+
+        // Equipment & Rentals
+        Route::get('equipment', [AdminEquipmentController::class, 'index'])->name('equipment.index');
+        Route::post('equipment/{equipment}/toggle-visibility', [AdminEquipmentController::class, 'toggleVisibility'])->name('equipment.toggle-visibility');
+        Route::delete('equipment/{equipment}', [AdminEquipmentController::class, 'destroy'])->name('equipment.destroy');
+        Route::get('rentals', [AdminRentalController::class, 'index'])->name('rentals.index');
 
         // KYC
         Route::resource('kyc', AdminKycController::class)->only(['index']);

@@ -22,7 +22,7 @@ export default function EquipmentGrid({ equipment, onOpenDrawer }) {
                   <Badge unstyled className={`px-2.5 py-1 text-[10px] font-bold rounded-lg shadow-sm backdrop-blur-md text-white border border-white/20 ${
                     item.statusColor === 'success' ? 'bg-brand-success/80' : 'bg-brand-warning/80'
                   }`}>
-                    {item.status}
+                    {item.statusLabel ?? item.status}
                   </Badge>
             </div>
             

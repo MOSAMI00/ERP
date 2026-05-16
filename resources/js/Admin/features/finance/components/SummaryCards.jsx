@@ -36,7 +36,7 @@ export default function SummaryCards({ summary = {} }) {
         </div>
         <div>
           <p className="text-brand-text-muted text-sm mb-1">الأرباح المحوّلة</p>
-          <p className="text-2xl font-bold text-brand-text-primary">{Number(summary.total_completed ?? 0).toLocaleString()} <span className="text-sm font-normal text-brand-text-muted">ر.ي</span></p>
+          <p className="text-2xl font-bold text-brand-text-primary">{Number(summary.total_profits ?? 0).toLocaleString()} <span className="text-sm font-normal text-brand-text-muted">ر.ي</span></p>
         </div>
       </div>
     </div>

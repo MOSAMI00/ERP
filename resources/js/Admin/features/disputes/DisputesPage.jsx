@@ -4,7 +4,6 @@ import SummaryCards from './components/SummaryCards';
 import DisputesTable from './components/DisputesTable';
 import DisputeReviewPage from './components/DisputeReviewPage';
 import { asArray, normalizeDispute } from '../../../utils/pageData';
-import { route } from '../../../inertia/routes';
 
 export default function DisputesPage() {
   const { props } = usePage();
@@ -20,7 +19,7 @@ export default function DisputesPage() {
       eq: normalized.rental?.equipment?.name ?? '—',
       amount: normalized.requestedAmount,
       date: normalized.created_at ?? normalized.createdAt ?? '',
-      statusColor: normalized.status === 'resolved' ? 'success' : normalized.status === 'in_review' ? 'warning' : 'danger',
+      statusColor: normalized.status === 'resolved' ? 'success' : normalized.status === 'under_review' ? 'warning' : 'danger',
     };
   });
 

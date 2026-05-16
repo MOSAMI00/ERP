@@ -1,9 +1,9 @@
+import { Link } from '@inertiajs/react';
 import Badge from '../../../components/ui/Badge';
 import Button from '../../../components/ui/Button';
 import Table from '../../../components/ui/Table';
 
-export default function ComplaintsTable() {
-  const rows = [1, 2, 3];
+export default function ComplaintsTable({ reports = [] }) {
   const columns = [
     { key: 'id', label: '#', className: 'py-3 px-4 rounded-r-lg' },
     { key: 'reporter', label: 'المُبلِّغ', className: 'py-3 px-4' },
@@ -20,20 +20,22 @@ export default function ComplaintsTable() {
       </div>
       <Table
         columns={columns}
-        data={rows}
+        data={reports}
         theadClassName="bg-brand-content text-brand-text-muted font-medium"
-        renderRow={(i) => (
-          <tr key={i} className="hover:bg-brand-content/50 transition-colors">
-                <td className="py-3 px-4 text-brand-text-muted">#R-80{i}</td>
-                <td className="py-3 px-4 font-medium">ياسر علي</td>
+        renderRow={(report) => (
+          <tr key={report.id} className="hover:bg-brand-content/50 transition-colors">
+                <td className="py-3 px-4 text-brand-text-muted">#R-{report.id}</td>
+                <td className="py-3 px-4 font-medium">{report.reviewer?.full_name ?? '—'}</td>
                 <td className="py-3 px-4">
-                  <Badge unstyled className="px-2 py-1 bg-brand-warning/10 text-brand-warning rounded-md text-xs font-bold">سلوك مسيء</Badge>
+                  <Badge unstyled className="px-2 py-1 bg-brand-warning/10 text-brand-warning rounded-md text-xs font-bold">{report.rental?.equipment?.name ?? report.target_type ?? 'تقييم'}</Badge>
                 </td>
-                <td className="py-3 px-4 text-brand-text-muted">منذ ساعتين</td>
+                <td className="py-3 px-4 text-brand-text-muted">{String(report.created_at ?? '').slice(0, 10)}</td>
                 <td className="py-3 px-4 text-center">
+                  <Link href={route('admin.reviews.index')}>
                   <Button unstyled className="border border-brand-primary text-brand-primary px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-brand-primary/10 transition-colors inline-flex items-center">
                     معالجة
                   </Button>
+                  </Link>
                 </td>
               </tr>
         )}

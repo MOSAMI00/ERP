@@ -1,5 +1,5 @@
 import React from 'react';
-import { DataTable, StatusBadge } from '../components/shared';
+import { DataTable, StatusBadge } from '../../../Components/shared';
 import { formatCurrency } from '../../../utils/formatters';
 import { INSURANCE_STATUS_META } from '../lib/insuranceConfig';
 

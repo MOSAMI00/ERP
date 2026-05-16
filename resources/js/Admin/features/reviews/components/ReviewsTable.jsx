@@ -3,7 +3,6 @@ import { router } from '@inertiajs/react';
 import Badge from '../../../components/ui/Badge';
 import Button from '../../../components/ui/Button';
 import Table from '../../../components/ui/Table';
-import { route } from '../../../../inertia/routes';
 
 const renderStars = (rating) => {
   return Array(5).fill(0).map((_, i) => (

@@ -22,9 +22,9 @@ export default function FinancePage() {
         <Tabs tabs={financeTabs} activeTab={activeTab} onChange={setActiveTab} />
         
         {activeTab === 'payments' && <PaymentsTab payments={payments} filters={props.filters ?? {}} />}
-        {activeTab === 'escrow' && <EscrowTab />}
-        {activeTab === 'profits' && <ProfitsTab />}
-        {activeTab === 'refunds' && <RefundsTab />}
+        {activeTab === 'escrow' && <EscrowTab payments={payments} summary={props.summary ?? {}} />}
+        {activeTab === 'profits' && <ProfitsTab payments={payments} />}
+        {activeTab === 'refunds' && <RefundsTab payments={payments} />}
       </div>
     </div>
   );

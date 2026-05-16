@@ -21,7 +21,7 @@ export default function RentalDrawer({ isOpen, rental, onClose }) {
                 rental.statusColor === 'pending' ? 'bg-brand-text-muted/10 text-brand-text-muted' :
                 `bg-brand-${rental.statusColor}/10 text-brand-${rental.statusColor}`
               }`}>
-                {rental.status === 'In Use' ? 'In Use 🔧' : rental.status}
+                {rental.statusLabel ?? rental.status}
               </Badge>
             </div>
           </div>

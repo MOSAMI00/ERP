@@ -36,7 +36,7 @@ export default function EquipmentList({ equipment, onOpenDrawer }) {
               <td className="px-6 py-4 text-center font-bold text-brand-primary">{item.price.toLocaleString()} ر.ي</td>
               <td className="px-6 py-4 text-center">
                 <Badge unstyled className={`px-2.5 py-1 text-xs font-bold rounded-md bg-brand-${item.statusColor}/10 text-brand-${item.statusColor}`}>
-                  {item.status}
+                  {item.statusLabel ?? item.status}
                 </Badge>
               </td>
               <td className="px-6 py-4 text-center">
