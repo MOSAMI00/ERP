@@ -27,9 +27,13 @@ class RegisteredUserController extends Controller
             'phone'         => ['required', 'string', 'max:30', 'unique:users,phone'],
             'email'         => ['nullable', 'string', 'lowercase', 'email', 'max:255', 'unique:users,email'],
             'type'          => ['required', 'in:tenant,owner'],
-            'governorate'   => ['required', 'string', 'max:255'],
-            'password'      => ['required', 'confirmed', Rules\Password::defaults()],
-            'paymentMethod' => ['nullable', 'string', 'max:255'],
+            'governorate'    => ['required', 'string', 'max:255'],
+            'password'       => ['required', 'confirmed', Rules\Password::defaults()],
+            'paymentMethod'  => ['nullable', 'string', 'max:255'],
+            'bank_name'      => ['nullable', 'string', 'max:255'],
+            'account_number' => ['nullable', 'string', 'max:255'],
+            'account_name'   => ['nullable', 'string', 'max:255'],
+            'wallet_number'  => ['nullable', 'string', 'max:255'],
         ]);
 
         // Normalise phone to digits only
@@ -57,6 +61,10 @@ class RegisteredUserController extends Controller
             \App\Models\UserPaymentMethod::create([
                 'user_id' => $user->id,
                 'type' => $type,
+                'bank_name' => $request->bank_name,
+                'account_number' => $request->account_number,
+                'account_name' => $request->account_name,
+                'wallet_number' => $request->wallet_number,
                 'is_default' => true,
             ]);
         }

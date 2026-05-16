@@ -14,6 +14,10 @@ export function RegisterPage() {
     district: '',
     type: 'tenant',
     paymentMethod: '',
+    bank_name: '',
+    account_number: '',
+    account_name: '',
+    wallet_number: '',
   });
 
   const userType = form.data.type;
