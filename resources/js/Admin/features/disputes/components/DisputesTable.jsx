@@ -20,7 +20,9 @@ export default function DisputesTable({ disputes, pagination, filters = {}, onOp
     { key: 'tenant', label: 'المستأجر' },
     { key: 'owner', label: 'المؤجر' },
     { key: 'eq', label: 'المعدة' },
-    { key: 'amount', label: 'مبلغ النزاع (ر.ي)', className: 'px-6 py-4 text-center' },
+    { key: 'owner_amount', label: 'طلب المؤجر', className: 'px-6 py-4 text-center' },
+    { key: 'tenant_amount', label: 'اقتراح المستأجر', className: 'px-6 py-4 text-center' },
+    { key: 'final_amount', label: 'قرار الإدارة', className: 'px-6 py-4 text-center' },
     { key: 'date', label: 'تاريخ الفتح', className: 'px-6 py-4 text-center' },
     { key: 'status', label: 'الحالة', className: 'px-6 py-4 text-center' },
     { key: 'actions', label: 'الإجراءات', className: 'px-6 py-4 text-center' },
@@ -58,7 +60,11 @@ export default function DisputesTable({ disputes, pagination, filters = {}, onOp
                 <td className="px-6 py-4">{dispute.tenant}</td>
                 <td className="px-6 py-4">{dispute.owner}</td>
                 <td className="px-6 py-4 text-brand-text-muted">{dispute.eq}</td>
-                <td className="px-6 py-4 text-center font-bold text-brand-danger">{dispute.amount.toLocaleString()}</td>
+                <td className="px-6 py-4 text-center font-bold text-brand-danger">{dispute.ownerAmount.toLocaleString()}</td>
+                <td className="px-6 py-4 text-center font-bold text-brand-warning">{dispute.tenantAmount.toLocaleString()}</td>
+                <td className="px-6 py-4 text-center font-bold text-brand-success">
+                  {dispute.status === 'resolved' ? dispute.finalAmount.toLocaleString() : '—'}
+                </td>
                 <td className="px-6 py-4 text-center text-brand-text-muted">{dispute.date}</td>
                 <td className="px-6 py-4 text-center">
                   <Badge unstyled className={`px-2.5 py-1 rounded-md text-xs font-bold bg-brand-${dispute.statusColor}/10 text-brand-${dispute.statusColor}`}>

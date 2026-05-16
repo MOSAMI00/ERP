@@ -184,7 +184,7 @@ Route::middleware(['auth'])->group(function () {
         })->name('order.delivery');
         Route::get('/delivery', function () {
             $rentals = request()->user()->rentalsAsTenant()
-                ->with(['equipment.images', 'equipmentHandover', 'tenant', 'owner'])
+                ->with(['equipment.images', 'equipmentHandover.dispute', 'tenant', 'owner'])
                 ->latest()
                 ->get();
 
@@ -261,12 +261,13 @@ Route::middleware(['auth'])->group(function () {
             return Inertia::render('Owner/Rentals/RentalsPage', ['rentals' => request()->user()->rentalsAsOwner()->with(['equipment.images', 'tenant', 'contract', 'payments'])->latest()->get()]);
         })->name('rentals');
         Route::get('/delivery', function () {
-            $rentals = request()->user()->rentalsAsOwner()->with(['equipment.images', 'equipmentHandover', 'tenant', 'owner'])->latest()->get();
+            $rentals = request()->user()->rentalsAsOwner()->with(['equipment.images', 'equipmentHandover.dispute', 'tenant', 'owner'])->latest()->get();
             return Inertia::render('Owner/Delivery/DeliveryPage', [
                 'rentals' => $rentals,
                 'handover_reports' => HandoverReportModel::whereIn('rental_op_id', $rentals->pluck('id'))->with('images')->latest()->get(),
                 'disputes' => DisputeModel::whereIn('rental_op_id', $rentals->pluck('id'))->latest()->get(),
                 'reviews' => ReviewModel::whereIn('rental_op_id', $rentals->pluck('id'))->where('reviewer_id', request()->user()->id)->get(),
+                'compensations' => \App\Models\EquipmentHandover::whereIn('rental_op_id', $rentals->pluck('id'))->with('dispute')->get(),
             ]);
         })->name('delivery');
         Route::get('/insurance', function () {

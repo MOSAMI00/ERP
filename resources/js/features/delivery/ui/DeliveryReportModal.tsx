@@ -9,6 +9,13 @@ const STATUS_LABELS = {
   partially_damaged: 'تلفيات جزئية',
 };
 
+function imageUrl(image) {
+  const path = image?.image_url ?? image?.url ?? image;
+  if (!path || typeof path !== 'string') return null;
+  if (/^(data:|blob:|https?:\/\/|\/)/.test(path)) return path;
+  return `/storage/${path.replace(/^\/+/, '')}`;
+}
+
 export function DeliveryReportModal({ report, onClose }) {
   if (!report) return null;
 
@@ -62,16 +69,21 @@ export function DeliveryReportModal({ report, onClose }) {
             <p className="m-0 text-[#888888] mb-3">الصور التوثيقية</p>
             {images.length > 0 ? (
               <div className="grid grid-cols-3 gap-2">
-                {images.map((img, idx) => (
-                  <div key={idx} className="aspect-square rounded-lg bg-gray-100 overflow-hidden border border-gray-200">
-                    <img 
-                      src={img.image_url ?? img.url ?? img} 
-                      className="w-full h-full object-cover cursor-pointer hover:scale-110 transition-transform" 
-                      alt="توثيق"
-                      onClick={() => window.open(img.image_url ?? img.url ?? img, '_blank')}
-                    />
-                  </div>
-                ))}
+                {images.map((img, idx) => {
+                  const src = imageUrl(img);
+                  if (!src) return null;
+
+                  return (
+                    <div key={idx} className="aspect-square rounded-lg bg-gray-100 overflow-hidden border border-gray-200">
+                      <img
+                        src={src}
+                        className="w-full h-full object-cover cursor-pointer hover:scale-110 transition-transform"
+                        alt={`صورة توثيق ${idx + 1}`}
+                        onClick={() => window.open(src, '_blank')}
+                      />
+                    </div>
+                  );
+                })}
               </div>
             ) : (
               <p className="m-0 mt-1 font-bold text-[#222222]">لا توجد صور مرفقة</p>

@@ -1,10 +1,23 @@
 import React from 'react';
 import { StatusBadge } from '../../../components/shared';
-import { formatRentalDate } from '../../../utils/formatters';
+import { formatCurrency, formatRentalDate } from '../../../utils/formatters';
 import { STAGE_META, STATUS_META } from '../lib/deliveryConfig';
 import { DeliveryStageForm } from './DeliveryStageForm';
 import { OwnerCompensationCard } from './OwnerCompensationCard';
 import { PostRentalRating } from './PostRentalRating';
+
+const ROLE_LABELS = {
+  owner: 'المؤجر',
+  tenant: 'المستأجر',
+};
+
+const CONDITION_LABELS = {
+  excellent: 'ممتازة',
+  good: 'جيدة',
+  fair: 'متوسطة',
+  damaged: 'تحتاج مراجعة',
+  partially_damaged: 'تلفيات جزئية',
+};
 
 export function OwnerDeliveryDetails({
   rental,
@@ -26,6 +39,8 @@ export function OwnerDeliveryDetails({
   isSubmitting,
 }) {
   const ownerReturnReport = reports.find((report) => report.phase === 'return' && report.submitted_by_role === 'owner');
+  const totalAmount = rental.totalAmount ?? rental.total_amount ?? rental.total ?? 0;
+  const insuranceAmount = rental.insuranceAmount ?? rental.insurance_amount ?? rental.insurance ?? 0;
 
   return (
     <div className="rounded-2xl border border-[#E0E0E0] bg-white p-5 shadow-sm">
@@ -34,7 +49,10 @@ export function OwnerDeliveryDetails({
         <div>
           <h2 className="m-0 text-xl font-bold text-[#222222]">{rental.equipment.name}</h2>
           <p className="m-0 mt-1 text-sm text-[#888888]">
-            {rental.orderNum} • {rental.partnerLabel}: {rental.partnerName}
+            العملية {rental.orderNum} مع {rental.partnerLabel} {rental.partnerName}
+          </p>
+          <p className="m-0 mt-1 text-xs text-[#888888]">
+            حالة الطلب الأصلية: {rental.statusLabel ?? rental.status}
           </p>
         </div>
         <StatusBadge
@@ -60,6 +78,18 @@ export function OwnerDeliveryDetails({
           <p className="m-0 text-[#888888]">موقع التسليم</p>
           <p className="m-0 mt-1 font-bold text-[#222222]">{rental.delivery_location || [rental.equipment?.governorate, rental.equipment?.address].filter(Boolean).join(' - ') || '—'}</p>
         </div>
+        <div className="rounded-xl bg-[#F8FAFC] p-4">
+          <p className="m-0 text-[#888888]">قيمة العملية</p>
+          <p className="m-0 mt-1 font-bold text-[#222222]">{formatCurrency(totalAmount)} ر.ي</p>
+        </div>
+        <div className="rounded-xl bg-[#F8FAFC] p-4">
+          <p className="m-0 text-[#888888]">مبلغ التأمين</p>
+          <p className="m-0 mt-1 font-bold text-[#222222]">{formatCurrency(insuranceAmount)} ر.ي</p>
+        </div>
+        <div className="rounded-xl bg-[#F8FAFC] p-4">
+          <p className="m-0 text-[#888888]">عدد المحاضر</p>
+          <p className="m-0 mt-1 font-bold text-[#222222]">{reports.length} محضر</p>
+        </div>
       </div>
 
       {/* Reports Log */}
@@ -75,9 +105,13 @@ export function OwnerDeliveryDetails({
                 className="flex items-center justify-between gap-3 rounded-xl bg-[#F8FAFC] p-3 text-right text-sm transition-colors hover:bg-[#EEF3F0]"
               >
                 <span className="font-semibold text-[#222222]">
-                  {report.phase === 'delivery' ? 'تقرير التسليم' : 'تقرير الإرجاع'}
+                  {report.phase === 'delivery' ? 'محضر التسليم' : 'محضر الإرجاع'}
+                  {' '}
+                  - {ROLE_LABELS[report.submitted_by_role ?? report.submittedByRole] ?? 'طرف العملية'}
                 </span>
-                <span className="text-[#888888]">{formatRentalDate(report.created_at)}</span>
+                <span className="text-[#888888]">
+                  {CONDITION_LABELS[report.condition_status ?? report.conditionStatus] ?? 'حالة غير محددة'} • {formatRentalDate(report.created_at)}
+                </span>
               </button>
             ))}
           </div>

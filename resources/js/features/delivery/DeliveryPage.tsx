@@ -21,30 +21,136 @@ const DEFAULT_FORM = {
   evidencePhotos: [],
 };
 
+const STATUS_LABELS = {
+  confirmed: 'مؤكد بانتظار الدفع',
+  paid: 'جاهز للتسليم',
+  in_use: 'قيد الاستخدام',
+  return_done: 'تم تأكيد الإرجاع',
+  compensation_requested: 'مطالبة تعويض',
+  disputed: 'نزاع مفتوح',
+  completed: 'مكتمل',
+};
+
+function assetUrl(path) {
+  if (!path) return null;
+  if (typeof path !== 'string') return null;
+  if (/^(data:|blob:|https?:\/\/|\/)/.test(path)) return path;
+  return `/storage/${path.replace(/^\/+/, '')}`;
+}
+
+function firstImage(equipment) {
+  const image = equipment?.image
+    ?? equipment?.images?.find?.((item) => item?.is_primary)?.image_url
+    ?? equipment?.images?.[0]?.image_url
+    ?? equipment?.images?.[0]?.url
+    ?? equipment?.images?.[0];
+
+  return assetUrl(image) || 'https://placehold.co/160x160/f4f6f9/888?text=Equipment';
+}
+
+function enumValue(value, fallback = '') {
+  if (!value) return fallback;
+  if (typeof value === 'object') return value.value ?? value.name ?? fallback;
+  return value;
+}
+
+function relationId(record, key) {
+  return record?.[key] ?? record?.[`${key.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase())}`];
+}
+
+function normalizeReportImages(report) {
+  return ((report?.images ?? []) as any[])
+    .map((image) => assetUrl(image?.image_url ?? image?.url ?? image))
+    .filter(Boolean);
+}
+
+function personName(user, fallback) {
+  return user?.full_name ?? user?.name ?? fallback;
+}
+
+function money(value) {
+  return Number(value ?? 0).toLocaleString('ar-YE');
+}
+
+function compensationCondition(status) {
+  const value = enumValue(status, 'good');
+  if (value === 'damaged' || value === 'partially_damaged') return value;
+  return 'good';
+}
+
+function normalizeDisputeForDelivery(dispute) {
+  if (!dispute) return null;
+  return {
+    ...dispute,
+    status: enumValue(dispute.status, 'open'),
+    adminDecision: enumValue(dispute.admin_decision ?? dispute.adminDecision),
+    tenantClaim: dispute.tenant_claim ?? dispute.tenantClaim ?? '',
+    tenantProposedAmount: Number(dispute.requested_amount ?? dispute.requestedAmount ?? 0),
+    finalCompensation: Number(dispute.final_compensation ?? dispute.finalCompensation ?? 0),
+    adminNote: dispute.admin_note ?? dispute.adminNote ?? '',
+  };
+}
+
+function normalizeCompensationForDelivery(rawCompensation, rental, reports, disputes) {
+  if (!rawCompensation || !rental) return undefined;
+
+  const dispute = normalizeDisputeForDelivery(rawCompensation.dispute ?? disputes[0]);
+  const ownerReturnReport = reports.find((report) => enumValue(report.phase) === 'return' && enumValue(report.submitted_by_role ?? report.submittedByRole) === 'owner');
+  const ownerRequestedAmount = Number(rawCompensation.proposed_deduction ?? rawCompensation.proposedDeduction ?? rawCompensation.requestedAmount ?? 0);
+  const finalAmount = dispute?.status === 'resolved'
+    ? Number(dispute.finalCompensation ?? 0)
+    : ownerRequestedAmount;
+
+  return {
+    ...rawCompensation,
+    id: rawCompensation.id,
+    status: enumValue(rawCompensation.owner_decision ?? rawCompensation.ownerDecision ?? rawCompensation.status, ownerRequestedAmount > 0 ? 'partial_refund' : 'none'),
+    ownerRequestedAmount,
+    tenantProposedAmount: dispute?.tenantProposedAmount ?? 0,
+    finalAmount,
+    requestedAmount: ownerRequestedAmount,
+    notes: rawCompensation.final_notes ?? rawCompensation.finalNotes ?? rawCompensation.notes,
+    finalCondition: enumValue(rawCompensation.final_condition ?? rawCompensation.finalCondition),
+    lateFee: rawCompensation.late_fee ?? rawCompensation.lateFee,
+    actualReturnDate: rawCompensation.actual_return_date ?? rawCompensation.actualReturnDate,
+    objectionDeadline: rawCompensation.objection_deadline ?? rawCompensation.objectionDeadline,
+    evidencePhotos: normalizeReportImages(ownerReturnReport),
+    rentalStatus: enumValue(rental.status),
+    dispute,
+    isSettled: enumValue(rental.status) === 'completed',
+  };
+}
+
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function getStageFeedback({ role, stage }) {
+function getStageFeedback({ role, stage, rental, compensation, disputes }) {
   const isOwner = role === 'owner';
+  const equipmentName = rental?.equipment?.name ?? 'المعدة';
+  const partnerName = rental?.partnerName ?? (isOwner ? 'المستأجر' : 'المؤجر');
+  const amount = compensation?.requestedAmount ? `${money(compensation.requestedAmount)} ر.ي` : 'مبلغ التعويض';
+  const disputeStatus = enumValue(disputes?.[0]?.status);
   const messages = {
-    awaiting_payment: 'بانتظار قيام المستأجر بالدفع وتوقيع العقد حتى تتمكن من تسليم المعدة.',
+    awaiting_payment: isOwner
+      ? `طلب ${equipmentName} مؤكد، لكن التسليم يبدأ بعد إتمام الدفع وتوقيع العقد من ${partnerName}.`
+      : `تم قبول طلب ${equipmentName}. أكمل الدفع وتوقيع العقد حتى يبدأ المؤجر إجراءات التسليم.`,
     delivery: isOwner
-      ? 'يرجى توثيق تسليم المعدة بالصور وتعبئة حالة المعدة حتى ينتقل الطلب إلى قيد التسليم.'
-      : 'يرجى الانتظار حتى يقوم المؤجر بتسليم المعدة وتوثيقها أولًا.',
+      ? `وثق حالة ${equipmentName} عند التسليم بالصور والملاحظات؛ هذا التقرير سيكون مرجع العملية عند الإرجاع أو النزاع.`
+      : `بانتظار أن يوثق ${partnerName} تسليم ${equipmentName}. ستتمكن من مراجعة التقرير قبل تأكيد الاستلام.`,
     handover: isOwner
-      ? 'تم توثيق التسليم. يرجى الانتظار حتى يؤكد المستأجر استلام المعدة.'
-      : 'المؤجر وثق التسليم. راجع التقرير ثم أكد الاستلام إذا كانت البيانات صحيحة.',
+      ? `تم إرسال تقرير التسليم إلى ${partnerName}. بانتظار تأكيده لاستلام المعدة.`
+      : `راجع صور وملاحظات التسليم الخاصة بـ ${equipmentName}. أكد الاستلام فقط إذا كانت الحالة مطابقة لما استلمته.`,
     in_use: isOwner
-      ? 'المعدة الآن لدى المستأجر. يرجى الانتظار حتى يرسل المستأجر تقرير الإرجاع.'
-      : 'المعدة قيد الاستخدام. عند انتهاء مدة الإيجار، ارفع صور الإرجاع وسجل التقرير.',
+      ? `${equipmentName} حالياً لدى ${partnerName}. عند انتهاء الفترة سيظهر تقرير الإرجاع هنا للمراجعة.`
+      : `${equipmentName} قيد الاستخدام ضمن هذه العملية. عند الإرجاع ارفع صوراً واضحة وسجل أي ملاحظات قبل التسليم.`,
     return: isOwner
-      ? 'المستأجر أرسل تقرير الإرجاع. راجع الصور والملاحظات ثم أكد الإرجاع.'
-      : 'تم إرسال تقرير الإرجاع. يرجى الانتظار حتى يؤكد المؤجر استلام المعدة.',
-    return_done: 'تم تأكيد الإرجاع بنجاح.',
+      ? `${partnerName} أرسل تقرير الإرجاع. راجع الصور والملاحظات ثم أكد الاستلام أو اطلب تعويضاً إذا وجدت تلفيات.`
+      : `تم إرسال تقرير إرجاع ${equipmentName}. بانتظار مراجعة ${partnerName} وتأكيد الاستلام.`,
+    return_done: `تم تأكيد إرجاع ${equipmentName}. يمكن للمؤجر الآن إنهاء العملية أو طلب تعويض إذا كان هناك خصم مبرر.`,
     compensation_requested: isOwner
-      ? 'لقد طلبت تعويضاً. بانتظار رد المستأجر.'
-      : 'طلب المؤجر تعويضاً عن أضرار. يرجى المراجعة والرد.',
-    disputes: 'يوجد نزاع مفتوح على هذه العملية.',
-    completed: 'اكتملت العملية بنجاح.',
+      ? `تم إرسال مطالبة تعويض بقيمة ${amount}. بانتظار قبول ${partnerName} أو فتح نزاع.`
+      : `طلب ${partnerName} تعويضاً بقيمة ${amount}. راجع الملاحظات والصور ثم اقبل الخصم أو افتح نزاعاً موثقاً.`,
+    disputes: `يوجد نزاع مفتوح على هذه العملية${disputeStatus ? `، حالته الحالية: ${disputeStatus}.` : '.'}`,
+    completed: `اكتملت عملية ${equipmentName} وتم إغلاق إجراءات التسليم والإرجاع.`,
   };
 
   return messages[stage] || 'لا يوجد إجراء مطلوب منك في هذه المرحلة.';
@@ -53,38 +159,51 @@ function getStageFeedback({ role, stage }) {
 function normalizeDeliveryRows({ rentals, role, userId }) {
   return rentals
     .filter((rental) => {
-      if (role === 'owner') return (rental.owner_id ?? rental.ownerId) === userId;
-      return (rental.tenant_id ?? rental.tenantId) === userId;
+      if (role === 'owner') return relationId(rental, 'owner_id') === userId;
+      return relationId(rental, 'tenant_id') === userId;
     })
-    .filter((rental) => ['confirmed', 'paid', 'in_use', 'return_done', 'compensation_requested', 'disputed', 'completed'].includes(rental.status))
+    .filter((rental) => ['confirmed', 'paid', 'in_use', 'return_done', 'compensation_requested', 'disputed', 'completed'].includes(enumValue(rental.status)))
     .map((rental) => {
+      const equipment = rental.equipment ?? {};
+      const status = enumValue(rental.status);
       return {
         ...rental,
-        partnerName: role === 'owner' ? (rental.tenant?.full_name ?? rental.tenant?.name ?? 'المستأجر') : (rental.equipment?.owner?.full_name ?? rental.equipment?.owner_name ?? 'المؤجر'),
+        status,
+        orderNum: rental.orderNum ?? rental.order_num ?? `#${String(rental.id).padStart(5, '0')}`,
+        statusLabel: STATUS_LABELS[status] ?? status,
+        equipment: {
+          ...equipment,
+          name: equipment.name ?? 'معدة بدون اسم',
+          image: firstImage(equipment),
+        },
+        partnerName: role === 'owner' ? personName(rental.tenant, 'المستأجر') : personName(rental.owner, 'المؤجر'),
         partnerLabel: role === 'owner' ? 'المستأجر' : 'المؤجر',
+        totalAmount: Number(rental.total_amount ?? rental.totalAmount ?? 0),
+        insuranceAmount: Number(rental.insurance_amount ?? rental.insuranceAmount ?? 0),
       };
     });
 }
 
 function getWorkflowStage(rental, reports, handover) {
-  if (rental.status === 'disputed') return 'disputes';
-  if (rental.status === 'completed') return 'completed';
-  if (rental.status === 'return_done') return 'return_done';
-  if (rental.status === 'compensation_requested') return 'compensation_requested';
+  const status = enumValue(rental.status);
+  if (status === 'disputed') return 'disputes';
+  if (status === 'completed') return 'completed';
+  if (status === 'return_done') return 'return_done';
+  if (status === 'compensation_requested') return 'compensation_requested';
 
-  const ownerDelivery = reports.some((report) => report.phase === 'delivery' && (report.submitted_by_role ?? report.submittedByRole) === 'owner');
-  const tenantDelivery = reports.some((report) => report.phase === 'delivery' && (report.submitted_by_role ?? report.submittedByRole) === 'tenant');
-  const tenantReturn = reports.some((report) => report.phase === 'return' && (report.submitted_by_role ?? report.submittedByRole) === 'tenant');
-  const ownerReturn = reports.some((report) => report.phase === 'return' && (report.submitted_by_role ?? report.submittedByRole) === 'owner');
+  const ownerDelivery = reports.some((report) => enumValue(report.phase) === 'delivery' && enumValue(report.submitted_by_role ?? report.submittedByRole) === 'owner');
+  const tenantDelivery = reports.some((report) => enumValue(report.phase) === 'delivery' && enumValue(report.submitted_by_role ?? report.submittedByRole) === 'tenant');
+  const tenantReturn = reports.some((report) => enumValue(report.phase) === 'return' && enumValue(report.submitted_by_role ?? report.submittedByRole) === 'tenant');
+  const ownerReturn = reports.some((report) => enumValue(report.phase) === 'return' && enumValue(report.submitted_by_role ?? report.submittedByRole) === 'owner');
 
-  if (rental.status === 'confirmed') return 'awaiting_payment';
+  if (status === 'confirmed') return 'awaiting_payment';
   
-  if (rental.status === 'paid' && !ownerDelivery) return 'delivery';
-  if (rental.status === 'paid' && ownerDelivery && !tenantDelivery) return 'handover';
-  if (rental.status === 'in_use' && !tenantReturn) return 'in_use';
-  if (rental.status === 'in_use' && tenantReturn && !ownerReturn) return 'return';
+  if (status === 'paid' && !ownerDelivery) return 'delivery';
+  if (status === 'paid' && ownerDelivery && !tenantDelivery) return 'handover';
+  if (status === 'in_use' && !tenantReturn) return 'in_use';
+  if (status === 'in_use' && tenantReturn && !ownerReturn) return 'return';
 
-  return rental.status;
+  return status;
 }
 
 function getFormSpec({ role, stage }) {
@@ -134,12 +253,12 @@ export default function DeliveryPage({ role: roleProp }) {
   const rows = useMemo(() => {
     const normalizedRentals = normalizeDeliveryRows({ rentals, role, userId });
     return normalizedRentals.map((rental) => {
-      const rentalReports = handoverReports.filter(h => (h.rental_op_id ?? h.rentalId) === rental.id);
+      const rentalReports = handoverReports.filter(h => relationId(h, 'rental_op_id') === rental.id);
       const rawComp = allCompensations.find(c => (c.rental_op_id ?? c.rentalId) === rental.id) || (rental.equipment_handover ?? rental.equipmentHandover);
       
       const comp = rawComp ? {
         ...rawComp,
-        status: rawComp.owner_decision ?? rawComp.ownerDecision ?? rawComp.status,
+        status: enumValue(rawComp.owner_decision ?? rawComp.ownerDecision ?? rawComp.status),
         proposed_deduction: rawComp.proposed_deduction ?? rawComp.proposedDeduction ?? rawComp.requestedAmount,
         rentalStatus: rental.status,
         dispute: rawComp.dispute,
@@ -162,8 +281,8 @@ export default function DeliveryPage({ role: roleProp }) {
     return filteredRows[0];
   }, [filteredRows, rows, selectedRentalId]);
 
-  const reports = selectedRental ? handoverReports.filter(h => (h.rental_op_id ?? h.rentalId) === selectedRental.id) : [];
-  const disputes = selectedRental ? allDisputes.filter(d => (d.rental_op_id ?? d.rentalId) === selectedRental.id) : [];
+  const reports = selectedRental ? handoverReports.filter(h => relationId(h, 'rental_op_id') === selectedRental.id) : [];
+  const disputes = selectedRental ? allDisputes.filter(d => relationId(d, 'rental_op_id') === selectedRental.id).map(normalizeDisputeForDelivery) : [];
   
   const rawCompensation = selectedRental 
     ? (allCompensations.find(c => (c.rental_op_id ?? c.rentalId) === selectedRental.id) 
@@ -172,25 +291,17 @@ export default function DeliveryPage({ role: roleProp }) {
 
   const compensation = useMemo(() => {
     if (!rawCompensation || !selectedRental) return undefined;
-    return {
-      ...rawCompensation,
-      id: rawCompensation.id,
-      requestedAmount: rawCompensation.proposed_deduction ?? rawCompensation.proposedDeduction ?? rawCompensation.requestedAmount,
-      status: rawCompensation.owner_decision ?? rawCompensation.ownerDecision ?? rawCompensation.status,
-      notes: rawCompensation.final_notes ?? rawCompensation.finalNotes ?? rawCompensation.notes,
-      rentalStatus: selectedRental.status,
-      dispute: rawCompensation.dispute,
-    };
-  }, [rawCompensation, selectedRental]);
+    return normalizeCompensationForDelivery(rawCompensation, selectedRental, reports, disputes);
+  }, [rawCompensation, selectedRental, reports, disputes]);
   
-  const ownerReturnReport = reports.find((report) => report.phase === 'return' && (report.submitted_by_role ?? report.submittedByRole) === 'owner');
+  const ownerReturnReport = reports.find((report) => enumValue(report.phase) === 'return' && enumValue(report.submitted_by_role ?? report.submittedByRole) === 'owner');
   const selectedStage = selectedRental?.workflowStage || 'delivery';
   const formSpec = getFormSpec({ role, stage: selectedStage });
   const activeForm = selectedRental ? { ...DEFAULT_FORM, ...(forms[selectedRental.id] || {}) } : DEFAULT_FORM;
   const activeCompensationForm = selectedRental
     ? { amount: '', notes: '', photos: [], ...(compensationForms[selectedRental.id] || {}) }
     : { amount: '', notes: '', photos: [] };
-  const stageFeedback = getStageFeedback({ role, stage: selectedStage });
+  const stageFeedback = getStageFeedback({ role, stage: selectedStage, rental: selectedRental, compensation, disputes });
 
   const tabs = config.tabs.map((tab) => ({
     ...tab,
@@ -216,7 +327,7 @@ export default function DeliveryPage({ role: roleProp }) {
       rental_op_id: selectedRental.id,
       phase: formSpec.phase,
       condition_status: activeForm.conditionStatus || 'good',
-      has_issues: activeForm.hasDamage === 'true' || activeForm.conditionStatus === 'damaged',
+      has_issues: activeForm.hasDamage === 'true' || ['damaged', 'partially_damaged'].includes(activeForm.conditionStatus),
       notes: activeForm.notes,
       images: activeForm.evidencePhotos,
     }, {
@@ -256,7 +367,7 @@ export default function DeliveryPage({ role: roleProp }) {
         ? 'no_refund'
         : 'partial_refund',
       proposed_deduction: amount,
-      final_condition: activeForm.conditionStatus,
+      final_condition: compensationCondition(ownerReturnReport.condition_status ?? ownerReturnReport.conditionStatus),
       final_notes: activeCompensationForm.notes.trim(),
     }, {
       preserveScroll: true,
@@ -291,7 +402,7 @@ export default function DeliveryPage({ role: roleProp }) {
     router.post('/disputes', {
       rental_op_id: selectedRental.id,
       equipment_handover_id: handover.id,
-      tenant_claim: claim || 'Tenant opened a compensation dispute.',
+      tenant_claim: claim || 'أعترض على مطالبة التعويض وأطلب مراجعة الإدارة للمحاضر والصور.',
       requested_amount: amount,
     }, { preserveScroll: true });
   };

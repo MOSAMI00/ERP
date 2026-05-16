@@ -4,9 +4,9 @@ import { useState } from 'react';
 const money = (value) => Number(value ?? 0).toLocaleString();
 
 const decisionLabels = {
-  accept_deduction: 'قبول الخصم',
-  reject_deduction: 'رفض الخصم',
-  modify_compensation: 'تعديل التعويض',
+  accept_deduction: 'اعتماد مبلغ المؤجر كاملاً',
+  reject_deduction: 'رفض خصم المؤجر وإرجاع التأمين',
+  modify_compensation: 'اعتماد مبلغ معدل من الإدارة',
 };
 
 const conditionLabels = {
@@ -90,6 +90,9 @@ export default function DisputeReviewPage({
   const deliveryReports = (dispute.reports ?? []).filter((report) => report.phase === 'delivery');
   const returnReports = (dispute.reports ?? []).filter((report) => report.phase === 'return');
   const handover = dispute.handover ?? {};
+  const ownerRequestedAmount = dispute.ownerRequestedAmount ?? Number(handover.proposed_deduction ?? 0);
+  const tenantProposedAmount = dispute.tenantProposedAmount ?? dispute.requestedAmount ?? 0;
+  const finalCompensation = dispute.finalCompensation ?? 0;
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
@@ -135,8 +138,12 @@ export default function DisputeReviewPage({
 
           <div className="bg-brand-content p-4 rounded-xl border border-brand-border space-y-2">
             <div className="flex justify-between text-sm">
-              <span className="text-brand-text-muted">الخصم المقترح</span>
-              <span className="font-bold text-brand-danger">{money(handover.proposed_deduction ?? dispute.amount)} ر.ي</span>
+              <span className="text-brand-text-muted">المبلغ المطلوب من المؤجر</span>
+              <span className="font-bold text-brand-danger">{money(ownerRequestedAmount)} ر.ي</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-brand-text-muted">المبلغ المقترح من المستأجر</span>
+              <span className="font-bold text-brand-warning">{money(tenantProposedAmount)} ر.ي</span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-brand-text-muted">مبلغ التأمين</span>
@@ -170,8 +177,10 @@ export default function DisputeReviewPage({
           </h3>
 
           <div className="bg-brand-content p-4 rounded-xl border border-brand-border flex justify-between items-center">
-            <span className="text-sm font-bold text-brand-text-primary">مبلغ النزاع</span>
-            <span className="text-xl font-bold text-brand-danger">{money(dispute.amount)} <span className="text-sm">ر.ي</span></span>
+            <span className="text-sm font-bold text-brand-text-primary">{isResolved ? 'المبلغ النهائي حسب قرار الإدارة' : 'المبلغ المطلوب من المؤجر'}</span>
+            <span className={`text-xl font-bold ${isResolved ? 'text-brand-success' : 'text-brand-danger'}`}>
+              {money(isResolved ? finalCompensation : ownerRequestedAmount)} <span className="text-sm">ر.ي</span>
+            </span>
           </div>
 
           {isResolved ? (
@@ -179,13 +188,19 @@ export default function DisputeReviewPage({
               <div className="bg-brand-success/10 border border-brand-success/20 rounded-xl p-4">
                 <p className="font-bold text-brand-success flex items-center">
                   <CheckCircle2 size={18} className="ml-2" />
-                  تم حل النزاع
+                  تمت التسوية بقرار إداري
                 </p>
                 <p className="text-sm text-brand-text-primary mt-3">
                   القرار: {decisionLabels[dispute.adminDecision] ?? dispute.adminDecision ?? 'غير محدد'}
                 </p>
                 <p className="text-sm text-brand-text-primary mt-2">
-                  التعويض النهائي: {money(dispute.finalCompensation)} ر.ي
+                  مبلغ المؤجر الأصلي: {money(ownerRequestedAmount)} ر.ي
+                </p>
+                <p className="text-sm text-brand-text-primary mt-2">
+                  اقتراح المستأجر: {money(tenantProposedAmount)} ر.ي
+                </p>
+                <p className="text-sm text-brand-text-primary mt-2">
+                  المبلغ النهائي المخصوم من التأمين: {money(finalCompensation)} ر.ي
                 </p>
                 <p className="text-sm text-brand-text-muted mt-3">{dispute.adminNote || 'لا توجد ملاحظة إدارية.'}</p>
               </div>
@@ -198,7 +213,7 @@ export default function DisputeReviewPage({
                 <input type="radio" name="decision" checked={decision === 'accept'} onChange={() => setDecision('accept')} className="mt-0.5 text-brand-success focus:ring-brand-success" />
                 <div className="mr-3">
                   <span className="block font-bold text-sm">قبول الخصم كاملاً</span>
-                  <span className="block text-xs text-brand-text-muted mt-1">سيتم خصم المبلغ من التأمين وتحويله للمؤجر.</span>
+                  <span className="block text-xs text-brand-text-muted mt-1">سيتم اعتماد مبلغ المؤجر: {money(ownerRequestedAmount)} ر.ي.</span>
                 </div>
               </label>
 
@@ -206,7 +221,7 @@ export default function DisputeReviewPage({
                 <input type="radio" name="decision" checked={decision === 'reject'} onChange={() => setDecision('reject')} className="mt-0.5 text-brand-danger focus:ring-brand-danger" />
                 <div className="mr-3">
                   <span className="block font-bold text-sm">رفض الخصم</span>
-                  <span className="block text-xs text-brand-text-muted mt-1">سيتم إرجاع كامل مبلغ التأمين للمستأجر.</span>
+                  <span className="block text-xs text-brand-text-muted mt-1">سيكون المبلغ النهائي 0 ر.ي، ويعاد التأمين للمستأجر.</span>
                 </div>
               </label>
 
@@ -214,6 +229,7 @@ export default function DisputeReviewPage({
                 <input type="radio" name="decision" checked={decision === 'adjust'} onChange={() => setDecision('adjust')} className="mt-0.5 text-brand-primary focus:ring-brand-primary" />
                 <div className="mr-3 w-full">
                   <span className="block font-bold text-sm">تعديل قيمة التعويض</span>
+                  <span className="block text-xs text-brand-text-muted mt-1">اكتب مبلغ الإدارة النهائي بين اقتراح الطرفين أو حسب الأدلة.</span>
                   {decision === 'adjust' && (
                     <div className="mt-3 relative">
                       <input

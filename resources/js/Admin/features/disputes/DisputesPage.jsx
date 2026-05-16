@@ -17,7 +17,10 @@ export default function DisputesPage() {
       tenant: normalized.rental?.tenant?.name ?? '—',
       owner: normalized.rental?.owner?.name ?? '—',
       eq: normalized.rental?.equipment?.name ?? '—',
-      amount: normalized.requestedAmount,
+      amount: normalized.displayAmount,
+      ownerAmount: normalized.ownerRequestedAmount,
+      tenantAmount: normalized.tenantProposedAmount,
+      finalAmount: normalized.finalCompensation,
       date: String(normalized.created_at ?? normalized.createdAt ?? '').slice(0, 10),
       statusColor: normalized.status === 'resolved' ? 'success' : normalized.status === 'under_review' ? 'warning' : 'danger',
     };
@@ -26,7 +29,7 @@ export default function DisputesPage() {
   const openReview = (dispute) => {
     setSelectedDispute(dispute);
     setDecision('accept');
-    setAdjustedAmount(String(dispute.finalCompensation || dispute.amount || ''));
+    setAdjustedAmount(String(dispute.finalCompensation || dispute.ownerRequestedAmount || dispute.amount || ''));
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 

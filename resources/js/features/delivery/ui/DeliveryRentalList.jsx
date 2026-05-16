@@ -42,7 +42,12 @@ export function DeliveryRentalList({ rentals, selectedRental, onSelect }) {
             />
             <div className="min-w-0 flex-1">
               <p className="m-0 truncate text-sm font-bold text-[#222222]">{rental.equipment.name}</p>
-              <p className="m-0 mt-1 text-xs text-[#888888]">{rental.orderNum} • {rental.partnerName}</p>
+              <p className="m-0 mt-1 text-xs text-[#888888]">
+                العملية {rental.orderNum} • {rental.partnerLabel}: {rental.partnerName}
+              </p>
+              <p className="m-0 mt-1 text-xs text-[#888888]">
+                {rental.start_date?.slice?.(0, 10) ?? '—'} إلى {rental.end_date?.slice?.(0, 10) ?? '—'}
+              </p>
             </div>
             <StatusBadge status={STAGE_META[rental.workflowStage]?.status} meta={{
               ...STATUS_META[STAGE_META[rental.workflowStage]?.status],

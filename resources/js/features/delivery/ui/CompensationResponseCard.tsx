@@ -5,6 +5,14 @@ function canRenderPhoto(photo) {
   return /^(data:|blob:|https?:\/\/|\/)/.test(photo);
 }
 
+const CONDITION_LABELS = {
+  excellent: 'ممتازة',
+  good: 'جيدة',
+  fair: 'متوسطة',
+  damaged: 'متضررة',
+  partially_damaged: 'متضررة جزئياً',
+};
+
 export function CompensationResponseCard({
   compensation,
   onAccept,
@@ -25,8 +33,20 @@ export function CompensationResponseCard({
   if (isCompleted) {
     return (
       <div className="mb-4 rounded-xl border-2 border-[#27AE60] bg-[#F4FAF6] p-5">
-        <h4 className="m-0 text-base font-bold text-[#27AE60]">✅ تم قبول التعويض وتسوية العملية</h4>
-        <p className="m-0 mt-2 text-sm text-[#555555]">المبلغ الذي تم خصمه: {formatCurrency(compensation.requestedAmount)} ر.ي</p>
+        <h4 className="m-0 text-base font-bold text-[#27AE60]">تمت تسوية مطالبة التعويض</h4>
+        <p className="m-0 mt-2 text-sm text-[#555555]">طلب المؤجر: {formatCurrency(compensation.ownerRequestedAmount ?? compensation.requestedAmount)} ر.ي</p>
+        {compensation.dispute ? (
+          <p className="m-0 mt-1 text-sm text-[#555555]">اقتراحك عند فتح النزاع: {formatCurrency(compensation.tenantProposedAmount ?? 0)} ر.ي</p>
+        ) : null}
+        <p className="m-0 mt-1 text-sm font-bold text-[#222222]">
+          المبلغ النهائي حسب التسوية: {formatCurrency(compensation.finalAmount ?? compensation.requestedAmount)} ر.ي
+        </p>
+        {compensation.notes ? (
+          <p className="m-0 mt-1 text-sm text-[#555555]">ملاحظات المؤجر: {compensation.notes}</p>
+        ) : null}
+        {compensation.dispute?.adminNote ? (
+          <p className="m-0 mt-1 text-sm text-[#555555]">ملاحظة الإدارة: {compensation.dispute.adminNote}</p>
+        ) : null}
       </div>
     );
   }
@@ -34,8 +54,15 @@ export function CompensationResponseCard({
   if (isDisputed) {
     return (
       <div className="mb-4 rounded-xl border-2 border-[#E74C3C] bg-[#FDEDEC] p-5">
-        <h4 className="m-0 text-base font-bold text-[#E74C3C]">⚖️ تم رفض التعويض وفتح نزاع</h4>
-        <p className="m-0 mt-2 text-sm text-[#555555]">حالة النزاع: {compensation.dispute?.status === 'resolved' ? 'تم الحل' : 'قيد المراجعة الإدارية'}</p>
+        <h4 className="m-0 text-base font-bold text-[#E74C3C]">المطالبة تحولت إلى نزاع</h4>
+        <p className="m-0 mt-2 text-sm text-[#555555]">
+          حالة النزاع: {compensation.dispute?.status === 'resolved' ? 'تمت التسوية بقرار إداري' : 'قيد المراجعة الإدارية'}
+        </p>
+        <p className="m-0 mt-1 text-sm text-[#555555]">طلب المؤجر: {formatCurrency(compensation.ownerRequestedAmount ?? compensation.requestedAmount)} ر.ي</p>
+        <p className="m-0 mt-1 text-sm text-[#555555]">اقتراحك: {formatCurrency(compensation.tenantProposedAmount ?? 0)} ر.ي</p>
+        {compensation.dispute?.tenant_claim ? (
+          <p className="m-0 mt-1 text-sm text-[#555555]">اعتراضك: {compensation.dispute.tenant_claim}</p>
+        ) : null}
       </div>
     );
   }
@@ -44,14 +71,19 @@ export function CompensationResponseCard({
 
   return (
     <div className="mb-4 rounded-xl border-2 border-[#E67E22] bg-white p-5">
-      <h4 className="m-0 mb-4 text-base font-bold text-[#222222]">⚠️ طلب تعويض من المؤجر</h4>
+      <h4 className="m-0 mb-4 text-base font-bold text-[#222222]">مطالبة تعويض من المؤجر</h4>
 
       <div className="mb-4 rounded-lg bg-[#FEF9F0] p-3 text-sm leading-7 text-[#222222]">
         <p className="m-0">
-          <strong>المبلغ المطالب به:</strong> {formatCurrency(compensation.requestedAmount)} ر.ي
+          <strong>قيمة الخصم المطلوب:</strong> {formatCurrency(compensation.requestedAmount)} ر.ي
         </p>
+        {compensation.finalCondition ? (
+          <p className="m-0 mt-2">
+            <strong>حالة المعدة عند الإرجاع:</strong> {CONDITION_LABELS[compensation.finalCondition] || compensation.finalCondition}
+          </p>
+        ) : null}
         <p className="m-0 mt-2">
-          <strong>ملاحظات المؤجر:</strong> {compensation.notes}
+          <strong>سبب المطالبة:</strong> {compensation.notes || 'لم يكتب المؤجر ملاحظات إضافية.'}
         </p>
         {compensation.evidencePhotos?.length > 0 ? (
           <div className="mt-3 flex flex-wrap gap-2">
@@ -95,9 +127,9 @@ export function CompensationResponseCard({
         </div>
       ) : (
         <div className="flex flex-col gap-3">
-          <p className="m-0 text-sm font-bold text-[#222222]">أدخل تفاصيل النزاع:</p>
+          <p className="m-0 text-sm font-bold text-[#222222]">اكتب اعتراضك بوضوح ليصل للإدارة مع بيانات العملية:</p>
           <textarea
-            placeholder="موقفك من المطالبة وأسباب اعتراضك..."
+            placeholder="مثال: أرفض الخصم لأن التلف كان موجوداً قبل الاستلام، أو لأن الصور لا تثبت سوء الاستخدام..."
             rows={3}
             value={tenantClaim}
             onChange={(event) => setTenantClaim(event.target.value)}
@@ -105,7 +137,7 @@ export function CompensationResponseCard({
           />
           <input
             type="number"
-            placeholder="القيمة المقترحة أو المطالب بها (ر.ي) - اختياري"
+            placeholder="القيمة التي تقبل بها إن وجدت (ر.ي) - اختياري"
             value={disputeAmount}
             onChange={(event) => setDisputeAmount(event.target.value)}
             className="rounded-lg border border-[#DDDDDD] p-3 text-sm focus:border-[#2D5A27] focus:outline-none"
