@@ -219,7 +219,7 @@ Route::middleware(['auth'])->group(function () {
             ]);
         })->name('ratings');
         Route::get('/insurance', function () {
-            $rentals = request()->user()->rentalsAsTenant()->with(['equipment', 'payments'])->latest()->get();
+            $rentals = request()->user()->rentalsAsTenant()->with(['equipment', 'tenant', 'owner', 'payments', 'equipmentHandover.dispute'])->latest()->get();
             return Inertia::render('Tenant/Insurance/InsurancePage', ['rentals' => $rentals]);
         })->name('insurance');
         Route::get('/settings', function () {
@@ -271,7 +271,7 @@ Route::middleware(['auth'])->group(function () {
             ]);
         })->name('delivery');
         Route::get('/insurance', function () {
-            return Inertia::render('Owner/Insurance/InsurancePage', ['rentals' => request()->user()->rentalsAsOwner()->with(['equipment', 'payments'])->latest()->get()]);
+            return Inertia::render('Owner/Insurance/InsurancePage', ['rentals' => request()->user()->rentalsAsOwner()->with(['equipment', 'tenant', 'owner', 'payments', 'equipmentHandover.dispute'])->latest()->get()]);
         })->name('insurance');
         Route::get('/earnings', function () {
             $rentalIds = request()->user()->rentalsAsOwner()->pluck('id');

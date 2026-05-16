@@ -1,6 +1,4 @@
-import { PauseCircle } from 'lucide-react';
 import Badge from '../../../components/ui/Badge';
-import Button from '../../../components/ui/Button';
 import Table from '../../../components/ui/Table';
 
 export default function EscrowTab({ payments = [], summary = {} }) {
@@ -10,7 +8,6 @@ export default function EscrowTab({ payments = [], summary = {} }) {
     { key: 'amount', label: 'مبلغ محتجز' },
     { key: 'since', label: 'منذ' },
     { key: 'status', label: 'الحالة', className: 'px-6 py-4 text-center' },
-    { key: 'action', label: 'إجراء', className: 'px-6 py-4 text-center' },
   ];
 
   return (
@@ -30,18 +27,13 @@ export default function EscrowTab({ payments = [], summary = {} }) {
         data={rows}
         renderRow={(payment) => (
           <tr key={payment.id} className="hover:bg-brand-content/50 transition-colors">
-                <td className="px-6 py-4 font-bold" dir="ltr">OP-{payment.rental?.id ?? payment.id}</td>
-                <td className="px-6 py-4 font-bold text-brand-warning">{Number(payment.amount ?? 0).toLocaleString()} ر.ي</td>
-                <td className="px-6 py-4 text-brand-text-muted">{String(payment.created_at ?? '').slice(0, 10)}</td>
-                <td className="px-6 py-4 text-center">
-                  <Badge unstyled className="px-2.5 py-1 bg-brand-warning/10 text-brand-warning rounded-md text-xs font-bold">{payment.rental?.status ?? payment.status}</Badge>
-                </td>
-                <td className="px-6 py-4 text-center">
-                  <Button unstyled className="text-brand-danger border border-brand-danger hover:bg-brand-danger/10 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors inline-flex items-center">
-                    <PauseCircle size={14} className="ml-1" /> تعليق الأموال
-                  </Button>
-                </td>
-              </tr>
+            <td className="px-6 py-4 font-bold" dir="ltr">OP-{payment.rental?.id ?? payment.id}</td>
+            <td className="px-6 py-4 font-bold text-brand-warning">{Number(payment.amount ?? 0).toLocaleString()} ر.ي</td>
+            <td className="px-6 py-4 text-brand-text-muted">{String(payment.created_at ?? '').slice(0, 10)}</td>
+            <td className="px-6 py-4 text-center">
+              <Badge unstyled className="px-2.5 py-1 bg-brand-warning/10 text-brand-warning rounded-md text-xs font-bold">{payment.rental?.status ?? payment.status}</Badge>
+            </td>
+          </tr>
         )}
       />
     </div>

@@ -34,6 +34,10 @@ class AdminPaymentController extends Controller
                 fn($q) => $q->where('type', $request->type)
             )
             ->when(
+                $request->escrow_status,
+                fn($q) => $q->where('escrow_status', $request->escrow_status)
+            )
+            ->when(
                 $request->search,
                 fn($q) => $q->where(fn ($searchQuery) => $searchQuery
                     ->where('transaction_ref', 'like', "%{$request->search}%")
@@ -41,14 +45,27 @@ class AdminPaymentController extends Controller
                         'payer',
                         fn($q) => $q->where('full_name', 'like', "%{$request->search}%")
                     )
+                    ->orWhereHas(
+                        'rental.tenant',
+                        fn($q) => $q->where('full_name', 'like', "%{$request->search}%")
+                    )
+                    ->orWhereHas(
+                        'rental.owner',
+                        fn($q) => $q->where('full_name', 'like', "%{$request->search}%")
+                    )
+                    ->orWhereHas(
+                        'rental.equipment',
+                        fn($q) => $q->where('name', 'like', "%{$request->search}%")
+                    )
                 )
             )
             ->latest()
-            ->paginate(20);
+            ->paginate(20)
+            ->withQueryString();
 
         return Inertia::render('Admin/Payments/Index', [
             'payments' => $payments,
-            'filters'  => $request->only(['status', 'type', 'search']),
+            'filters'  => $request->only(['status', 'type', 'escrow_status', 'search']),
             'summary'  => [
                 'total_completed' => Payment::where('status', PaymentStatus::Paid->value)->sum('amount'),
                 'total_pending'   => Payment::where('escrow_status', EscrowStatus::Held->value)->sum('amount'),
