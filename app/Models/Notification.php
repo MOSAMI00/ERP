@@ -17,6 +17,7 @@ class Notification extends Model
         'body',
         'reference_type',
         'reference_id',
+        'action_url',
         'is_read',
         'priority',
         'read_at',

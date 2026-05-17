@@ -12,7 +12,8 @@ export default function NotificationsPage({ role: roleProp }) {
   const role = roleProp || user?.type || 'tenant';
   const config = getNotificationsConfig(role);
 
-  const allNotifications = props.notifications ?? props.owner_notifications ?? [];
+  const rawNotifications = props.notifications ?? props.owner_notifications ?? [];
+  const allNotifications = Array.isArray(rawNotifications) ? rawNotifications : (rawNotifications.data ?? []);
   const [activeTab, setActiveTab] = useState(config.tabs[0]);
 
   const unreadCount = allNotifications.filter((n) => !(n.read ?? n.is_read)).length;
@@ -31,8 +32,9 @@ export default function NotificationsPage({ role: roleProp }) {
     router.patch(`/notifications/${notification.id}/read`, {}, {
       preserveScroll: true,
       onSuccess: () => {
-        if (config.actions?.hasExternalLinks && notification.action?.href) {
-          visit(notification.action.href);
+        const actionUrl = notification.action_url ?? notification.actionUrl ?? notification.action?.href;
+        if (actionUrl) {
+          visit(actionUrl);
         }
       },
     });

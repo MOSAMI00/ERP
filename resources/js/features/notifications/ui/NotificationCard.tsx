@@ -31,6 +31,7 @@ export function NotificationCard({ notification, onOpen }) {
   const isRead = notification.read ?? notification.is_read;
   const message = notification.message ?? notification.body;
   const time = notification.time ?? notification.created_at ?? notification.createdAt ?? '';
+  const actionUrl = notification.action_url ?? notification.actionUrl ?? notification.action?.href;
 
   return (
     <button
@@ -82,7 +83,7 @@ export function NotificationCard({ notification, onOpen }) {
         <p style={{ margin: 0, fontSize: '14px', lineHeight: 1.6, color: '#555555' }}>
           {message}
         </p>
-        {notification.action ? (
+        {actionUrl ? (
           <span
             style={{
               display: 'inline-block',
@@ -93,7 +94,7 @@ export function NotificationCard({ notification, onOpen }) {
               textDecoration: 'underline',
             }}
           >
-            {notification.action.label}
+            {notification.action?.label ?? 'فتح التفاصيل'}
           </span>
         ) : null}
       </div>

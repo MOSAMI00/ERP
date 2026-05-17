@@ -1,4 +1,5 @@
-import { ShieldCheck, Signature } from 'lucide-react';
+import { Signature } from 'lucide-react';
+import { ContractBody } from '../../contracts/ui/ContractBody';
 
 export function ContractSigning({ 
   agreeToContract, 
@@ -6,7 +7,8 @@ export function ContractSigning({
   onBack, 
   onConfirm, 
   processing, 
-  errors 
+  errors,
+  contractBody,
 }) {
   return (
     <div className="space-y-6">
@@ -20,37 +22,8 @@ export function ContractSigning({
         </div>
       </div>
 
-      <div className="bg-muted/50 border border-border rounded-xl p-6 h-[400px] overflow-y-auto space-y-4 text-sm leading-relaxed text-foreground/80 font-arabic">
-        <h3 className="font-bold text-center text-lg mb-4 underline">عقد تأجير معدات إلكتروني</h3>
-        
-        <section>
-          <h4 className="font-bold text-foreground">1. أطراف العقد:</h4>
-          <p>يعتبر هذا العقد اتفاقاً ملزماً بين مالك المعدة (المؤجر) والمستأجر المسجل في منصة إيجار.</p>
-        </section>
-
-        <section>
-          <h4 className="font-bold text-foreground">2. مسؤولية المعدة:</h4>
-          <p>يقر المستأجر باستلام المعدة بحالة جيدة وصالحة للاستخدام، ويتعهد بالحفاظ عليها وإعادتها بنفس الحالة التي استلمها بها.</p>
-        </section>
-
-        <section>
-          <h4 className="font-bold text-foreground">3. التأمين والتعويض:</h4>
-          <p>يتم حجز مبلغ التأمين كضمان، وفي حال حدوث أضرار ناتجة عن سوء الاستخدام، يحق للمؤجر طلب تعويض يخصم من مبلغ التأمين أو يطالب به قانوناً.</p>
-        </section>
-
-        <section>
-          <h4 className="font-bold text-foreground">4. التأخير في الإرجاع:</h4>
-          <p>تطبق رسوم إضافية في حال التأخر عن الموعد المحدد للإرجاع، بواقع 150% من القيمة اليومية لكل يوم تأخير.</p>
-        </section>
-
-        <section>
-          <h4 className="font-bold text-foreground">5. حل النزاعات:</h4>
-          <p>في حال وجود خلاف، يتم اللجوء لنظام النزاعات في منصة إيجار كطرف أول للفصل بين الطرفين بناءً على تقارير التسليم والاستلام.</p>
-        </section>
-
-        <div className="border-t border-border pt-4 mt-8 italic text-center text-muted-foreground">
-          تم إنشاء هذا العقد آلياً بواسطة منصة إيجار
-        </div>
+      <div className="bg-muted/50 border border-border rounded-xl p-3 h-[440px] overflow-y-auto font-arabic">
+        <ContractBody body={contractBody ?? 'تعذر تحميل نص العقد. يرجى العودة للخطوة السابقة والمحاولة مرة أخرى.'} />
       </div>
 
       <div className="p-4 bg-primary/5 border border-primary/20 rounded-xl flex gap-3 items-start">

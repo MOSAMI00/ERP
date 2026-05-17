@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Validator;
 
 class StoreEquipmentRequest extends FormRequest
 {
@@ -25,5 +26,14 @@ class StoreEquipmentRequest extends FormRequest
             'images'           => ['nullable', 'array'],
             'images.*'         => ['image', 'mimes:jpeg,png,jpg,webp', 'max:5120'],
         ];
+    }
+
+    public function withValidator(Validator $validator): void
+    {
+        $validator->after(function (Validator $validator) {
+            if ($this->user()?->kyc_status !== 'approved') {
+                $validator->errors()->add('kyc', 'يجب توثيق الهوية بالكامل قبل إضافة أي معدة.');
+            }
+        });
     }
 }

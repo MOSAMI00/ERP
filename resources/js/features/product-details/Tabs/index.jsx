@@ -4,7 +4,7 @@ import { TabTerms } from './Terms';
 import { TabReviews } from './Reviews';
 
 
-export function Tabs({ product }) {
+export function Tabs({ product, platformTerms, ownerReviews }) {
   const [activeTab, setActiveTab] = useState('description');
 
   return (
@@ -31,8 +31,8 @@ export function Tabs({ product }) {
 
       <div className="py-6">
         {activeTab === 'description' && <TabDescription product={product} />}
-        {activeTab === 'terms' && <TabTerms />}
-        {activeTab === 'reviews' && <TabReviews product={product} />}
+        {activeTab === 'terms' && <TabTerms terms={platformTerms} />}
+        {activeTab === 'reviews' && <TabReviews product={product} ownerReviews={ownerReviews} />}
       </div>
     </div>
   );

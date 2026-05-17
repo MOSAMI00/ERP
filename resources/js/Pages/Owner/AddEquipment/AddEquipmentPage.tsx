@@ -14,7 +14,9 @@ export default function AddEquipmentPage() {
   const [step, setStep] = useState(0);
   const { props } = usePage() as any;
   const equipment = props.equipment ?? null;
+  const user = props.auth?.user ?? null;
   const isEditMode = (props.mode ?? '') === 'edit' && Boolean(equipment?.id);
+  const kycBlocked = !isEditMode && user?.kyc_status !== 'approved';
 
   const form = useForm({
     name: equipment?.name ?? '',
@@ -36,6 +38,8 @@ export default function AddEquipmentPage() {
   const goBack = () => setStep((s) => Math.max(s - 1, 0));
 
   const handleSubmit = () => {
+    if (kycBlocked) return;
+
     form.transform((data) => ({
       ...data,
       images: data.images.filter((image) => image instanceof File),
@@ -103,6 +107,12 @@ export default function AddEquipmentPage() {
       </div>
 
       <div className="owner-card">
+        {kycBlocked && (
+          <div className="mb-6 p-4 rounded-xl border border-amber-200 bg-amber-50 text-amber-800">
+            يجب توثيق الهوية بالكامل (KYC) قبل إضافة أي معدة.
+          </div>
+        )}
+
         {renderStep()}
 
         {form.errors && Object.keys(form.errors).length > 0 && (
@@ -124,14 +134,14 @@ export default function AddEquipmentPage() {
           </button>
 
           {step < EQUIPMENT_STEPS.length - 1 ? (
-            <button className="owner-btn owner-btn-primary" onClick={goNext}>
+            <button className="owner-btn owner-btn-primary" onClick={goNext} disabled={kycBlocked}>
               التالي <ArrowLeft size={16} />
             </button>
           ) : (
             <button
               className="owner-btn owner-btn-primary"
               onClick={handleSubmit}
-              disabled={form.processing}
+              disabled={form.processing || kycBlocked}
             >
               <Check size={16} /> {form.processing ? 'جاري الحفظ...' : (isEditMode ? 'حفظ التعديلات' : 'نشر المعدة')}
             </button>

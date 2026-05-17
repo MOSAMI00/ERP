@@ -18,6 +18,8 @@ class PlatformSetting extends Model
         'objection_window_hours',
         'refund_window_days',
         'kyc_required',
+        'platform_terms',
+        'contract_template',
         'updated_by',
     ];
 

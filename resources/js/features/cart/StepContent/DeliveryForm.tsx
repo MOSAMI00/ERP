@@ -5,7 +5,7 @@ const TIME_SLOTS = [
   { value: 'evening', label: '🌙 مساءً', time: '4م - 8م' },
 ];
 
-export function DeliveryForm({ deliveryInfo, setDeliveryInfo, timeSlot, setTimeSlot, onBack, onNext }) {
+export function DeliveryForm({ deliveryInfo, setDeliveryInfo, timeSlot, setTimeSlot, error, onBack, onNext }) {
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold">بيانات التسليم</h2>
@@ -38,7 +38,7 @@ export function DeliveryForm({ deliveryInfo, setDeliveryInfo, timeSlot, setTimeS
         </div>
 
         <div className="space-y-2">
-          <label className="block text-sm font-medium">العنوان التفصيلي</label>
+            <label className="block text-sm font-medium">العنوان التفصيلي</label>
           <textarea
             value={deliveryInfo.address}
             onChange={(e) => setDeliveryInfo({ ...deliveryInfo, address: e.target.value })}
@@ -67,6 +67,12 @@ export function DeliveryForm({ deliveryInfo, setDeliveryInfo, timeSlot, setTimeS
           </div>
         </div>
       </div>
+
+      {error && (
+        <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700">
+          {error}
+        </div>
+      )}
 
       <div className="flex gap-3">
         <button onClick={onBack} className="flex-1 h-12 border border-border rounded-lg hover:bg-muted transition-colors">
