@@ -44,16 +44,6 @@ const BasicDetailsFields = ({ draft, updateDraft }) => {
         />
       </div>
 
-      <div className="mb-4">
-        <label className="owner-label">شروط التأجير *</label>
-        <textarea
-          className="owner-input"
-          rows={4}
-          placeholder="مثال: الاستخدام داخل المدينة فقط، يتحمل المستأجر تكلفة النقل، إعادة المعدة بنفس حالة الاستلام..."
-          value={draft.rental_terms}
-          onChange={updateDraft('rental_terms')}
-        />
-      </div>
     </>
   );
 };

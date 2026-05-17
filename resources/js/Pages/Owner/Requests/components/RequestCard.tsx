@@ -1,4 +1,5 @@
 import React from 'react';
+import { router } from '@inertiajs/react';
 import { formatCurrency, formatRentalDateRange } from '../../../../utils/formatters';
 import { StatusBadge } from '../../../../components/shared';
 import RequestDecisionActions from './RequestDecisionActions';
@@ -17,8 +18,14 @@ const RequestCard = ({ rental, onOpenModal }) => {
   const completedCount = tenant.completedRentalsCount;
   const tenantRating = tenant.rating;
 
+  const openRental = () => router.visit(`/rentals/${rental.id}`);
+
   return (
-    <div className="owner-card" style={{ borderTop: `3px solid ${status.color}` }}>
+    <div
+      className="owner-card"
+      style={{ borderTop: `3px solid ${status.color}`, cursor: 'pointer' }}
+      onClick={openRental}
+    >
       <div className="flex-between mb-4">
         <div className="flex-center gap-4" style={{ justifyContent: 'flex-start' }}>
           {tenant.avatarUrl ? (
@@ -30,9 +37,6 @@ const RequestCard = ({ rental, onOpenModal }) => {
           )}
           <div>
             <h4 style={{ margin: '0 0 2px' }}>{tenant.name ?? UNKNOWN_USER}</h4>
-            <span className="text-muted" style={{ fontSize: 13, direction: 'ltr', display: 'inline-block' }}>
-              {tenant.phone ?? '—'}
-            </span>
             {(tenantRating != null || completedCount != null) ? (
               <div className="flex-center gap-2 mt-2" style={{ justifyContent: 'flex-start' }}>
                 {tenantRating != null ? <span className="text-muted" style={{ fontSize: 12 }}>{tenantRating}</span> : null}
@@ -59,7 +63,9 @@ const RequestCard = ({ rental, onOpenModal }) => {
       </div>
 
       <hr style={{ border: 'none', borderTop: '1px solid var(--color-border)', margin: '12px 0' }} />
-      <RequestDecisionActions rental={rental} onOpenModal={onOpenModal} />
+      <div onClick={(event) => event.stopPropagation()}>
+        <RequestDecisionActions rental={rental} onOpenModal={onOpenModal} />
+      </div>
     </div>
   );
 };

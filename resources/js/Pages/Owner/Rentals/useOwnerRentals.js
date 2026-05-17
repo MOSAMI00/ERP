@@ -26,7 +26,7 @@ export const useOwnerRentals = ({
   ), [activeTab, ownerId, rentals, search]);
 
   const selectedRental = useMemo(
-    () => rentals.find((rental) => rental.id === selectedRentalId),
+    () => rentals.find((rental) => String(rental.id) === String(selectedRentalId)),
     [rentals, selectedRentalId],
   );
 

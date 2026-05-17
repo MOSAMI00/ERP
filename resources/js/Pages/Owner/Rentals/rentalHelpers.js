@@ -20,7 +20,7 @@ export const fallbackEquipment = (rental) => {
 };
 export const fallbackTenant = (rental) => {
   const tenant = rental?.tenant ?? {};
-  return { ...tenant, name: tenant.name ?? tenant.full_name ?? 'مستخدم غير معروف', phone: tenant.phone ?? '—' };
+  return { ...tenant, name: tenant.name ?? tenant.full_name ?? 'مستخدم غير معروف', rating: tenant.rating ?? 0 };
 };
 
 export const buildRentalTimeline = (rental) => (

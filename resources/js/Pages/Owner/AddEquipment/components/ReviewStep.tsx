@@ -41,7 +41,6 @@ const ReviewStep = ({ draft, images }) => {
         <ReviewRow label="الموقع">{displayValue(location)}</ReviewRow>
         <ReviewRow label="السعر اليومي">{displayValue(draft.price_per_day)} ر.ي</ReviewRow>
         <ReviewRow label="التأمين">{displayValue(draft.insurance_amount)} ر.ي</ReviewRow>
-        <ReviewRow label="شروط التأجير">{displayValue(draft.rental_terms)}</ReviewRow>
         <ReviewRow label="الصور">{images.length || '—'}</ReviewRow>
       </div>
     </div>

@@ -19,7 +19,15 @@ const RentalsTable = ({
     {
       key: 'tenant',
       header: 'المستأجر',
-      cell: (rental) => fallbackTenant(rental).name ?? 'مستخدم غير معروف',
+      cell: (rental) => {
+        const tenant = fallbackTenant(rental);
+        return (
+          <div>
+            <div className="font-semibold">{tenant.name ?? 'مستخدم غير معروف'}</div>
+            <div className="text-xs text-[#F39C12]">⭐ {Number(tenant.rating ?? 0).toFixed(1)}</div>
+          </div>
+        );
+      },
     },
     {
       key: 'equipment',

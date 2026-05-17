@@ -20,7 +20,7 @@ const Rentals = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('all');
   const [search, setSearch] = useState('');
-  const [selectedRentalId, setSelectedRentalId] = useState(null);
+  const [selectedRentalId, setSelectedRentalId] = useState(() => new URLSearchParams(window.location.search).get('selected'));
 
   useEffect(() => {
     const timer = window.setTimeout(() => setIsLoading(false), 350);

@@ -27,12 +27,7 @@ const RentalDetailsPanel = ({
       <div>
         <span className="text-muted" style={{ fontSize: 12 }}>المستأجر</span>
         <p style={{ fontWeight: 600, margin: '2px 0' }}>{tenant?.name ?? 'مستخدم غير معروف'}</p>
-      </div>
-      <div>
-        <span className="text-muted" style={{ fontSize: 12 }}>الهاتف</span>
-        <p style={{ fontWeight: 600, margin: '2px 0', direction: 'ltr', textAlign: 'right' }}>
-          {tenant?.phone ?? '—'}
-        </p>
+        <p className="text-muted" style={{ fontSize: 12, margin: '2px 0' }}>⭐ {Number(tenant?.rating ?? 0).toFixed(1)}</p>
       </div>
       <div>
         <span className="text-muted" style={{ fontSize: 12 }}>الفترة</span>

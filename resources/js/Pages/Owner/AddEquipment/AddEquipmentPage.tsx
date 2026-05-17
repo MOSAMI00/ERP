@@ -24,7 +24,7 @@ export default function AddEquipmentPage() {
     description: equipment?.description ?? '',
     price_per_day: equipment?.price_per_day ?? '',
     insurance_amount: equipment?.insurance_amount ?? '',
-    rental_terms: equipment?.rental_terms ?? '',
+    rental_terms: equipment?.rental_terms ?? 'لا توجد شروط إضافية.',
     images: (equipment?.images ?? []) as any[],
   });
 
@@ -39,6 +39,7 @@ export default function AddEquipmentPage() {
     form.transform((data) => ({
       ...data,
       images: data.images.filter((image) => image instanceof File),
+      rental_terms: data.rental_terms || 'لا توجد شروط إضافية.',
     }));
 
     const options = {
