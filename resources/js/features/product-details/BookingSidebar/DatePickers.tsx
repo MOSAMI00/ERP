@@ -21,6 +21,7 @@ interface DatePickersProps {
   days: number;
   notes?: string;
   setNotes?: (v: string) => void;
+  disabled?: boolean;
 }
 
 type PickerMode = 'start' | 'end' | null;
@@ -32,6 +33,7 @@ export function DatePickers({
   endDate,
   setEndDate,
   days,
+  disabled = false,
 }: DatePickersProps) {
   const [unavailableRanges, setUnavailableRanges] = useState<UnavailableRange[]>([]);
   const [loadingDates, setLoadingDates] = useState(true);
@@ -117,6 +119,7 @@ export function DatePickers({
   };
 
   const togglePicker = (picker: PickerMode) => {
+    if (disabled) return;
     setOpenPicker((prev) => (prev === picker ? null : picker));
     if (picker === 'start' && selectedStart) setMonth(selectedStart);
     if (picker === 'end' && (selectedEnd || selectedStart))
@@ -155,7 +158,8 @@ export function DatePickers({
         <button
           type="button"
           onClick={() => togglePicker('start')}
-          className="w-full h-11 px-4 rounded-lg border border-border bg-white focus:outline-none focus:border-primary flex items-center justify-between text-sm"
+          disabled={disabled}
+          className="w-full h-11 px-4 rounded-lg border border-border bg-white focus:outline-none focus:border-primary flex items-center justify-between text-sm disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <span className={startDate ? 'text-gray-800' : 'text-gray-400'}>
             {startDate
@@ -205,7 +209,7 @@ export function DatePickers({
         <button
           type="button"
           onClick={() => togglePicker('end')}
-          disabled={!startDate}
+          disabled={disabled || !startDate}
           className="w-full h-11 px-4 rounded-lg border border-border bg-white focus:outline-none focus:border-primary flex items-center justify-between text-sm disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <span className={endDate ? 'text-gray-800' : 'text-gray-400'}>

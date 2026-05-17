@@ -75,6 +75,7 @@ const Rentals = () => {
         rental={selectedRental}
         equipment={selectedEquipment}
         tenant={selectedTenant}
+        owner={user}
         handovers={selectedHandovers}
         timeline={timeline}
         onClose={() => setSelectedRentalId(null)}

@@ -38,6 +38,14 @@ class RentalWorkflowService
     // ══════════════════════════════════════════
     public function createRental(array $data, User $tenant): RentalOperation
     {
+        if ($tenant->kyc_status !== 'approved') {
+            throw new \App\Domains\Shared\Exceptions\UnauthorizedDomainActionException('يجب توثيق الهوية بالكامل قبل طلب تأجير معدة.');
+        }
+
+        if ($tenant->type === 'owner') {
+            throw new \App\Domains\Shared\Exceptions\UnauthorizedDomainActionException('حساب المؤجر لا يمكنه طلب تأجير المعدات.');
+        }
+
         $this->availability->validateForSubmit(
             $data['equipment_id'],
             $data['start_date'],

@@ -120,14 +120,76 @@ Route::get('/product/{id}', function ($id) use ($equipmentCard) {
     $equipment = EquipmentModel::with(['category', 'images', 'owner'])
         ->where('status', 'active')
         ->findOrFail($id);
+    $settings = app(\App\Shared\Settings\PlatformSettingsService::class);
+    $ownerReviews = ReviewModel::query()
+        ->with(['reviewer:id,full_name,avatar', 'rental:id,equipment_id'])
+        ->where('target_type', 'user')
+        ->where('target_id', $equipment->owner_id)
+        ->where('status', 'visible')
+        ->latest()
+        ->take(20)
+        ->get()
+        ->map(fn (ReviewModel $review) => [
+            'id' => $review->id,
+            'rating' => (float) $review->rating,
+            'review_text' => $review->review_text,
+            'created_at' => $review->created_at?->toDateString(),
+            'reviewer' => [
+                'full_name' => $review->reviewer?->full_name,
+                'avatar' => $review->reviewer?->avatar,
+            ],
+            'operation' => [
+                'id' => $review->rental_op_id,
+                'equipment_id' => $review->rental?->equipment_id,
+            ],
+        ]);
 
     return Inertia::render('features/product-details/ProductDetailPage', [
         'product' => $equipmentCard($equipment),
+        'platform_terms' => $settings->getPlatformTerms(),
+        'owner_reviews' => [
+            'average' => round((float) $ownerReviews->avg('rating'), 2),
+            'count' => $ownerReviews->count(),
+            'items' => $ownerReviews->values(),
+        ],
     ]);
 })->name('product.show');
 
 Route::get('/cart', function () {
-    return Inertia::render('features/cart/CartPage');
+    $contractTemplate = app(\App\Shared\Settings\PlatformSettingsService::class)->getContractTemplate();
+    $contractVariables = null;
+    $equipment = request()->filled('equipment_id')
+        ? EquipmentModel::with('owner')->find(request('equipment_id'))
+        : null;
+
+    if ($equipment && request()->user()) {
+        $start = request('start_date');
+        $end = request('end_date');
+        $durationDays = 1;
+        if ($start && $end) {
+            $durationDays = max(1, \Carbon\Carbon::parse($start)->diffInDays(\Carbon\Carbon::parse($end)));
+        }
+        $rentalAmount = (float) $equipment->price_per_day * $durationDays;
+
+        $contractVariables = [
+            'rental_id' => 'بانتظار الإنشاء',
+            'tenant_name' => request()->user()->full_name,
+            'owner_name' => $equipment->owner?->full_name,
+            'equipment_name' => $equipment->name,
+            'rental_price' => number_format($rentalAmount, 2),
+            'insurance_amount' => number_format((float) $equipment->insurance_amount, 2),
+            'total_amount' => number_format($rentalAmount + (float) $equipment->insurance_amount, 2),
+            'start_date' => $start,
+            'end_date' => $end,
+            'delivery_location' => 'يُحدد في خطوة بيانات التسليم',
+            'preferred_time_slot' => 'يُحدد في خطوة بيانات التسليم',
+        ];
+    }
+
+    return Inertia::render('features/cart/CartPage', [
+        'contract_template' => $contractTemplate,
+        'contract_variables' => $contractVariables,
+    ]);
 })->name('cart');
 
 // Public JSON endpoint – no auth required
@@ -171,7 +233,7 @@ Route::middleware(['auth'])->group(function () {
         })->name('index');
         Route::get('/order/{id}', function ($id) {
             $rental = request()->user()->rentalsAsTenant()
-                ->with(['equipment.images', 'owner', 'contract', 'payments', 'handoverReports', 'equipmentHandover'])
+                ->with(['equipment.images', 'owner', 'tenant', 'contract', 'payments', 'handoverReports', 'equipmentHandover'])
                 ->findOrFail($id);
 
             return Inertia::render('Tenant/Orders/OrderDetails/OrderDetailsPage', [

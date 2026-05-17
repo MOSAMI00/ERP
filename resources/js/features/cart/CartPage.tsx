@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useForm, usePage } from '@inertiajs/react';
 import { CartHeader } from './ui/Header';
 import { Stepper } from './ui/Stepper';
@@ -10,6 +10,7 @@ import { SummarySidebar } from './SummarySidebar/SummarySidebar';
 export default function CartPage() {
   const { props } = usePage<any>();
   const [removedIds, setRemovedIds] = useState<any[]>([]);
+  const [deliveryError, setDeliveryError] = useState('');
 
   const queryParams = new URLSearchParams(window.location.search);
   const queryItem = queryParams.get('equipment_id') ? {
@@ -53,6 +54,35 @@ export default function CartPage() {
   const deposit = cartItems.reduce((acc, item) => acc + (item.deposit ?? 0), 0);
   const serviceFee = cartItems.reduce((acc, item) => acc + (item.service_fee ?? item.serviceFee ?? 0), 0);
   const total = cartItems.reduce((acc, item) => acc + (item.total_amount ?? item.totalAmount ?? 0), 0);
+  const timeSlotLabels = {
+    morning: 'صباحاً (8ص - 12م)',
+    afternoon: 'ظهراً (12م - 4م)',
+    evening: 'مساءً (4م - 8م)',
+  };
+  const buildDeliveryLocation = () => [
+    form.data.delivery_info?.governorate,
+    form.data.delivery_info?.district,
+    form.data.delivery_info?.address,
+  ].filter(Boolean).join(' - ');
+
+  const contractBody = useMemo(() => {
+    const template = props.contract_template;
+    const variables = {
+      ...(props.contract_variables ?? {}),
+      delivery_location: form.data.delivery_location || buildDeliveryLocation() || '—',
+      preferred_time_slot: timeSlotLabels[form.data.time_slot] ?? '—',
+      rental_price: rentalCost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+      insurance_amount: deposit.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+      total_amount: (rentalCost + deposit).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+    };
+
+    if (!template) return null;
+
+    return Object.entries(variables).reduce(
+      (body, [key, value]) => body.replaceAll(`{${key}}`, String(value ?? '—')),
+      template,
+    );
+  }, [props.contract_template, props.contract_variables, form.data.delivery_info, form.data.delivery_location, form.data.time_slot, rentalCost, deposit]);
 
   const handleDelete = (id) => {
     setRemovedIds((current) => [...current, id]);
@@ -68,6 +98,18 @@ export default function CartPage() {
       ].filter(Boolean).join(' - '),
     }));
     form.post('/rentals');
+  };
+
+  const handleDeliveryNext = () => {
+    const info = form.data.delivery_info ?? {};
+    if (!info.governorate || !info.district?.trim() || !info.address?.trim() || !form.data.time_slot) {
+      setDeliveryError('جميع بيانات التسليم والوقت المفضل مطلوبة قبل المتابعة للعقد.');
+      return;
+    }
+
+    form.setData('delivery_location', buildDeliveryLocation());
+    setDeliveryError('');
+    setCurrentStep(3);
   };
 
   return (
@@ -92,8 +134,9 @@ export default function CartPage() {
                   setDeliveryInfo={(info) => form.setData('delivery_info', typeof info === 'function' ? info(form.data.delivery_info) : info)}
                   timeSlot={form.data.time_slot}
                   setTimeSlot={(slot) => form.setData('time_slot', slot)}
+                  error={deliveryError}
                   onBack={() => setCurrentStep(1)}
-                  onNext={() => setCurrentStep(3)}
+                  onNext={handleDeliveryNext}
                 />
               )}
               {currentStep === 3 && (
@@ -104,6 +147,7 @@ export default function CartPage() {
                   onConfirm={handleConfirm}
                   processing={form.processing}
                   errors={form.errors}
+                  contractBody={contractBody}
                 />
               )}
             </section>

@@ -43,11 +43,6 @@ class RentalOperationController extends Controller
     {
         $data = $request->validated();
         
-        if (empty($data['delivery_location'])) {
-            $equipment = Equipment::findOrFail($data['equipment_id']);
-            $data['delivery_location'] = $equipment->location ?? 'صنعاء';
-        }
-
         try {
             $rental = $this->workflow->createRental($data, $request->user());
         } catch (\App\Domains\Shared\Exceptions\InvalidStateTransitionException $e) {
@@ -59,7 +54,7 @@ class RentalOperationController extends Controller
         }
 
         return redirect()->route('rentals.show', $rental)
-            ->with('success', 'Rental request sent.');
+            ->with('success', 'تم إرسال طلب التأجير بنجاح.');
     }
 
     public function show(RentalOperation $rental)
@@ -88,7 +83,7 @@ class RentalOperationController extends Controller
 
         $this->workflow->approveRental($rental);
 
-        return back()->with('success', 'Rental confirmed.');
+        return back()->with('success', 'تمت الموافقة على الطلب وإشعار المستأجر.');
     }
 
     public function cancel(CancelRentalRequest $request, RentalOperation $rental)
@@ -103,6 +98,6 @@ class RentalOperationController extends Controller
             $this->workflow->cancelByTenant($rental, $data['cancellation_reason']);
         }
 
-        return back()->with('success', 'Rental cancelled.');
+        return back()->with('success', 'تم إلغاء عملية التأجير.');
     }
 }

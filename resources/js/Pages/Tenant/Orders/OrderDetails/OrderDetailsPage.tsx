@@ -92,6 +92,48 @@ function HandoverSummary({ reports }) {
   );
 }
 
+function ContactInfoCard({ rental, isPaid }) {
+  if (!isPaid) return null;
+
+  const cleanPhone = (phone) => String(phone ?? '').replace(/[^\d]/g, '');
+  const ownerPhone = rental.owner?.phone;
+  const tenantPhone = rental.tenant?.phone;
+  const ownerWhatsapp = ownerPhone ? `https://wa.me/${cleanPhone(ownerPhone)}` : null;
+  const tenantWhatsapp = tenantPhone ? `https://wa.me/${cleanPhone(tenantPhone)}` : null;
+
+  return (
+    <div className="bg-white rounded-2xl border border-[#E0E0E0] p-5">
+      <h3 className="font-bold text-[#222222] mb-4">بيانات التواصل والتسليم</h3>
+      <div className="grid sm:grid-cols-2 gap-3">
+        <div className="p-3 bg-[#F4F6F9] rounded-xl">
+          <p className="text-xs text-[#888888] mb-1">المؤجر</p>
+          <p className="font-semibold text-[#222222]">{rental.owner?.full_name ?? '—'}</p>
+          <p className="text-sm text-[#555555] mt-1">{ownerPhone ?? 'لا يوجد رقم هاتف'}</p>
+          {ownerWhatsapp && (
+            <a className="text-sm font-bold text-[#2D5A27] underline" href={ownerWhatsapp} target="_blank" rel="noreferrer">
+              تواصل عبر واتساب
+            </a>
+          )}
+        </div>
+        <div className="p-3 bg-[#F4F6F9] rounded-xl">
+          <p className="text-xs text-[#888888] mb-1">المستأجر</p>
+          <p className="font-semibold text-[#222222]">{rental.tenant?.full_name ?? '—'}</p>
+          <p className="text-sm text-[#555555] mt-1">{tenantPhone ?? 'لا يوجد رقم هاتف'}</p>
+          {tenantWhatsapp && (
+            <a className="text-sm font-bold text-[#2D5A27] underline" href={tenantWhatsapp} target="_blank" rel="noreferrer">
+              تواصل عبر واتساب
+            </a>
+          )}
+        </div>
+      </div>
+      <div className="mt-3 text-sm text-[#555555] space-y-1">
+        <p>عنوان المستأجر: {rental.delivery_location ?? '—'}</p>
+        <p>عنوان المؤجر/المعدة: {rental.equipment?.address ?? rental.equipment?.governorate ?? '—'}</p>
+      </div>
+    </div>
+  );
+}
+
 export default function OrderDetailPage() {
   const { props } = usePage();
   const rental = props.rental ?? null;
@@ -139,6 +181,7 @@ export default function OrderDetailPage() {
         <section className="lg:col-span-8 flex flex-col gap-5">
           <OrderInfoCard rental={rental} statusLabel={st.label} statusColor={st.color} statusBg={st.bg} />
           <RentalInfoCard rental={rental} />
+          <ContactInfoCard rental={rental} isPaid={hasPaidPayment || ['paid', 'in_use', 'completed', 'disputed'].includes(rental.status)} />
           <OrderTimeline steps={buildTimeline(rental.status)} />
           {showPayForm && (
             <div className="bg-white rounded-2xl border border-border p-5 md:p-6">

@@ -40,12 +40,19 @@ interface Product {
 
 interface PageProps {
   product?: Product;
+  platform_terms?: string;
+  owner_reviews?: {
+    average: number;
+    count: number;
+    items: Array<any>;
+  };
   [key: string]: unknown;
 }
 
 export default function ProductDetailPage() {
   const { props } = usePage<PageProps>();
   const product = props.product ?? null;
+  const user = (props.auth as any)?.user ?? null;
 
   if (!product) {
     return (
@@ -75,12 +82,16 @@ export default function ProductDetailPage() {
               status={product.status}
               discount={product.discount}
             />
-            <Tabs product={product} />
+            <Tabs
+              product={product}
+              platformTerms={props.platform_terms}
+              ownerReviews={props.owner_reviews}
+            />
           </section>
 
           <aside className="lg:col-span-4">
             <div className="sticky top-24">
-              <BookingSidebar product={product} />
+              <BookingSidebar product={product} user={user} />
               <OwnerCard owner={product.owner} />
             </div>
           </aside>

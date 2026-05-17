@@ -21,6 +21,8 @@ class UpdateSettingsRequest extends FormRequest
             'objection_window_hours' => ['required', 'integer', 'min:1'],
             'refund_window_days'     => ['required', 'integer', 'min:1'],
             'kyc_required'           => ['required', 'boolean'],
+            'platform_terms'         => ['nullable', 'string'],
+            'contract_template'      => ['nullable', 'string'],
         ];
     }
 }

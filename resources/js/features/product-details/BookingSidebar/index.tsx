@@ -8,7 +8,7 @@ import { BookingButton } from './BookingButton';
 import { TrustBadges } from './TrustBadges';
 import { calculateRentalDays } from '../../../utils/formatters';
 
-export function BookingSidebar({ product }) {
+export function BookingSidebar({ product, user }) {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [isChecking, setIsChecking] = useState(false);
@@ -21,6 +21,16 @@ export function BookingSidebar({ product }) {
   const serviceFee = days * dailyRate * 0.05;
   const totalRental = days * dailyRate;
   const grandTotal = totalRental + deposit + serviceFee;
+  const isKycApproved = user?.kyc_status === 'approved';
+  const isOwnerAccount = user?.type === 'owner';
+  const bookingBlocked = !user || !isKycApproved || isOwnerAccount;
+  const blockMessage = !user
+    ? 'سجل الدخول بحساب مستأجر موثق قبل اختيار التواريخ.'
+    : isOwnerAccount
+      ? 'حساب المؤجر لا يمكنه طلب تأجير المعدات. استخدم حساب مستأجر.'
+      : !isKycApproved
+        ? 'يجب توثيق الهوية بالكامل قبل اختيار التواريخ وإرسال طلب التأجير.'
+        : '';
   
   useEffect(() => {
     if (startDate && endDate && days > 0) {
@@ -50,6 +60,7 @@ export function BookingSidebar({ product }) {
   }, [startDate, endDate, days, product.id]);
 
   const handleBook = () => {
+    if (bookingBlocked) return;
     if (!isValid) return;
     
     router.visit('/cart', {
@@ -73,6 +84,12 @@ export function BookingSidebar({ product }) {
   return (
     <div className="bg-white border border-border rounded-xl p-6 space-y-4 shadow-sm">
       <PriceCard product={product} dailyRate={dailyRate} deposit={deposit} />
+
+      {bookingBlocked && (
+        <div className="text-sm p-3 rounded-lg bg-amber-50 text-amber-800 border border-amber-200">
+          {blockMessage}
+        </div>
+      )}
       
       <DatePickers 
         productId={product.id}
@@ -81,6 +98,7 @@ export function BookingSidebar({ product }) {
         endDate={endDate} 
         setEndDate={setEndDate} 
         days={days} 
+        disabled={bookingBlocked}
       />
 
       {validationReason && (
@@ -99,7 +117,7 @@ export function BookingSidebar({ product }) {
         startDate={startDate} 
         endDate={endDate} 
         onBook={handleBook}
-        disabled={!isValid || isChecking}
+        disabled={bookingBlocked || !isValid || isChecking}
         loading={isChecking}
       />
 

@@ -6,6 +6,7 @@ const RentalSelectionDetails = ({
   rental,
   equipment,
   tenant,
+  owner,
   handovers,
   timeline,
   onClose,
@@ -25,6 +26,7 @@ const RentalSelectionDetails = ({
           rental={rental}
           equipment={equipment}
           tenant={tenant}
+          owner={owner}
           handovers={handovers}
         />
         <RentalTimeline steps={timeline} />

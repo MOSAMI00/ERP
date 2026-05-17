@@ -5,8 +5,20 @@ const RentalDetailsPanel = ({
   rental,
   equipment,
   tenant,
+  owner,
   handovers,
-}) => (
+}) => {
+  const payments = rental.payments ?? [];
+  const hasPaidPayment = payments.some?.((payment) => {
+    const status = typeof payment.status === 'object' ? payment.status?.value : payment.status;
+    return status === 'paid';
+  });
+  const isPaid = hasPaidPayment || ['paid', 'in_use', 'completed', 'disputed'].includes(rental.status);
+  const tenantPhone = tenant?.phone;
+  const ownerPhone = owner?.phone;
+  const whatsappLink = (phone?: string) => phone ? `https://wa.me/${String(phone).replace(/[^\d]/g, '')}` : null;
+
+  return (
   <div className="owner-card">
     <h4 className="mb-4">معلومات العملية</h4>
     <div className="flex-center gap-4 mb-6" style={{ justifyContent: 'flex-start' }}>
@@ -51,6 +63,37 @@ const RentalDetailsPanel = ({
       <span style={{ color: 'var(--color-primary-green)' }}>{formatCurrency(rental.total_amount ?? rental.totalAmount)} ر.ي</span>
     </div>
 
+    {isPaid && (
+      <>
+        <hr style={{ border: 'none', borderTop: '1px solid var(--color-border)', margin: '12px 0' }} />
+        <h5 className="mb-3">بيانات التواصل والتسليم</h5>
+        <div className="owner-card" style={{ boxShadow: 'none', backgroundColor: 'var(--color-page-bg)', marginBottom: 8 }}>
+          <div className="mb-3">
+            <span className="text-muted" style={{ fontSize: 12 }}>المستأجر</span>
+            <p style={{ margin: '2px 0', fontWeight: 700 }}>{tenant?.name ?? tenant?.full_name ?? '—'}</p>
+            <p style={{ margin: '2px 0' }}>{tenantPhone ?? 'لا يوجد رقم هاتف'}</p>
+            {whatsappLink(tenantPhone) && (
+              <a href={whatsappLink(tenantPhone) ?? '#'} target="_blank" rel="noreferrer" style={{ color: 'var(--color-primary-green)', fontWeight: 700 }}>
+                تواصل عبر واتساب
+              </a>
+            )}
+          </div>
+          <div className="mb-3">
+            <span className="text-muted" style={{ fontSize: 12 }}>المؤجر</span>
+            <p style={{ margin: '2px 0', fontWeight: 700 }}>{owner?.full_name ?? owner?.name ?? '—'}</p>
+            <p style={{ margin: '2px 0' }}>{ownerPhone ?? 'لا يوجد رقم هاتف'}</p>
+            {whatsappLink(ownerPhone) && (
+              <a href={whatsappLink(ownerPhone) ?? '#'} target="_blank" rel="noreferrer" style={{ color: 'var(--color-primary-green)', fontWeight: 700 }}>
+                تواصل عبر واتساب
+              </a>
+            )}
+          </div>
+          <p className="text-muted mb-1" style={{ fontSize: 12 }}>عنوان المستأجر: {rental.delivery_location ?? rental.deliveryLocation ?? '—'}</p>
+          <p className="text-muted mb-0" style={{ fontSize: 12 }}>عنوان المؤجر/المعدة: {equipment.address ?? equipment.location ?? '—'}</p>
+        </div>
+      </>
+    )}
+
     {handovers.length > 0 && (
       <>
         <hr style={{ border: 'none', borderTop: '1px solid var(--color-border)', margin: '12px 0' }} />
@@ -73,6 +116,7 @@ const RentalDetailsPanel = ({
       </>
     )}
   </div>
-);
+  );
+};
 
 export default RentalDetailsPanel;
