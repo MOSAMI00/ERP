@@ -308,14 +308,14 @@ export default function RentalDetailsPage() {
                 )}
 
                 {isOwner && rental.status === 'paid' && (
-                  <Link href={`/delivery?id=${rental.id}`} className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-primary font-bold text-white transition-colors hover:bg-primary/90">
+                  <Link href={`/owner/delivery?id=${rental.id}`} className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-primary font-bold text-white transition-colors hover:bg-primary/90">
                     <Package size={18} />
                     رفع محضر التسليم
                   </Link>
                 )}
 
                 {isOwner && rental.status === 'return_done' && (
-                  <Link href={`/delivery?id=${rental.id}`} className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-orange-500 font-bold text-white transition-colors hover:bg-orange-600">
+                  <Link href={`/owner/delivery?id=${rental.id}`} className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-orange-500 font-bold text-white transition-colors hover:bg-orange-600">
                     <AlertCircle size={18} />
                     مراجعة الإرجاع أو التعويض
                   </Link>
