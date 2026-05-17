@@ -1,11 +1,14 @@
 import React from 'react';
 import { router } from '@inertiajs/react';
-import { FileText, XCircle } from 'lucide-react';
+import { FileText, XCircle, CreditCard } from 'lucide-react';
 import { STATUS_CONFIG } from '../../../../../entities/rental';
 import { formatCurrency, formatRentalDateRange, isRentalStartingSoon } from '../../../../../utils/formatters';
 
+const enumValue = (value) => (typeof value === 'object' ? value?.value : value);
+
 function ActionButton({ rental, readyForDelivery, isPaid }) {
-  const { status, id } = rental;
+  const status = enumValue(rental.status);
+  const id = rental.id;
 
   const handleVisit = (e, url) => {
     e.stopPropagation();
@@ -23,23 +26,16 @@ function ActionButton({ rental, readyForDelivery, isPaid }) {
     );
   }
 
-  if (status === 'confirmed' && !isPaid) {
-    return (
-      <button
-        onClick={(e) => handleVisit(e, `/rentals/${id}`)}
-        className="px-4 py-2 rounded-lg text-sm font-semibold bg-warning text-white hover:bg-warning/90 transition-all"
-      >
-        إتمام الدفع
-      </button>
-    );
-  }
-
   const configs = {
     confirmed: {
-      label: readyForDelivery ? 'جاهز للاستلام؟' : 'عرض التفاصيل',
+      label: (
+        <span className="inline-flex items-center gap-1.5">
+          <CreditCard size={15} /> إتمام الدفع
+        </span>
+      ),
       color: '#FFFFFF',
-      bg: '#2D5A27',
-      onClick: (e) => handleVisit(e, readyForDelivery ? `/handover/create/${id}?phase=delivery` : `/rentals/${id}`),
+      bg: '#F39C12', // Warning color
+      onClick: (e) => handleVisit(e, `/rentals/${id}/pay`),
     },
     in_use: { 
       label: 'التسليم والإرجاع', 
@@ -67,7 +63,7 @@ function ActionButton({ rental, readyForDelivery, isPaid }) {
   return (
     <button
       onClick={config.onClick}
-      className="px-4 py-2 rounded-lg text-sm font-semibold transition-all hover:opacity-90 active:scale-95"
+      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold transition-all hover:opacity-90 active:scale-95"
       style={{ color: config.color, backgroundColor: config.bg }}
     >
       {config.label}
@@ -84,16 +80,17 @@ function paidRentalPayment(rental) {
 }
 
 export function OrderCard({ rental }) {
-  const st = STATUS_CONFIG[rental.status] || { label: rental.status, color: '#888', bg: '#eee' };
+  const statusStr = enumValue(rental.status);
+  const st = STATUS_CONFIG[statusStr] || { label: statusStr, color: '#888', bg: '#eee' };
   const equipment = rental.equipment || {};
   const owner = equipment.owner || rental.owner || {};
-  
-  const isPaid = ['paid', 'in_use', 'completed', 'disputed'].includes(rental.status) || 
-                (rental.payments && rental.payments.some(p => p.status === 'paid'));
-  const paymentLabel = isPaid ? 'مدفوع' : (rental.payment_status === 'refunded' ? 'مسترد' : 'غير مدفوع');
-  const paymentColor = isPaid ? '#27AE60' : (rental.payment_status === 'refunded' ? '#95A5A6' : '#F39C12');
-  const readyForDelivery = rental.status === 'paid' && isRentalStartingSoon(rental);
-  const canCancelBeforePayment = ['pending', 'confirmed'].includes(rental.status) && !isPaid;
+
+  const isPaid = ['paid', 'in_use', 'completed', 'disputed'].includes(statusStr) ||
+    (rental.payments && rental.payments.some(p => enumValue(p.status) === 'paid'));
+  const paymentLabel = isPaid ? 'مدفوع' : (enumValue(rental.payment_status) === 'refunded' ? 'مسترد' : 'غير مدفوع');
+  const paymentColor = isPaid ? '#27AE60' : (enumValue(rental.payment_status) === 'refunded' ? '#95A5A6' : '#F39C12');
+  const readyForDelivery = statusStr === 'paid' && isRentalStartingSoon(rental);
+  const canCancelBeforePayment = ['pending', 'confirmed'].includes(statusStr) && !isPaid;
   const receiptPayment = paidRentalPayment(rental);
 
   const cancelRental = (event) => {
@@ -147,7 +144,7 @@ export function OrderCard({ rental }) {
         <span className="px-2.5 py-1 rounded-full bg-[#F4F6F9]" style={{ color: paymentColor }}>
           الدفع: {paymentLabel}
         </span>
-        {rental.status === 'disputed' && (
+        {statusStr === 'disputed' && (
           <span className="px-2.5 py-1 rounded-full bg-[#FDEDEC] text-[#E74C3C] font-bold">
             عليه نزاع
           </span>
