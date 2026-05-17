@@ -14,20 +14,12 @@ return new class extends Migration
         Schema::table('users', function (Blueprint $table) {
             $table->enum('kyc_status', ['pending', 'approved', 'rejected'])->default('pending')->change();
         });
-
-        Schema::table('rental_operations', function (Blueprint $table) {
-            $table->string('delivery_time')->nullable()->change();
-        });
     }
 
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
             $table->enum('kyc_status', ['pending', 'verified', 'rejected'])->default('pending')->change();
-        });
-
-        Schema::table('rental_operations', function (Blueprint $table) {
-            $table->timestamp('delivery_time')->nullable()->change();
         });
     }
 };
