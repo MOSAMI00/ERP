@@ -141,11 +141,12 @@ export default function RentalDetailsPage() {
                 </div>
                 <div>
                   <div className="font-bold">{isOwner ? rental.tenant.full_name : rental.owner.full_name}</div>
-                  
+                  <div className="text-sm text-muted-foreground">{isOwner ? rental.tenant.governorate : rental.owner.governorate}</div>
+                </div>
                 <div className="mr-auto">
                   <div className="flex items-center gap-1 text-yellow-500 font-bold">
                     <Star size={14} fill="currentColor" />
-                      <span>{isOwner ? rental.tenant.rating : rental.owner.rating}</span>
+                    <span>{isOwner ? rental.tenant.rating : rental.owner.rating}</span>
                   </div>
                 </div>
               </div>
