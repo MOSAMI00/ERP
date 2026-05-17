@@ -54,7 +54,6 @@ class RentalOperation extends Model
             'start_date' => 'date',
             'end_date' => 'date',
             'payment_deadline' => 'datetime',
-            'delivery_time' => 'datetime',
             'delivery_confirmed_at' => 'datetime',
             'return_confirmed_at' => 'datetime',
             'rental_amount' => 'decimal:2',
