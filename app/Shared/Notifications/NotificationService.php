@@ -99,10 +99,10 @@ class NotificationService
         if ($recipientRole === 'owner') {
             return $event === 'new_rental_request'
                 ? '/owner/requests'
-                : "/owner/rentals?selected={$rental->id}";
+                : "/rentals/{$rental->id}";
         }
 
-        return "/dashboard/order/{$rental->id}";
+        return "/rentals/{$rental->id}";
     }
 
     private function userActionUrl(string $event): string

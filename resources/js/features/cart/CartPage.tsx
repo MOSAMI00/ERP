@@ -69,19 +69,36 @@ export default function CartPage() {
     const template = props.contract_template;
     const variables = {
       ...(props.contract_variables ?? {}),
+      issued_at: new Date().toISOString().slice(0, 10),
       delivery_location: form.data.delivery_location || buildDeliveryLocation() || '—',
       preferred_time_slot: timeSlotLabels[form.data.time_slot] ?? '—',
       rental_price: rentalCost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
       insurance_amount: deposit.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
       total_amount: (rentalCost + deposit).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
     };
+    const aliases = {
+      rental_id: 'رقم_العملية',
+      issued_at: 'تاريخ_الإصدار',
+      tenant_name: 'اسم_المستأجر',
+      owner_name: 'اسم_المؤجر',
+      equipment_name: 'اسم_المعدة',
+      rental_price: 'إجمالي_الإيجار',
+      insurance_amount: 'مبلغ_التأمين',
+      start_date: 'تاريخ_البداية',
+      end_date: 'تاريخ_النهاية',
+    };
 
     if (!template) return null;
 
-    return Object.entries(variables).reduce(
-      (body, [key, value]) => body.replaceAll(`{${key}}`, String(value ?? '—')),
-      template,
-    );
+    return Object.entries(variables).reduce((body, [key, value]) => {
+      const text = String(value ?? '—');
+      const alias = aliases[key];
+
+      return body
+        .replaceAll(`{${key}}`, text)
+        .replaceAll(`{{${key}}}`, text)
+        .replaceAll(alias ? `{{${alias}}}` : `{{${key}}}`, text);
+    }, template);
   }, [props.contract_template, props.contract_variables, form.data.delivery_info, form.data.delivery_location, form.data.time_slot, rentalCost, deposit]);
 
   const handleDelete = (id) => {

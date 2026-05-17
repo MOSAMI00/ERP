@@ -233,13 +233,10 @@ Route::middleware(['auth'])->group(function () {
         })->name('index');
         Route::get('/order/{id}', function ($id) {
             $rental = request()->user()->rentalsAsTenant()
-                ->with(['equipment.images', 'owner', 'tenant', 'contract', 'payments', 'handoverReports', 'equipmentHandover'])
+                ->select('id')
                 ->findOrFail($id);
 
-            return Inertia::render('Tenant/Orders/OrderDetails/OrderDetailsPage', [
-                'rental' => $rental,
-                'handover_reports' => $rental->handoverReports,
-            ]);
+            return redirect()->route('rentals.show', $rental);
         })->name('order');
         Route::get('/order/{id}/delivery', function ($id) {
             return redirect()->route('dashboard.delivery', ['id' => $id]);
@@ -329,7 +326,15 @@ Route::middleware(['auth'])->group(function () {
             return Inertia::render('Owner/Requests/RequestsPage', ['rentals' => request()->user()->rentalsAsOwner()->with(['equipment.images', 'tenant', 'contract', 'payments'])->latest()->get()]);
         })->name('requests');
         Route::get('/rentals', function () {
-            return Inertia::render('Owner/Rentals/RentalsPage', ['rentals' => request()->user()->rentalsAsOwner()->with(['equipment.images', 'tenant', 'contract', 'payments'])->latest()->get()]);
+            if (request()->filled('selected')) {
+                $rental = request()->user()->rentalsAsOwner()
+                    ->select('id')
+                    ->findOrFail(request('selected'));
+
+                return redirect()->route('rentals.show', $rental);
+            }
+
+            return redirect()->route('owner.requests');
         })->name('rentals');
         Route::get('/delivery', function () {
             $rentals = request()->user()->rentalsAsOwner()->with(['equipment.images', 'equipmentHandover.dispute', 'tenant', 'owner'])->latest()->get();
