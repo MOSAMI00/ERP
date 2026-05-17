@@ -3,6 +3,7 @@ import { CheckCircle2, FileSignature } from 'lucide-react';
 import { formatCurrency, formatRentalDateRange } from '../../../../utils/formatters';
 import { AppButton } from '../../../../components/shared';
 import DetailsModal from '../../../../components/shared/DetailsModal';
+import { ContractBody } from '../../../../features/contracts/ui/ContractBody';
 import {
   equipmentOf,
   tenantOf,
@@ -73,15 +74,7 @@ const AcceptRequestModal = ({ isOpen, rental, onClose, onConfirm }) => {
         <h4 className="flex-center gap-2" style={{ justifyContent: 'flex-start', marginTop: 0 }}>
           <FileSignature size={18} /> العقد
         </h4>
-        <pre style={{
-          whiteSpace: 'pre-wrap',
-          margin: 0,
-          fontFamily: 'inherit',
-          lineHeight: 1.9,
-          color: 'var(--color-text-main)',
-        }}>
-          {body}
-        </pre>
+        <ContractBody body={body} />
       </div>
 
       <label className="flex-center gap-3" style={{ justifyContent: 'flex-start', cursor: 'pointer' }}>

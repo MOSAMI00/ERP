@@ -1,4 +1,5 @@
-import { ShieldCheck, Signature } from 'lucide-react';
+import { Signature } from 'lucide-react';
+import { ContractBody } from '../../contracts/ui/ContractBody';
 
 export function ContractSigning({ 
   agreeToContract, 
@@ -21,10 +22,8 @@ export function ContractSigning({
         </div>
       </div>
 
-      <div className="bg-muted/50 border border-border rounded-xl p-6 h-[400px] overflow-y-auto text-sm leading-relaxed text-foreground/80 font-arabic">
-        <pre className="whitespace-pre-wrap font-inherit m-0" style={{ fontFamily: 'inherit' }}>
-          {contractBody ?? 'تعذر تحميل نص العقد. يرجى العودة للخطوة السابقة والمحاولة مرة أخرى.'}
-        </pre>
+      <div className="bg-muted/50 border border-border rounded-xl p-3 h-[440px] overflow-y-auto font-arabic">
+        <ContractBody body={contractBody ?? 'تعذر تحميل نص العقد. يرجى العودة للخطوة السابقة والمحاولة مرة أخرى.'} />
       </div>
 
       <div className="p-4 bg-primary/5 border border-primary/20 rounded-xl flex gap-3 items-start">

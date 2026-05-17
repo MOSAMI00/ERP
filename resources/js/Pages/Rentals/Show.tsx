@@ -18,6 +18,7 @@ import {
   User,
 } from 'lucide-react';
 import { formatCurrency } from '../../utils/formatters';
+import { ContractBody } from '../../features/contracts/ui/ContractBody';
 
 const STATUS_META = {
   pending: { label: 'بانتظار الموافقة', tone: 'bg-amber-100 text-amber-800' },
@@ -173,65 +174,6 @@ function PeopleCard({ rental, isOwner }: { rental: any; isOwner: boolean }) {
   );
 }
 
-function ReportsCard({ reports }: { reports: any[] }) {
-  if (!reports?.length) return null;
-
-  return (
-    <div className="rounded-2xl border border-border bg-white p-6 shadow-sm">
-      <h3 className="mb-4 flex items-center gap-2 font-bold">
-        <Truck size={18} className="text-primary" />
-        محاضر التسليم والاستلام
-      </h3>
-      <div className="space-y-4">
-        {reports.map((report) => (
-          <div key={report.id} className="rounded-xl border border-border bg-muted/30 p-4">
-            <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-              <p className="font-bold">{statusValue(report.phase) === 'delivery' ? 'محضر التسليم' : 'محضر الاستلام/الإرجاع'}</p>
-              <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-muted-foreground">
-                {report.created_at?.slice?.(0, 10) ?? '—'}
-              </span>
-            </div>
-            <div className="grid gap-2 text-sm sm:grid-cols-2">
-              <p>حالة المعدة: <strong>{statusValue(report.condition_status) ?? '—'}</strong></p>
-              <p>وجود ملاحظات: <strong>{report.has_damage || report.has_issues ? 'نعم' : 'لا'}</strong></p>
-            </div>
-            {report.notes && <p className="mt-2 text-sm text-muted-foreground">{report.notes}</p>}
-            {report.images?.length > 0 && (
-              <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
-                {report.images.map((image: any) => (
-                  <a key={image.id ?? image.image_url} href={image.image_url} target="_blank" rel="noreferrer">
-                    <img src={image.image_url} alt="" className="h-24 w-full rounded-lg object-cover" />
-                  </a>
-                ))}
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function DisputeCard({ handover }: { handover: any }) {
-  const dispute = handover?.dispute;
-  if (!dispute) return null;
-
-  return (
-    <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-red-900 shadow-sm">
-      <h3 className="mb-2 flex items-center gap-2 font-bold">
-        <AlertCircle size={18} />
-        حالة النزاع
-      </h3>
-      <p className="text-sm">الحالة: <strong>{dispute.status ?? '—'}</strong></p>
-      <p className="text-sm">التعويض المطلوب: <strong>{formatCurrency(dispute.requested_amount ?? 0)} ر.ي</strong></p>
-      {dispute.final_compensation != null && (
-        <p className="text-sm">قرار التعويض النهائي: <strong>{formatCurrency(dispute.final_compensation)} ر.ي</strong></p>
-      )}
-      {dispute.admin_note && <p className="mt-2 text-sm">{dispute.admin_note}</p>}
-    </div>
-  );
-}
-
 export default function RentalDetailsPage() {
   const { rental, auth } = usePage<any>().props;
   const user = auth?.user;
@@ -242,6 +184,7 @@ export default function RentalDetailsPage() {
   const image = primaryImage(rental.equipment);
   const backUrl = isOwner ? '/owner/requests' : '/dashboard';
   const preferredTime = TIME_SLOT_LABELS[rental.preferred_time_slot] ?? rental.delivery_time ?? '—';
+  const canCancelBeforePayment = ['pending', 'confirmed'].includes(rental.status) && !paid && (isTenant || rental.status === 'confirmed');
 
   const postAction = (label: string, url: string, data: Record<string, any> = {}) => {
     if (!confirm(`هل أنت متأكد من ${label}؟`)) return;
@@ -298,9 +241,9 @@ export default function RentalDetailsPage() {
                   <FileText size={18} className="text-primary" />
                   العقد الإلكتروني
                 </h3>
-                <pre className="max-h-[520px] overflow-y-auto whitespace-pre-wrap rounded-xl border border-border bg-muted/50 p-4 text-sm leading-8" style={{ fontFamily: 'inherit' }}>
-                  {rental.contract.contract_body}
-                </pre>
+                <div className="max-h-[560px] overflow-y-auto rounded-xl bg-muted/30 p-3">
+                  <ContractBody body={rental.contract.contract_body} />
+                </div>
                 <div className="mt-4 flex flex-wrap gap-4 text-xs font-bold">
                   <span className="flex items-center gap-1 text-success"><CheckCircle2 size={14} /> تم توقيع المستأجر</span>
                   {rental.contract.owner_signature === 'signed'
@@ -310,8 +253,6 @@ export default function RentalDetailsPage() {
               </div>
             )}
 
-            <ReportsCard reports={rental.handover_reports ?? rental.handoverReports ?? []} />
-            <DisputeCard handover={rental.equipment_handover ?? rental.equipmentHandover} />
           </section>
 
           <aside className="space-y-6 lg:col-span-4">
@@ -380,7 +321,7 @@ export default function RentalDetailsPage() {
                   </Link>
                 )}
 
-                {['pending', 'confirmed'].includes(rental.status) && !paid && (
+                {canCancelBeforePayment && (
                   <button type="button" onClick={() => postAction('إلغاء العملية', `/rentals/${rental.id}/cancel`, { cancellation_reason: isOwner ? 'ألغى المؤجر العملية قبل الدفع' : 'ألغى المستأجر العملية قبل الدفع' })} className="flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-danger font-bold text-danger transition-colors hover:bg-danger/5">
                     <AlertCircle size={18} />
                     إلغاء العملية
@@ -400,7 +341,7 @@ export default function RentalDetailsPage() {
               <Shield className="text-primary" size={24} />
               <div className="text-xs">
                 <div className="font-bold text-primary">حماية منصة إيجار</div>
-                <div className="text-muted-foreground">العقد والدفع والتقارير محفوظة داخل العملية.</div>
+                <div className="text-muted-foreground">العقد والدفع محفوظان داخل العملية.</div>
               </div>
             </div>
           </aside>

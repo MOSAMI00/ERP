@@ -1,4 +1,5 @@
 import React from 'react';
+import { ContractBody } from './ContractBody';
 
 export function ContractDetailModal({ contract, config, onClose }) {
   if (!contract) return null;
@@ -57,12 +58,8 @@ export function ContractDetailModal({ contract, config, onClose }) {
           </div>
         </div>
 
-        <div className="mt-5 rounded-xl border border-[#E0E0E0] bg-white p-4 text-sm leading-7 text-[#555555]">
-          {contract.body ? (
-            <pre className="m-0 whitespace-pre-wrap font-[inherit] leading-7">{contract.body}</pre>
-          ) : (
-            'لا يوجد نص عقد محفوظ لهذه العملية.'
-          )}
+        <div className="mt-5 max-h-[520px] overflow-y-auto rounded-xl bg-[#F8FAFC] p-3">
+          <ContractBody body={contract.body} />
         </div>
       </div>
     </div>

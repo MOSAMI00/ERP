@@ -67,8 +67,6 @@ class RentalOperationController extends Controller
             'owner',
             'contract',
             'payments',
-            'handoverReports.images',
-            'equipmentHandover.dispute',
             'reviews',
         ]);
 
