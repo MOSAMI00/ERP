@@ -383,7 +383,7 @@ export default function DeliveryPage({ role: roleProp }) {
       setIsSubmittingCompensation(true);
       router.post(`/equipment-handovers/${handover.id}/decide`, {
         owner_decision: 'full_refund',
-        final_condition: activeForm.conditionStatus || 'good',
+        final_condition: compensationCondition(ownerReturnReport.condition_status ?? ownerReturnReport.conditionStatus),
         final_notes: 'اختار المؤجر عدم طلب تعويض.',
       }, {
         preserveScroll: true,

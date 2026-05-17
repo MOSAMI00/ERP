@@ -9,6 +9,7 @@ use App\Domains\Compensation\Actions\CreateEquipmentHandoverAction;
 use App\Domains\Compensation\Actions\RequestCompensationAction;
 use App\Domains\Compensation\Enums\OwnerDecision;
 use App\Domains\Handover\Enums\HandoverPhase;
+use App\Domains\Handover\Enums\ConditionStatus;
 use App\Domains\Payment\Services\PaymentWorkflowService;
 use App\Domains\Rental\Actions\UpdateRentalStatusAction;
 use App\Domains\Rental\Enums\RentalStatus;
@@ -222,7 +223,7 @@ class CompensationWorkflowService
             ->where('submitted_by_role', 'owner')
             ->first();
 
-        return $ownerReport && ($ownerReport->condition_status !== ConditionStatus::Good || $ownerReport->has_issues);
+        return $ownerReport && (!in_array($ownerReport->condition_status,[ConditionStatus::Good,ConditionStatus::Excellent]) || $ownerReport->has_issues);
     }
 
     private function mustHaveReturnReports(RentalOperation $rental): void
