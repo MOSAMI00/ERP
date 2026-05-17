@@ -16,7 +16,7 @@ class DecideHandoverRequest extends FormRequest
         return [
             'owner_decision'     => ['required', 'in:full_refund,partial_refund,no_refund'],
             'proposed_deduction' => ['nullable', 'numeric', 'min:0'],
-            'final_condition'    => ['required', 'in:good,damaged,partially_damaged'],
+            'final_condition'    => ['required', 'in:excellent,good,fair,damaged,partially_damaged'],
             'final_notes'        => ['nullable', 'string'],
         ];
     }

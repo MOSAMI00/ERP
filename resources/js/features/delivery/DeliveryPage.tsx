@@ -74,7 +74,9 @@ function money(value) {
 
 function compensationCondition(status) {
   const value = enumValue(status, 'good');
-  if (value === 'damaged' || value === 'partially_damaged') return value;
+  if (['excellent', 'good', 'fair', 'damaged', 'partially_damaged'].includes(value)) {
+    return value;
+  }
   return 'good';
 }
 
