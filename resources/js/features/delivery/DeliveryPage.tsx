@@ -264,6 +264,7 @@ export default function DeliveryPage({ role: roleProp }) {
   const [forms, setForms] = useState({});
   const [compensationForms, setCompensationForms] = useState({});
   const [isSubmittingCompensation, setIsSubmittingCompensation] = useState(false);
+  const [isSubmittingStage, setIsSubmittingStage] = useState(false);
 
   useEffect(() => {
     if (routeRentalId) setSelectedRentalId(routeRentalId);
@@ -340,8 +341,9 @@ export default function DeliveryPage({ role: roleProp }) {
   };
 
   const handleSubmitStage = () => {
-    if (!selectedRental || !formSpec) return;
+    if (!selectedRental || !formSpec || isSubmittingStage) return;
 
+    setIsSubmittingStage(true);
     router.post('/handover-reports', {
       rental_op_id: selectedRental.id,
       phase: formSpec.phase,
@@ -354,6 +356,9 @@ export default function DeliveryPage({ role: roleProp }) {
       forceFormData: true,
       onSuccess: () => {
         setForms((current) => ({ ...current, [selectedRental.id]: DEFAULT_FORM }));
+      },
+      onFinish: () => {
+        setIsSubmittingStage(false);
       }
     });
   };
@@ -495,6 +500,7 @@ export default function DeliveryPage({ role: roleProp }) {
                 onSelectReport={setSelectedReport}
                 onSubmitRating={handleSubmitRating}
                 hasReview={allReviews.some(r => (r.rental_op_id ?? r.rentalId) === selectedRental.id)}
+                isSubmittingStage={isSubmittingStage}
               />
             ) : (
               <OwnerDeliveryDetails
@@ -515,6 +521,7 @@ export default function DeliveryPage({ role: roleProp }) {
                 onSelectReport={setSelectedReport}
                 onSubmitRating={handleSubmitRating}
                 hasReview={allReviews.some(r => (r.rental_op_id ?? r.rentalId) === selectedRental.id)}
+                isSubmittingStage={isSubmittingStage}
               />
             )
           ) : null}

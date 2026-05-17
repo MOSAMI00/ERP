@@ -37,6 +37,7 @@ export function OwnerDeliveryDetails({
   onSubmitRating,
   hasReview,
   isSubmitting,
+  isSubmittingStage,
 }) {
   const ownerReturnReport = reports.find((report) => report.phase === 'return' && report.submitted_by_role === 'owner');
   const totalAmount = rental.totalAmount ?? rental.total_amount ?? rental.total ?? 0;
@@ -144,6 +145,7 @@ export function OwnerDeliveryDetails({
           spec={formSpec}
           onChange={onUpdateForm}
           onSubmit={onSubmitStage}
+          loading={isSubmittingStage}
         />
       ) : (
         stage !== 'completed' && (

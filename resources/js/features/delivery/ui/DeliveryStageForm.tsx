@@ -1,7 +1,7 @@
 import React from 'react';
 import { AppButton } from '../../../components/shared';
 
-export function DeliveryStageForm({ form, onChange, onSubmit, spec }) {
+export function DeliveryStageForm({ form, onChange, onSubmit, spec, loading }) {
   const isReturn = spec.phase === 'return';
   const isOwner = spec.submitter === 'owner';
 
@@ -64,10 +64,10 @@ export function DeliveryStageForm({ form, onChange, onSubmit, spec }) {
 
       <AppButton
         className="mt-4"
-        disabled={form.evidencePhotos.length === 0}
+        disabled={loading || form.evidencePhotos.length === 0}
         onClick={onSubmit}
       >
-        {spec.submitLabel}
+        {loading ? 'جاري الإرسال...' : spec.submitLabel}
       </AppButton>
     </div>
   );
