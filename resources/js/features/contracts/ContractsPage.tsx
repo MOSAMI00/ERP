@@ -11,6 +11,22 @@ import { TenantContractsTable } from "./ui/TenantContractsTable";
 import { OwnerContractsTable } from "./ui/OwnerContractsTable";
 import { ContractDetailModal } from "./ui/ContractDetailModal";
 
+const money = (value) => `${Number(value ?? 0).toLocaleString('ar-YE')} ر.ي`;
+const enumValue = (value) => (typeof value === 'object' ? value?.value : value);
+const statusFromContract = (contract) => {
+  const contractStatus = enumValue(contract.status);
+  const rentalStatus = enumValue(contract.rental?.status);
+  if (contractStatus === 'signed' && ['completed'].includes(rentalStatus)) return 'completed';
+  if (contractStatus === 'signed') return 'active';
+  return 'pending';
+};
+const statusLabels = {
+  pending: 'بانتظار التوقيع',
+  active: 'نشط',
+  completed: 'مكتمل',
+  expired: 'منتهي',
+};
+
 export default function ContractsPage({ role: roleProp }) {
   const { props } = usePage();
   const user = props.auth?.user ?? null;
@@ -21,8 +37,25 @@ export default function ContractsPage({ role: roleProp }) {
   const [selectedContract, setSelectedContract] = useState(null);
 
   const contracts = useMemo(() => {
-    return props.contracts ?? [];
-  }, [props.contracts]);
+    return (props.contracts ?? []).map((contract) => {
+      const rental = contract.rental ?? {};
+      const equipment = rental.equipment ?? {};
+      const partner = role === 'owner' ? rental.tenant : rental.owner;
+      const status = statusFromContract(contract);
+
+      return {
+        ...contract,
+        number: contract.number ?? contract.contract_num ?? `CT-${String(contract.id).padStart(4, '0')}`,
+        partnerName: partner?.full_name ?? partner?.name ?? 'مستخدم غير معروف',
+        equipment: equipment.name ?? 'معدة غير معروفة',
+        amount: money(rental.total_amount ?? rental.totalAmount),
+        status,
+        statusLabel: statusLabels[status] ?? status,
+        body: contract.contract_body ?? contract.contractBody,
+        rental,
+      };
+    });
+  }, [props.contracts, role]);
 
   const filtered = useMemo(() => {
     const allowedStatuses = config.statusesByTab[activeTab] || [];

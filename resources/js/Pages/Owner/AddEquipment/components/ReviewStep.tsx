@@ -1,10 +1,7 @@
 import React from 'react';
 import { Image as ImageIcon } from 'lucide-react';
 import {
-  conditionOptions,
-  deliveryOptions,
   displayValue,
-  getOptionLabel,
 } from '../useEquipmentDraft';
 
 const ReviewRow = ({ label, children }) => (
@@ -42,10 +39,9 @@ const ReviewStep = ({ draft, images }) => {
         <ReviewRow label="الاسم">{displayValue(draft.name)}</ReviewRow>
         <ReviewRow label="الفئة">{displayValue(draft.category_id)}</ReviewRow>
         <ReviewRow label="الموقع">{displayValue(location)}</ReviewRow>
-        <ReviewRow label="الحالة">{getOptionLabel(conditionOptions, draft.condition)}</ReviewRow>
-        <ReviewRow label="التسليم">{getOptionLabel(deliveryOptions, draft.delivery_method)}</ReviewRow>
         <ReviewRow label="السعر اليومي">{displayValue(draft.price_per_day)} ر.ي</ReviewRow>
         <ReviewRow label="التأمين">{displayValue(draft.insurance_amount)} ر.ي</ReviewRow>
+        <ReviewRow label="شروط التأجير">{displayValue(draft.rental_terms)}</ReviewRow>
         <ReviewRow label="الصور">{images.length || '—'}</ReviewRow>
       </div>
     </div>

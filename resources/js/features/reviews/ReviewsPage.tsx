@@ -3,8 +3,7 @@ import { usePage, router } from '@inertiajs/react';
 import { formatRentalDate } from '../../utils/formatters';
 import { getReviewsConfig } from './lib/reviewsConfig';
 import { ReviewSummary } from './ui/ReviewSummary';
-import { TenantReviewsList } from './ui/TenantReviewsList';
-import { OwnerReviewsList } from './ui/OwnerReviewsList';
+import { ReviewsList } from './ui/ReviewsList';
 import { PageHeader, FilterTabs } from '../../components/shared';
 
 export default function ReviewsPage({ role: roleProp }) {
@@ -30,7 +29,7 @@ export default function ReviewsPage({ role: roleProp }) {
         stars: review.rating,
         comment: review.review_text ?? review.reviewText,
         date: formatRentalDate(review.created_at ?? review.createdAt),
-        image: review.equipment_image ?? '⭐',
+        image: review.rental?.equipment?.images?.[0]?.image_url ?? review.equipment_image ?? '⭐',
       }));
   }, [reviews, userId]);
 
@@ -46,7 +45,7 @@ export default function ReviewsPage({ role: roleProp }) {
         stars: review.rating,
         comment: review.review_text ?? review.reviewText,
         date: formatRentalDate(review.created_at ?? review.createdAt),
-        image: review.equipment_image ?? '👤',
+        image: review.rental?.equipment?.images?.[0]?.image_url ?? review.equipment_image ?? '👤',
       }));
   }, [reviews, userId]);
 
@@ -73,7 +72,7 @@ export default function ReviewsPage({ role: roleProp }) {
         targetId: role === 'owner'
           ? (rental.tenant_id ?? rental.tenantId)
           : (rental.equipment?.owner_id ?? rental.equipment?.ownerId),
-        image: rental.equipment?.image ?? (role === 'owner' ? '👤' : '⭐'),
+        image: rental.equipment?.images?.[0]?.image_url ?? rental.equipment?.image ?? (role === 'owner' ? '👤' : '⭐'),
         date: formatRentalDate(rental.end_date ?? rental.endDate),
       }));
   }, [rentals, reviews, role, userId]);
@@ -119,31 +118,18 @@ export default function ReviewsPage({ role: roleProp }) {
         onTabChange={setActiveTab}
       />
 
-      {role === 'tenant' ? (
-        <TenantReviewsList
-          activeTab={activeTab}
-          displayedList={displayedList}
-          pendingReviews={pendingReviews}
-          ratingValues={ratingValues}
-          comments={comments}
-          setRatingValues={setRatingValues}
-          setComments={setComments}
-          handlePendingSubmit={handlePendingSubmit}
-          config={config}
-        />
-      ) : (
-        <OwnerReviewsList
-          activeTab={activeTab}
-          displayedList={displayedList}
-          pendingReviews={pendingReviews}
-          ratingValues={ratingValues}
-          comments={comments}
-          setRatingValues={setRatingValues}
-          setComments={setComments}
-          handlePendingSubmit={handlePendingSubmit}
-          config={config}
-        />
-      )}
+      <ReviewsList
+        activeTab={activeTab}
+        displayedList={displayedList}
+        pendingReviews={pendingReviews}
+        ratingValues={ratingValues}
+        comments={comments}
+        setRatingValues={setRatingValues}
+        setComments={setComments}
+        handlePendingSubmit={handlePendingSubmit}
+        config={config}
+        role={role}
+      />
     </div>
   );
 }

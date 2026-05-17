@@ -57,8 +57,11 @@ class PaymentController extends Controller
 
     public function show(Payment $payment)
     {
+        $payment->load(['rental.equipment', 'rental.owner', 'rental.tenant', 'payer']);
+        $this->authorize('view', $payment->rental);
+
         return Inertia::render('Payments/Show', [
-            'payment' => $payment->load(['rental.equipment', 'payer']),
+            'payment' => $payment,
         ]);
     }
 

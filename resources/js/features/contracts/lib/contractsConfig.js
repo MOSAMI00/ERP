@@ -8,7 +8,7 @@ const CONTRACT_CONFIGS = {
     tabs: ['الكل', 'نشط', 'مكتمل', 'منتهي'],
     statusesByTab: {
       الكل: [],
-      نشط: ['active'],
+      نشط: ['active', 'pending'],
       مكتمل: ['completed'],
       منتهي: ['expired'],
     },

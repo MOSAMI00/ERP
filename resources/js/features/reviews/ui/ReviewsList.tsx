@@ -2,7 +2,7 @@ import React from 'react';
 import { EmptyState } from '../../../components/shared';
 import { ReviewCard } from './ReviewCard';
 
-export function OwnerReviewsList({
+export function ReviewsList({
   activeTab,
   displayedList,
   pendingReviews,
@@ -12,6 +12,7 @@ export function OwnerReviewsList({
   setComments,
   handlePendingSubmit,
   config,
+  role = 'tenant',
 }) {
   if (activeTab === 'بانتظار التقييم') {
     return (
@@ -21,15 +22,15 @@ export function OwnerReviewsList({
             <div key={item.id} className="bg-white rounded-2xl border border-[#E0E0E0] p-5">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-12 h-12 rounded-xl bg-[#F4F6F9] overflow-hidden flex-shrink-0">
-                  {item.image?.startsWith('http') ? (
+                  {item.image?.startsWith?.('http') || item.image?.startsWith?.('/') ? (
                     <img src={item.image} alt={item.equipment} className="w-full h-full object-cover" />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-2xl">{item.image || '👤'}</div>
+                    <div className="w-full h-full flex items-center justify-center text-2xl">{item.image || '⭐'}</div>
                   )}
                 </div>
                 <div>
                   <p className="font-bold text-[#222222] text-sm">{item.equipment}</p>
-                  <p className="text-xs text-[#888888]">الطلب: {item.orderNum} • {item.partnerName} • {item.date}</p>
+                  <p className="text-xs text-[#888888]">العملية: {item.orderNum} • {item.partnerName} • {item.date}</p>
                 </div>
               </div>
 
@@ -48,7 +49,7 @@ export function OwnerReviewsList({
                 </div>
 
                 <textarea
-                  placeholder="اكتب تعليقك وتقييمك للمستأجر هنا..."
+                  placeholder={role === 'owner' ? 'اكتب تعليقك وتقييمك للمستأجر هنا...' : 'اكتب تقييمك للمؤجر وتجربتك مع المعدة هنا...'}
                   value={comments[item.id] || ''}
                   onChange={(e) => setComments({ ...comments, [item.id]: e.target.value })}
                   className="w-full bg-[#F4F6F9] border-none rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#2D5A27] resize-none"
@@ -67,7 +68,7 @@ export function OwnerReviewsList({
             </div>
           ))
         ) : (
-          <EmptyState icon="⭐" title="لا توجد تقييمات معلقة للمستأجرين" description="أنهيت جميع التقييمات!" />
+          <EmptyState icon="⭐" title="لا توجد تقييمات معلقة" description="أنجزت جميع تقييماتك!" />
         )}
       </div>
     );
@@ -76,7 +77,7 @@ export function OwnerReviewsList({
   return (
     <div className="flex flex-col gap-3">
       {displayedList.length > 0 ? (
-        displayedList.map((r) => <ReviewCard key={r.id} review={r} />)
+        displayedList.map((review) => <ReviewCard key={review.id} review={review} />)
       ) : (
         <EmptyState
           icon={config.emptyStateIcon}

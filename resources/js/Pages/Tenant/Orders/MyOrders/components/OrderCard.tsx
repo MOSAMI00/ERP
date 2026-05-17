@@ -1,9 +1,10 @@
 import React from 'react';
 import { router } from '@inertiajs/react';
+import { FileText, XCircle } from 'lucide-react';
 import { STATUS_CONFIG } from '../../../../../entities/rental';
 import { formatCurrency, formatRentalDateRange, isRentalStartingSoon } from '../../../../../utils/formatters';
 
-function ActionButton({ rental, readyForDelivery }) {
+function ActionButton({ rental, readyForDelivery, isPaid }) {
   const { status, id } = rental;
 
   const handleVisit = (e, url) => {
@@ -22,7 +23,7 @@ function ActionButton({ rental, readyForDelivery }) {
     );
   }
 
-  if (status === 'confirmed' && rental.payment_status === 'unpaid') {
+  if (status === 'confirmed' && !isPaid) {
     return (
       <button
         onClick={(e) => handleVisit(e, `/rentals/${id}`)}
@@ -74,6 +75,14 @@ function ActionButton({ rental, readyForDelivery }) {
   );
 }
 
+function paidRentalPayment(rental) {
+  return rental.payments?.find?.((payment) => {
+    const type = typeof payment.type === 'object' ? payment.type?.value : payment.type;
+    const status = typeof payment.status === 'object' ? payment.status?.value : payment.status;
+    return type === 'rental' && status === 'paid';
+  });
+}
+
 export function OrderCard({ rental }) {
   const st = STATUS_CONFIG[rental.status] || { label: rental.status, color: '#888', bg: '#eee' };
   const equipment = rental.equipment || {};
@@ -84,6 +93,17 @@ export function OrderCard({ rental }) {
   const paymentLabel = isPaid ? 'مدفوع' : (rental.payment_status === 'refunded' ? 'مسترد' : 'غير مدفوع');
   const paymentColor = isPaid ? '#27AE60' : (rental.payment_status === 'refunded' ? '#95A5A6' : '#F39C12');
   const readyForDelivery = rental.status === 'paid' && isRentalStartingSoon(rental);
+  const canCancelBeforePayment = ['pending', 'confirmed'].includes(rental.status) && !isPaid;
+  const receiptPayment = paidRentalPayment(rental);
+
+  const cancelRental = (event) => {
+    event.stopPropagation();
+    if (!confirm('هل أنت متأكد من إلغاء العملية؟')) return;
+
+    router.post(`/rentals/${rental.id}/cancel`, {
+      cancellation_reason: 'ألغى المستأجر العملية قبل الدفع',
+    }, { preserveScroll: true });
+  };
 
   const primaryImage = equipment.images?.[0]?.image_url || '/placeholder-equipment.png';
 
@@ -134,14 +154,35 @@ export function OrderCard({ rental }) {
         )}
       </div>
       <div className="border-t border-[#E0E0E0] mx-4" />
-      <div className="px-4 py-3 flex items-center justify-between" onClick={e => e.stopPropagation()}>
+      <div className="px-4 py-3 flex flex-wrap items-center justify-between gap-2" onClick={e => e.stopPropagation()}>
         <span
           className="px-3 py-1 rounded-full text-xs font-bold"
           style={{ color: st.color, backgroundColor: st.bg }}
         >
           {st.label}
         </span>
-        <ActionButton rental={rental} readyForDelivery={readyForDelivery} />
+        <div className="flex flex-wrap gap-2">
+          {receiptPayment ? (
+            <button
+              onClick={(event) => {
+                event.stopPropagation();
+                router.visit(`/payments/${receiptPayment.id}`);
+              }}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold border border-[#2D5A27] text-[#2D5A27] hover:bg-[#EAF3E9] transition-all"
+            >
+              <FileText size={15} /> عرض إيصال الدفع
+            </button>
+          ) : null}
+          {canCancelBeforePayment ? (
+            <button
+              onClick={cancelRental}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold border border-[#E74C3C] text-[#E74C3C] hover:bg-[#FDEDEC] transition-all"
+            >
+              <XCircle size={15} /> إلغاء العملية
+            </button>
+          ) : null}
+          <ActionButton rental={rental} readyForDelivery={readyForDelivery} isPaid={isPaid} />
+        </div>
       </div>
     </div>
   );

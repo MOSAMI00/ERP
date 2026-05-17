@@ -58,8 +58,11 @@ export function ContractDetailModal({ contract, config, onClose }) {
         </div>
 
         <div className="mt-5 rounded-xl border border-[#E0E0E0] bg-white p-4 text-sm leading-7 text-[#555555]">
-          هذه معاينة قراءة فقط لبيانات العقد الحالية. إجراءات التسليم
-          والإرجاع والنزاعات تبقى داخل صفحات workflow الخاصة بها.
+          {contract.body ? (
+            <pre className="m-0 whitespace-pre-wrap font-[inherit] leading-7">{contract.body}</pre>
+          ) : (
+            'لا يوجد نص عقد محفوظ لهذه العملية.'
+          )}
         </div>
       </div>
     </div>

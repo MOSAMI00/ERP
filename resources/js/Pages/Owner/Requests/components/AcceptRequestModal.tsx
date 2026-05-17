@@ -24,9 +24,18 @@ const contractText = (rental) => (
 
 const AcceptRequestModal = ({ isOpen, rental, onClose, onConfirm }) => {
   const [signed, setSigned] = useState(false);
-  const equipment = equipmentOf(rental);
   const tenant = tenantOf(rental);
+  const equipment = equipmentOf(rental);
   const body = useMemo(() => contractText(rental), [rental]);
+  const timeSlotLabels = {
+    morning: 'صباحاً (8ص - 12م)',
+    afternoon: 'ظهراً (12م - 4م)',
+    evening: 'مساءً (4م - 8م)',
+  };
+  const preferredTime = timeSlotLabels[rental?.preferred_time_slot ?? rental?.preferredTimeSlot]
+    ?? rental?.delivery_time
+    ?? rental?.deliveryTime
+    ?? '—';
 
   if (!rental) return null;
 
@@ -48,9 +57,10 @@ const AcceptRequestModal = ({ isOpen, rental, onClose, onConfirm }) => {
     >
       <div className="owner-grid-2 mb-6">
         <div><span className="text-muted">المستأجر:</span><br /><strong>{tenant.name ?? tenant.full_name ?? UNKNOWN_USER}</strong></div>
-        <div><span className="text-muted">الهاتف:</span><br /><strong style={{ direction: 'ltr', display: 'inline-block' }}>{tenant.phone ?? '—'}</strong></div>
         <div><span className="text-muted">المعدة:</span><br /><strong>{equipment.name ?? UNKNOWN_EQUIPMENT}</strong></div>
         <div><span className="text-muted">الفترة:</span><br /><strong>{formatRentalDateRange(rental.start_date ?? rental.startDate ?? '', rental.end_date ?? rental.endDate ?? '')}</strong></div>
+        <div><span className="text-muted">موقع الاستلام:</span><br /><strong>{rental.delivery_location ?? rental.deliveryLocation ?? equipment.location ?? '—'}</strong></div>
+        <div><span className="text-muted">الوقت المفضل للاستلام:</span><br /><strong>{preferredTime}</strong></div>
       </div>
 
       <div className="owner-card mb-5" style={{ backgroundColor: 'var(--color-page-bg)', boxShadow: 'none' }}>
