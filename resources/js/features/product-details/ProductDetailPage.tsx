@@ -1,4 +1,4 @@
-import { Link, usePage } from '@inertiajs/react';
+import { Link } from '@inertiajs/react';
 import { Header } from './ui/Header';
 import { Breadcrumb } from './ui/Breadcrumb';
 import { Gallery } from './Gallery';
@@ -6,6 +6,7 @@ import { Tabs } from './Tabs';
 import { BookingSidebar } from './BookingSidebar';
 import { OwnerCard } from './ui/OwnerCard';
 import { MobileBottomBar } from './ui/MobileBottomBar';
+import { useSharedData } from '@/inertia/useSharedData';
 
 interface Owner {
   id?: number;
@@ -49,10 +50,9 @@ interface PageProps {
   [key: string]: unknown;
 }
 
-export default function ProductDetailPage() {
-  const { props } = usePage<PageProps>();
-  const product = props.product ?? null;
-  const user = (props.auth as any)?.user ?? null;
+export default function ProductDetailPage({ product = null, platform_terms, owner_reviews }: PageProps) {
+  const { auth } = useSharedData();
+  const user = auth?.user ?? null;
 
   if (!product) {
     return (
@@ -84,8 +84,8 @@ export default function ProductDetailPage() {
             />
             <Tabs
               product={product}
-              platformTerms={props.platform_terms}
-              ownerReviews={props.owner_reviews}
+              platformTerms={platform_terms}
+              ownerReviews={owner_reviews}
             />
           </section>
 

@@ -1,8 +1,9 @@
 import React from 'react';
 import { router } from '@inertiajs/react';
 import { FileText, XCircle, CreditCard } from 'lucide-react';
-import { STATUS_CONFIG } from '../../../../../entities/rental';
 import { formatCurrency, formatRentalDateRange, isRentalStartingSoon } from '../../../../../utils/formatters';
+import type { SharedStatus } from '@/types/inertia';
+import { statusMap } from '@/utils/sharedStatus';
 
 const enumValue = (value) => (typeof value === 'object' ? value?.value : value);
 
@@ -79,9 +80,19 @@ function paidRentalPayment(rental) {
   });
 }
 
-export function OrderCard({ rental }) {
+const toneStyle = (tone: string) => ({
+  success: { color: '#27AE60', bg: '#EAFAF1' },
+  warning: { color: '#F39C12', bg: '#FEF9E7' },
+  danger: { color: '#E74C3C', bg: '#FDEDEC' },
+  info: { color: '#3498DB', bg: '#EBF5FB' },
+  primary: { color: '#2D5A27', bg: '#EAF3E9' },
+  neutral: { color: '#888', bg: '#eee' },
+}[tone] ?? { color: '#888', bg: '#eee' });
+
+export function OrderCard({ rental, rentalStatuses = [] }: { rental: any; rentalStatuses: SharedStatus[] }) {
   const statusStr = enumValue(rental.status);
-  const st = STATUS_CONFIG[statusStr] || { label: statusStr, color: '#888', bg: '#eee' };
+  const status = statusMap(rentalStatuses)[statusStr];
+  const st = { label: status?.label ?? statusStr, ...toneStyle(status?.tone ?? 'neutral') };
   const equipment = rental.equipment || {};
   const owner = equipment.owner || rental.owner || {};
 

@@ -1,30 +1,13 @@
 import { MapPin } from 'lucide-react';
+import type { SharedOption } from '@/types/inertia';
 
-const governorates = [
-  'صنعاء',
-  'عدن',
-  'تعز',
-  'الحديدة',
-  'إب',
-  'مأرب',
-  'حضرموت',
-  'المكلا',
-  'ذمار',
-  'لحج',
-  'أبين',
-  'شبوة',
-  'البيضاء',
-  'الجوف',
-  'عمران',
-  'ريمة',
-  'المهرة',
-  'المحويت',
-  'الضالع',
-  'سقطرى',
-];
+interface LocationSelectorsProps {
+  formData: Record<string, any>;
+  setFormData: (data: Record<string, any>) => void;
+  governorates: SharedOption[];
+}
 
-
-export function LocationSelectors({ formData, setFormData }) {
+export function LocationSelectors({ formData, setFormData, governorates }: LocationSelectorsProps) {
   return (
     <>
       <div>
@@ -41,8 +24,8 @@ export function LocationSelectors({ formData, setFormData }) {
           >
             <option value="">اختر المحافظة</option>
             {governorates.map((gov) => (
-              <option key={gov} value={gov}>
-                {gov}
+              <option key={gov.value} value={gov.value}>
+                {gov.label}
               </option>
             ))}
           </select>

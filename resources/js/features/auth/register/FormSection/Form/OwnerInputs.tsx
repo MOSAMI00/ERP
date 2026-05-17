@@ -1,10 +1,6 @@
 import { Info } from 'lucide-react';
+import type { SharedOption } from '@/types/inertia';
 
-const governorates = [
-  'صنعاء', 'عدن', 'تعز', 'الحديدة', 'إب', 'مأرب', 'حضرموت', 'المكلا',
-  'ذمار', 'لحج', 'أبين', 'شبوة', 'البيضاء', 'الجوف', 'عمران', 'ريمة',
-  'المهرة', 'المحويت', 'الضالع', 'سقطرى',
-];
 
 const equipmentCategories = [
   'مولدات', 'بناء', 'زراعة', 'تصوير', 'فعاليات', 'طبي', 'رياضة', 'أخرى',
@@ -15,7 +11,15 @@ const paymentMethods = [
 ];
 
 
-export function OwnerInputs({ formData, setFormData, selectedCategories, toggleCategory }) {
+interface OwnerInputsProps {
+  formData: Record<string, any>;
+  setFormData: (data: Record<string, any>) => void;
+  selectedCategories: string[];
+  toggleCategory: (category: string) => void;
+  governorates: SharedOption[];
+}
+
+export function OwnerInputs({ formData, setFormData, selectedCategories, toggleCategory, governorates }: OwnerInputsProps) {
   return (
     <>
       <div className="border-t border-[#E0E0E0] pt-4 mt-6">
@@ -80,8 +84,8 @@ export function OwnerInputs({ formData, setFormData, selectedCategories, toggleC
             >
               <option value="">اختر المحافظة</option>
               {governorates.map((gov) => (
-                <option key={gov} value={gov}>
-                  {gov}
+                <option key={gov.value} value={gov.value}>
+                  {gov.label}
                 </option>
               ))}
             </select>

@@ -1,12 +1,21 @@
 
 import { FilterTabs } from '../../../../../Components/shared/FilterTabs';
-import { RENTAL_TABS } from '../../../../../entities/rental';
+import type { SharedStatus } from '@/types/inertia';
 
-export function OrderTabs({ activeTab, onTabChange, rentals }) {
-  const tabs = RENTAL_TABS.map((tab) => ({
-    id: tab.key,
-    label: tab.label,
-    count: tab.key === 'all' ? rentals.length : rentals.filter((r) => r.status === tab.key).length,
+interface OrderTabsProps {
+  activeTab: string;
+  onTabChange: (tab: string) => void;
+  rentals: Array<{ status?: string }>;
+  rentalStatuses: SharedStatus[];
+}
+
+export function OrderTabs({ activeTab, onTabChange, rentals, rentalStatuses }: OrderTabsProps) {
+  const tabs = [
+    { id: 'all', label: 'الكل' },
+    ...rentalStatuses.map((status) => ({ id: status.value, label: status.label })),
+  ].map((tab) => ({
+    ...tab,
+    count: tab.id === 'all' ? rentals.length : rentals.filter((r) => r.status === tab.id).length,
   }));
 
   return (

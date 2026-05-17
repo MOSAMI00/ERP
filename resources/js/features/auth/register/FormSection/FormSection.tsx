@@ -14,6 +14,7 @@ export function FormSection({
   setAgreeToTerms,
   errors = {},
   processing = false,
+  governorates = [],
 }) {
   return (
     <div className="flex-1 flex items-center justify-center p-6 md:p-12 bg-white order-2 md:order-1 overflow-y-auto">
@@ -38,6 +39,7 @@ export function FormSection({
           setAgreeToTerms={setAgreeToTerms}
           errors={errors}
           processing={processing}
+          governorates={governorates}
         />
       </div>
     </div>

@@ -3,7 +3,7 @@ import { EmptyState } from '../../../../components/shared';
 import { EquipmentCardSkeleton } from '../../../../components/shared/OwnerSkeletons';
 import RequestCard from './RequestCard';
 
-const RequestGrid = ({ isLoading, rentals, search, onOpenModal }) => {
+const RequestGrid = ({ isLoading, rentals, search, onOpenModal, rentalStatuses = [] }) => {
   if (isLoading) {
     return (
       <div className="owner-grid-2">
@@ -27,7 +27,7 @@ const RequestGrid = ({ isLoading, rentals, search, onOpenModal }) => {
   return (
     <div className="owner-grid-2">
       {rentals.map((rental) => (
-        <RequestCard key={rental.id} rental={rental} onOpenModal={onOpenModal} />
+        <RequestCard key={rental.id} rental={rental} onOpenModal={onOpenModal} rentalStatuses={rentalStatuses} />
       ))}
     </div>
   );

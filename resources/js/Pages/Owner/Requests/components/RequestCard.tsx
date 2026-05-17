@@ -5,16 +5,29 @@ import { StatusBadge } from '../../../../components/shared';
 import RequestDecisionActions from './RequestDecisionActions';
 import {
   equipmentOf,
-  statusConfig,
   tenantOf,
   UNKNOWN_EQUIPMENT,
   UNKNOWN_USER,
 } from '../requestHelpers';
+import { statusMap } from '@/utils/sharedStatus';
 
-const RequestCard = ({ rental, onOpenModal }) => {
+const toneColor = (tone: string) => ({
+  success: '#27AE60',
+  warning: '#F39C12',
+  danger: '#E74C3C',
+  info: '#3498DB',
+  primary: '#2D5A27',
+  neutral: '#95A5A6',
+}[tone] ?? '#95A5A6');
+
+const RequestCard = ({ rental, onOpenModal, rentalStatuses = [] }) => {
   const equipment = equipmentOf(rental);
   const tenant = tenantOf(rental);
-  const status = statusConfig(rental?.status);
+  const sharedStatus = statusMap(rentalStatuses)[rental?.status];
+  const status = {
+    label: sharedStatus?.label ?? rental?.status,
+    color: toneColor(sharedStatus?.tone ?? 'neutral'),
+  };
   const completedCount = tenant.completedRentalsCount;
   const tenantRating = tenant.rating;
 

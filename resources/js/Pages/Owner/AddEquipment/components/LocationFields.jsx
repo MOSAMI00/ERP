@@ -1,14 +1,13 @@
 import React from 'react';
-import { governorateOptions } from '../useEquipmentDraft';
 
-const LocationFields = ({ draft, updateDraft }) => (
+const LocationFields = ({ draft, updateDraft, governorates = [] }) => (
   <div className="owner-grid-2">
     <div className="mb-4">
       <label className="owner-label">المحافظة *</label>
       <select className="owner-input" value={draft.governorate} onChange={updateDraft('governorate')}>
         <option value="">اختر المحافظة</option>
-        {governorateOptions.map((governorate) => (
-          <option key={governorate} value={governorate}>{governorate}</option>
+        {governorates.map((governorate) => (
+          <option key={governorate.value} value={governorate.value}>{governorate.label}</option>
         ))}
       </select>
     </div>

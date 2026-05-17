@@ -2,19 +2,13 @@ import React from 'react';
 import { Plus, Search } from 'lucide-react';
 import { AppButton, AppInput, AppSelect, PageHeader } from '../../../../components/shared';
 
-const statusOptions = [
-  { value: 'all', label: 'الحالة' },
-  { value: 'available', label: 'متاح' },
-  { value: 'confirmed', label: 'محجوز' },
-  { value: 'in_use', label: 'قيد الاستخدام' },
-  { value: 'hidden', label: 'مخفي' },
-];
 
 const EquipmentToolbar = ({
   search,
   category,
   status,
   categories,
+  equipmentStatuses = [],
   onSearchChange,
   onCategoryChange,
   onStatusChange,
@@ -41,7 +35,8 @@ const EquipmentToolbar = ({
           ))}
         </AppSelect>
         <AppSelect style={{ width: 130 }} value={status} onChange={(event) => onStatusChange(event.target.value)}>
-          {statusOptions.map((option) => (
+          <option value="all">الحالة</option>
+          {equipmentStatuses.map((option) => (
             <option key={option.value} value={option.value}>{option.label}</option>
           ))}
         </AppSelect>

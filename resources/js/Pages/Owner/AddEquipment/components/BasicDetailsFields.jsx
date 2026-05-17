@@ -1,12 +1,6 @@
 import React from 'react';
-import { usePage } from '@inertiajs/react';
-import { categoryOptions } from '../useEquipmentDraft';
 
-const BasicDetailsFields = ({ draft, updateDraft }) => {
-  const { props } = usePage();
-  const categories = props.categories ?? [];
-
-  return (
+const BasicDetailsFields = ({ draft, updateDraft, categories = [] }) => (
     <>
       <div className="owner-grid-2">
         <div className="mb-4">
@@ -45,7 +39,6 @@ const BasicDetailsFields = ({ draft, updateDraft }) => {
       </div>
 
     </>
-  );
-};
+);
 
 export default BasicDetailsFields;

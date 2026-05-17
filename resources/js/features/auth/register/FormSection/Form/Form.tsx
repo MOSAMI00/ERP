@@ -20,6 +20,7 @@ export function Form({
   setAgreeToTerms,
   errors = {} as Record<string, string>,
   processing = false,
+  governorates = [],
 }) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -83,7 +84,7 @@ export function Form({
         {errors.password_confirmation && <p className="text-sm text-red-600 mt-1">{errors.password_confirmation}</p>}
       </div>
 
-      <LocationSelectors formData={formData} setFormData={setFormData} />
+      <LocationSelectors formData={formData} setFormData={setFormData} governorates={governorates} />
       {errors.governorate && <p className="text-sm text-red-600">{errors.governorate}</p>}
 
       {userType === 'owner' && (
@@ -92,6 +93,7 @@ export function Form({
           setFormData={setFormData}
           selectedCategories={selectedCategories}
           toggleCategory={toggleCategory}
+          governorates={governorates}
         />
       )}
 

@@ -1,14 +1,18 @@
 import { useState } from 'react';
-import { usePage } from '@inertiajs/react';
 import { OrderHeader } from './components/OrderHeader';
 import { OrderActionBanner } from './components/ActionBanner';
 import { OrderTabs } from './components/FilterTabs';
 import { OrdersGrid } from './components/OrdersGrid';
 import { TenantLayout } from '../../../../Layouts/tenant/TenantLayout';
+import { useSharedData } from '@/inertia/useSharedData';
+import type { SharedStatus } from '@/types/inertia';
 
-export default function MyOrdersPage() {
-  const { props } = usePage();
-  const rentals = props.rentals ?? [];
+interface MyOrdersPageProps {
+  rentals?: any[];
+}
+
+export default function MyOrdersPage({ rentals = [] }: MyOrdersPageProps) {
+  const { statuses } = useSharedData();
   const [activeTab, setActiveTab] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -36,8 +40,9 @@ export default function MyOrdersPage() {
         activeTab={activeTab}
         onTabChange={setActiveTab}
         rentals={rentals}
+        rentalStatuses={statuses.rental as SharedStatus[]}
       />
-      <OrdersGrid filtered={filtered} />
+      <OrdersGrid filtered={filtered} rentalStatuses={statuses.rental as SharedStatus[]} />
     </div>
   );
 }
