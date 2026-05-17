@@ -50,11 +50,11 @@ const RequestCard = ({ rental, onOpenModal }) => {
       <div className="mb-4">
         <p style={{ fontWeight: 600, margin: '0 0 8px' }}>#{rental?.orderNum ?? '—'} · {equipment.name ?? UNKNOWN_EQUIPMENT}</p>
         <p className="text-muted mb-2" style={{ fontSize: 14 }}>
-          {formatRentalDateRange(rental?.startDate ?? '', rental?.endDate ?? '')} | {rental?.durationDays ?? '—'} أيام
+          {formatRentalDateRange(rental?.start_date ?? rental?.startDate ?? '', rental?.end_date ?? rental?.endDate ?? '')} | {rental?.duration_days ?? rental?.durationDays ?? '—'} أيام
         </p>
         <p className="text-muted mb-2" style={{ fontSize: 14 }}>{equipment.location ?? '—'}</p>
         <p style={{ fontSize: 14, margin: 0 }}>
-          الإيجار: <strong>{formatCurrency(rental?.rentalAmount ?? 0)} ر.ي</strong> | التأمين: <strong>{formatCurrency(rental?.insuranceAmount ?? 0)} ر.ي</strong>
+          الإيجار: <strong>{formatCurrency(rental?.rental_amount ?? rental?.rentalAmount ?? 0)} ر.ي</strong> | التأمين: <strong>{formatCurrency(rental?.insurance_amount ?? rental?.insuranceAmount ?? 0)} ر.ي</strong>
         </p>
       </div>
 

@@ -21,6 +21,12 @@ const CONDITION_LABELS = {
   partially_damaged: 'متضررة جزئياً',
 };
 
+const ADMIN_DECISION_LABELS = {
+  accept_deduction: 'الإدارة قبلت مطالبة المؤجر بالكامل',
+  reject_deduction: 'الإدارة رفضت الخصم وأعادت التأمين للمستأجر',
+  modify_compensation: 'الإدارة اعتمدت مبلغ تعويض معدل',
+};
+
 export function OwnerCompensationCard({
   compensation,
   form,
@@ -37,7 +43,9 @@ export function OwnerCompensationCard({
     let borderColor = '#F3C77B';
 
     if (compensation.rentalStatus === 'completed') {
-      statusLabel = compensation.dispute?.status === 'resolved' ? 'تمت التسوية بقرار إداري' : 'تمت تسوية التعويض';
+      statusLabel = compensation.dispute?.status === 'resolved'
+        ? (ADMIN_DECISION_LABELS[compensation.adminDecision ?? compensation.dispute?.adminDecision] ?? 'تمت التسوية بقرار إداري')
+        : 'تمت تسوية التعويض';
       badgeColor = '#27AE60';
       bgColor = '#F4FAF6';
       borderColor = '#D5E8D4';
@@ -63,7 +71,12 @@ export function OwnerCompensationCard({
             ) : null}
             {compensation.rentalStatus === 'completed' ? (
               <p className="m-0 mt-1 text-[#555555]">
-                المبلغ النهائي: <strong>{formatCurrency(compensation.finalAmount ?? compensation.requestedAmount)} ر.ي</strong>
+                المبلغ النهائي المخصوم من التأمين: <strong>{formatCurrency(compensation.finalAmount ?? compensation.requestedAmount)} ر.ي</strong>
+              </p>
+            ) : null}
+            {(compensation.adminDecision ?? compensation.dispute?.adminDecision) === 'reject_deduction' ? (
+              <p className="m-0 mt-1 font-bold text-[#27AE60]">
+                النتيجة: لا يوجد خصم للمؤجر، وسيعاد التأمين للمستأجر.
               </p>
             ) : null}
             {compensation.finalCondition ? (

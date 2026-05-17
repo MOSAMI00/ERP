@@ -1,7 +1,6 @@
 import OwnerLayout from '../../../Layouts/owner/OwnerLayout';
 import React, { useEffect, useMemo, useState } from 'react';
 import { usePage } from '@inertiajs/react';
-import { useOwnerPageProps } from '../../../inertia/owner-page-props';
 import { PageHeader } from '../../../components/shared';
 import EarningsKpis from './components/EarningsKpis';
 import EarningsChart from './components/EarningsChart';
@@ -13,18 +12,23 @@ const Earnings = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const { props } = usePage();
-  const user = (props.auth as any)?.user ?? null;
   const paymentMethods = (props.payment_methods as any[]) ?? [];
-  const { rentals } = useOwnerPageProps();
+  const payments = (props.payments as any[]) ?? [];
 
   useEffect(() => {
     const timer = window.setTimeout(() => setIsLoading(false), 350);
     return () => window.clearTimeout(timer);
   }, []);
 
-  const ownerRentals = useMemo(
-    () => rentals.filter((rental) => (rental.owner_id ?? rental.ownerId) === user?.id),
-    [rentals, user?.id],
+  const paymentValue = (payment, key, fallback = null) => payment?.[key] ?? payment?.[key.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase())] ?? fallback;
+  const enumValue = (value) => (typeof value === 'object' ? value?.value : value);
+  const earningPayments = useMemo(
+    () => payments.filter((payment) => ['owner_transfer', 'compensation'].includes(enumValue(paymentValue(payment, 'type')))),
+    [payments],
+  );
+  const pendingRentalPayments = useMemo(
+    () => payments.filter((payment) => enumValue(paymentValue(payment, 'type')) === 'rental' && enumValue(paymentValue(payment, 'status')) === 'paid' && enumValue(paymentValue(payment, 'escrow_status')) === 'held'),
+    [payments],
   );
 
   const dataEarnings = useMemo(() => {
@@ -35,26 +39,29 @@ const Earnings = () => {
       const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
       const month = date.getMonth();
       const year = date.getFullYear();
-      const amount = ownerRentals
-        .filter((rental) => {
-          const created = new Date(rental.created_at ?? rental.createdAt);
+      const amount = earningPayments
+        .filter((payment) => {
+          const created = new Date(paymentValue(payment, 'transferred_at') ?? paymentValue(payment, 'created_at'));
           return created.getMonth() === month && created.getFullYear() === year;
         })
-        .reduce((total, rental) => total + (rental.rental_amount ?? rental.rentalAmount ?? 0), 0);
+        .reduce((total, payment) => total + Number(paymentValue(payment, 'amount', 0)), 0);
       rows.push({ name: formatter.format(date), amount });
     }
     return rows;
-  }, [ownerRentals]);
+  }, [earningPayments]);
 
   const thisMonth = dataEarnings[dataEarnings.length - 1]?.amount ?? 0;
-  const total = ownerRentals.reduce((sum, rental) => sum + (rental.rental_amount ?? rental.rentalAmount ?? 0), 0);
-  const pendingTransfer = ownerRentals
-    .filter((rental) => (rental.payment_status ?? rental.paymentStatus) === 'paid' && (rental.escrow_status ?? rental.escrowStatus) === 'held')
-    .reduce((sum, rental) => sum + (rental.rental_amount ?? rental.rentalAmount ?? 0), 0);
-  const transferred = Math.max(0, total - pendingTransfer);
-  const paymentsRows = ownerRentals
+  const transferred = earningPayments.reduce((sum, payment) => sum + Number(paymentValue(payment, 'amount', 0)), 0);
+  const pendingTransfer = pendingRentalPayments.reduce((sum, payment) => {
+    const rental = payment.rental ?? {};
+    const rentalAmount = Number(rental.rental_amount ?? rental.rentalAmount ?? 0);
+    const fee = Number(paymentValue(payment, 'platform_fee', 0));
+    return sum + Math.max(0, rentalAmount - fee);
+  }, 0);
+  const total = transferred + pendingTransfer;
+  const paymentsRows = payments
     .slice()
-    .sort((a, b) => new Date(b.created_at ?? b.createdAt).getTime() - new Date(a.created_at ?? a.createdAt).getTime())
+    .sort((a, b) => new Date(paymentValue(b, 'created_at')).getTime() - new Date(paymentValue(a, 'created_at')).getTime())
     .slice(0, 8);
 
   return (

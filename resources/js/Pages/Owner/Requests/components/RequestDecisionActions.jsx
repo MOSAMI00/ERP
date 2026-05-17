@@ -16,7 +16,7 @@ const RequestDecisionActions = ({ rental, onOpenModal }) => {
       <AppButton variant="danger" style={{ flex: 1 }} onClick={() => onOpenModal('reject', rental.id)}>
         رفض
       </AppButton>
-      <AppButton variant="success" style={{ flex: 1 }} onClick={() => onOpenModal('accept', rental.id)}>
+      <AppButton variant="success" style={{ flex: 1 }} onClick={() => onOpenModal('acceptReview', rental.id)}>
         قبول الطلب
       </AppButton>
     </div>

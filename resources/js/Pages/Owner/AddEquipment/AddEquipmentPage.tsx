@@ -1,5 +1,5 @@
 import React from 'react';
-import { useForm } from '@inertiajs/react';
+import { useForm, usePage } from '@inertiajs/react';
 import { ArrowRight, ArrowLeft, X, Check } from 'lucide-react';
 import { visit } from '../../../inertia/navigation';
 import BasicInfoStep from './components/BasicInfoStep';
@@ -12,25 +12,28 @@ import { useState } from 'react';
 
 export default function AddEquipmentPage() {
   const [step, setStep] = useState(0);
+  const { props } = usePage() as any;
+  const equipment = props.equipment ?? null;
+  const isEditMode = (props.mode ?? '') === 'edit' && Boolean(equipment?.id);
 
   const form = useForm({
-    name: '',
-    category_id: '',
-    governorate: '',
-    address: '',
-    description: '',
+    name: equipment?.name ?? '',
+    category_id: equipment?.category_id ? String(equipment.category_id) : '',
+    governorate: equipment?.governorate ?? '',
+    address: equipment?.address ?? '',
+    description: equipment?.description ?? '',
     condition: 'excellent',
     delivery_method: 'both',
-    price_per_day: '',
+    price_per_day: equipment?.price_per_day ?? '',
     weekly_rate: '',
     monthly_rate: '',
-    insurance_amount: '',
-    rental_terms: '',
+    insurance_amount: equipment?.insurance_amount ?? '',
+    rental_terms: equipment?.rental_terms ?? '',
     min_rental: 'يوم واحد',
     max_rental: '',
     discount: '',
     specs: [{ key: '', value: '' }],
-    images: [] as File[],
+    images: (equipment?.images ?? []) as any[],
   });
 
   const addSpec = () => {
@@ -57,6 +60,7 @@ export default function AddEquipmentPage() {
   const handleSubmit = () => {
     form.transform((data) => ({
       ...data,
+      images: data.images.filter((image) => image instanceof File),
       rental_terms: data.rental_terms || [
         data.condition ? `Condition: ${data.condition}` : '',
         data.delivery_method ? `Delivery: ${data.delivery_method}` : '',
@@ -66,10 +70,17 @@ export default function AddEquipmentPage() {
       ].filter(Boolean).join('\n'),
     }));
 
-    form.post('/equipment', {
+    const options = {
       onSuccess: () => visit('/owner/equipment'),
       forceFormData: true,
-    });
+    };
+
+    if (isEditMode) {
+      form.post(`/equipment/${equipment.id}?_method=PATCH`, options);
+      return;
+    }
+
+    form.post('/equipment', options);
   };
 
   const renderStep = () => {
@@ -104,7 +115,7 @@ export default function AddEquipmentPage() {
   return (
     <div>
       <div className="flex-between mb-8">
-        <h2 style={{ margin: 0 }}>إضافة معدة جديدة</h2>
+        <h2 style={{ margin: 0 }}>{isEditMode ? 'تعديل المعدة' : 'إضافة معدة جديدة'}</h2>
         <button className="owner-btn owner-btn-outline" onClick={() => visit('/owner/equipment')}>
           <X size={16} /> إلغاء
         </button>
@@ -154,7 +165,7 @@ export default function AddEquipmentPage() {
               onClick={handleSubmit}
               disabled={form.processing}
             >
-              <Check size={16} /> {form.processing ? 'جاري النشر...' : 'نشر المعدة'}
+              <Check size={16} /> {form.processing ? 'جاري الحفظ...' : (isEditMode ? 'حفظ التعديلات' : 'نشر المعدة')}
             </button>
           )}
         </div>

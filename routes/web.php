@@ -191,7 +191,7 @@ Route::middleware(['auth'])->group(function () {
             return Inertia::render('Tenant/Delivery/DeliveryPage', [
                 'rentals' => $rentals,
                 'handover_reports' => HandoverReportModel::whereIn('rental_op_id', $rentals->pluck('id'))->with('images')->latest()->get(),
-                'disputes' => DisputeModel::whereIn('rental_op_id', $rentals->pluck('id'))->latest()->get(),
+                'disputes' => DisputeModel::whereIn('rental_op_id', $rentals->pluck('id'))->with('handover')->latest()->get(),
                 'reviews' => ReviewModel::whereIn('rental_op_id', $rentals->pluck('id'))->where('reviewer_id', request()->user()->id)->get(),
                 'compensations' => \App\Models\EquipmentHandover::whereIn('rental_op_id', $rentals->pluck('id'))->with('dispute')->get(),
             ]);
@@ -212,7 +212,7 @@ Route::middleware(['auth'])->group(function () {
             return Inertia::render('Tenant/Reviews/ReviewsPage', [
                 'reviews' => ReviewModel::where('reviewer_id', $user->id)
                     ->orWhere('target_id', $user->id)
-                    ->with(['rental.equipment', 'reviewer'])
+                    ->with(['rental.equipment', 'reviewer', 'target'])
                     ->latest()
                     ->get(),
                 'rentals' => $user->rentalsAsTenant()->where('status', 'completed')->with('equipment.owner')->latest()->get(),
@@ -254,8 +254,17 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/equipment/add', function () {
             return Inertia::render('Owner/AddEquipment/AddEquipmentPage', ['categories' => CategoryModel::orderBy('sort_order')->get()]);
         })->name('equipment.add');
+        Route::get('/equipment/{equipment}/edit', function (EquipmentModel $equipment) {
+            abort_unless((int) $equipment->owner_id === (int) request()->user()->id, 403);
+
+            return Inertia::render('Owner/AddEquipment/AddEquipmentPage', [
+                'equipment' => $equipment->load(['category', 'images']),
+                'categories' => CategoryModel::orderBy('sort_order')->get(),
+                'mode' => 'edit',
+            ]);
+        })->name('equipment.edit');
         Route::get('/requests', function () {
-            return Inertia::render('Owner/Requests/RequestsPage', ['rentals' => request()->user()->rentalsAsOwner()->with(['equipment.images', 'tenant'])->where('status', 'pending')->latest()->get()]);
+            return Inertia::render('Owner/Requests/RequestsPage', ['rentals' => request()->user()->rentalsAsOwner()->with(['equipment.images', 'tenant', 'contract', 'payments'])->where('status', 'pending')->latest()->get()]);
         })->name('requests');
         Route::get('/rentals', function () {
             return Inertia::render('Owner/Rentals/RentalsPage', ['rentals' => request()->user()->rentalsAsOwner()->with(['equipment.images', 'tenant', 'contract', 'payments'])->latest()->get()]);
@@ -265,7 +274,7 @@ Route::middleware(['auth'])->group(function () {
             return Inertia::render('Owner/Delivery/DeliveryPage', [
                 'rentals' => $rentals,
                 'handover_reports' => HandoverReportModel::whereIn('rental_op_id', $rentals->pluck('id'))->with('images')->latest()->get(),
-                'disputes' => DisputeModel::whereIn('rental_op_id', $rentals->pluck('id'))->latest()->get(),
+                'disputes' => DisputeModel::whereIn('rental_op_id', $rentals->pluck('id'))->with('handover')->latest()->get(),
                 'reviews' => ReviewModel::whereIn('rental_op_id', $rentals->pluck('id'))->where('reviewer_id', request()->user()->id)->get(),
                 'compensations' => \App\Models\EquipmentHandover::whereIn('rental_op_id', $rentals->pluck('id'))->with('dispute')->get(),
             ]);
@@ -277,7 +286,7 @@ Route::middleware(['auth'])->group(function () {
             $user = request()->user();
             $rentalIds = $user->rentalsAsOwner()->pluck('id');
             return Inertia::render('Owner/Earnings/EarningsPage', [
-                'payments' => PaymentModel::whereIn('rental_op_id', $rentalIds)->with('rental.equipment')->latest()->get(),
+                'payments' => PaymentModel::whereIn('rental_op_id', $rentalIds)->with(['rental.equipment', 'rental.tenant'])->latest()->get(),
                 'payment_methods' => $user->paymentMethods()->latest()->get(),
             ]);
         })->name('earnings');
@@ -296,7 +305,7 @@ Route::middleware(['auth'])->group(function () {
                 'reviews' => ReviewModel::whereIn('rental_op_id', $rentalIds)
                     ->orWhere('reviewer_id', $user->id)
                     ->orWhere('target_id', $user->id)
-                    ->with(['reviewer', 'rental.equipment'])
+                    ->with(['reviewer', 'target', 'rental.equipment'])
                     ->latest()
                     ->get(),
                 'rentals' => $user->rentalsAsOwner()->where('status', 'completed')->with('tenant')->latest()->get(),

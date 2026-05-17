@@ -17,5 +17,19 @@ export const statusConfig = (status) => (
   STATUS_CONFIG[status] ?? { label: status ?? UNKNOWN_STATUS, color: '#95A5A6' }
 );
 
-export const equipmentOf = (rental) => rental?.equipment ?? {};
-export const tenantOf = (rental) => rental?.tenant ?? {};
+export const equipmentOf = (rental) => {
+  const equipment = rental?.equipment ?? {};
+  return {
+    ...equipment,
+    location: equipment.location ?? equipment.governorate ?? equipment.address,
+  };
+};
+
+export const tenantOf = (rental) => {
+  const tenant = rental?.tenant ?? {};
+  return {
+    ...tenant,
+    name: tenant.name ?? tenant.full_name,
+    avatarUrl: tenant.avatarUrl ?? tenant.avatar,
+  };
+};

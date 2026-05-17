@@ -15,7 +15,9 @@ export function ReviewCard({ review }) {
         </div>
         <div className="flex-1">
           <p className="font-bold text-[#222222] text-sm">{review.equipment || 'معدة غير معروفة'}</p>
-          <p className="text-xs text-[#888888]">{review.person || 'مستخدم'}</p>
+          <p className="text-xs text-[#888888]">
+            العملية: {review.operation || '—'} • {review.userLabel || 'المستخدم'}: {review.person || 'مستخدم'}
+          </p>
           <div className="flex items-center gap-2 mt-1.5">
             <div className="flex text-[#F39C12] text-sm">
               {[1, 2, 3, 4, 5].map((star) => (

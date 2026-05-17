@@ -110,8 +110,22 @@ class EquipmentController extends Controller
         $this->authorize('update', $equipment);
 
         $data = $request->validated();
+        unset($data['images']);
 
         $equipment->update($data);
+
+        if ($request->hasFile('images')) {
+            $startOrder = (int) $equipment->images()->max('sort_order') + 1;
+
+            foreach ($request->file('images') as $index => $image) {
+                $path = $image->store('equipment', 'public');
+                $equipment->images()->create([
+                    'image_url' => '/storage/' . $path,
+                    'is_primary' => ! $equipment->images()->exists() && $index === 0,
+                    'sort_order' => $startOrder + $index,
+                ]);
+            }
+        }
 
         return back()->with('success', 'تم تحديث المعدة بنجاح.');
     }

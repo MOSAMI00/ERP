@@ -118,7 +118,11 @@ export const normalizeDispute = (dispute) => {
     const handover = dispute.handover || null;
     const ownerRequestedAmount = Number(handover?.proposed_deduction ?? handover?.proposedDeduction ?? 0);
     const tenantProposedAmount = Number(dispute.requested_amount ?? dispute.requested_compensation ?? 0);
-    const finalCompensation = Number(dispute.final_compensation ?? 0);
+    const adminDecision = enumValue(dispute.admin_decision);
+    const rawFinalCompensation = Number(dispute.final_compensation ?? 0);
+    const finalCompensation = status === 'resolved' && adminDecision === 'accept_deduction' && rawFinalCompensation === 0
+        ? ownerRequestedAmount
+        : rawFinalCompensation;
     const handoverReports = asArray(rental?.handover_reports ?? rental?.handoverReports);
     const reports = handoverReports.map((report) => ({
         ...report,
@@ -143,7 +147,7 @@ export const normalizeDispute = (dispute) => {
         tenantProposedAmount,
         finalCompensation,
         displayAmount: status === 'resolved' ? finalCompensation : ownerRequestedAmount,
-        adminDecision: enumValue(dispute.admin_decision),
+        adminDecision,
         tenantClaim: dispute.tenant_claim || '',
         ownerNotes: dispute.owner_notes || handover?.final_notes || '',
         adminNote: dispute.admin_note || '',

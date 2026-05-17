@@ -13,6 +13,12 @@ const CONDITION_LABELS = {
   partially_damaged: 'متضررة جزئياً',
 };
 
+const ADMIN_DECISION_LABELS = {
+  accept_deduction: 'الإدارة قبلت مطالبة المؤجر بالكامل',
+  reject_deduction: 'الإدارة رفضت الخصم وأعادت التأمين للمستأجر',
+  modify_compensation: 'الإدارة اعتمدت مبلغ تعويض معدل',
+};
+
 export function CompensationResponseCard({
   compensation,
   onAccept,
@@ -31,16 +37,23 @@ export function CompensationResponseCard({
     compensation.status === 'no_refund';
 
   if (isCompleted) {
+    const adminDecision = compensation.adminDecision ?? compensation.dispute?.adminDecision;
+    const settledByAdmin = compensation.dispute?.status === 'resolved';
     return (
       <div className="mb-4 rounded-xl border-2 border-[#27AE60] bg-[#F4FAF6] p-5">
-        <h4 className="m-0 text-base font-bold text-[#27AE60]">تمت تسوية مطالبة التعويض</h4>
+        <h4 className="m-0 text-base font-bold text-[#27AE60]">
+          {settledByAdmin ? (ADMIN_DECISION_LABELS[adminDecision] ?? 'تمت التسوية بقرار إداري') : 'تمت تسوية مطالبة التعويض'}
+        </h4>
         <p className="m-0 mt-2 text-sm text-[#555555]">طلب المؤجر: {formatCurrency(compensation.ownerRequestedAmount ?? compensation.requestedAmount)} ر.ي</p>
         {compensation.dispute ? (
           <p className="m-0 mt-1 text-sm text-[#555555]">اقتراحك عند فتح النزاع: {formatCurrency(compensation.tenantProposedAmount ?? 0)} ر.ي</p>
         ) : null}
         <p className="m-0 mt-1 text-sm font-bold text-[#222222]">
-          المبلغ النهائي حسب التسوية: {formatCurrency(compensation.finalAmount ?? compensation.requestedAmount)} ر.ي
+          المبلغ النهائي المخصوم من التأمين: {formatCurrency(compensation.finalAmount ?? compensation.requestedAmount)} ر.ي
         </p>
+        {adminDecision === 'reject_deduction' ? (
+          <p className="m-0 mt-1 text-sm font-bold text-[#27AE60]">سيتم إرجاع التأمين للمستأجر بدون خصم.</p>
+        ) : null}
         {compensation.notes ? (
           <p className="m-0 mt-1 text-sm text-[#555555]">ملاحظات المؤجر: {compensation.notes}</p>
         ) : null}
@@ -52,11 +65,14 @@ export function CompensationResponseCard({
   }
 
   if (isDisputed) {
+    const disputeStatusLabel = compensation.dispute?.status === 'resolved'
+      ? (ADMIN_DECISION_LABELS[compensation.dispute?.adminDecision] ?? 'تمت التسوية بقرار إداري')
+      : 'قيد المراجعة الإدارية';
     return (
       <div className="mb-4 rounded-xl border-2 border-[#E74C3C] bg-[#FDEDEC] p-5">
         <h4 className="m-0 text-base font-bold text-[#E74C3C]">المطالبة تحولت إلى نزاع</h4>
         <p className="m-0 mt-2 text-sm text-[#555555]">
-          حالة النزاع: {compensation.dispute?.status === 'resolved' ? 'تمت التسوية بقرار إداري' : 'قيد المراجعة الإدارية'}
+          حالة النزاع: {disputeStatusLabel}
         </p>
         <p className="m-0 mt-1 text-sm text-[#555555]">طلب المؤجر: {formatCurrency(compensation.ownerRequestedAmount ?? compensation.requestedAmount)} ر.ي</p>
         <p className="m-0 mt-1 text-sm text-[#555555]">اقتراحك: {formatCurrency(compensation.tenantProposedAmount ?? 0)} ر.ي</p>

@@ -38,6 +38,8 @@ export const useOwnerEquipmentCatalog = ({
       image: primaryImage?.image_url,
       location: item.governorate,
       dailyRate: parseFloat(item.price_per_day),
+      insuranceAmount: parseFloat(item.insurance_amount ?? 0),
+      rentalTerms: item.rental_terms,
       displayStatus: getDisplayStatus(latestRentalByEquipmentId[item.id]),
       rentalCount: rentals.filter((r) => r.equipment_id === item.id).length,
       category: categoryName,

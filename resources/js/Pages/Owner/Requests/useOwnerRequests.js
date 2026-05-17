@@ -9,7 +9,7 @@ export const useOwnerRequests = ({
   selectedRentalId,
 }) => {
   const ownerRentalPool = useMemo(
-    () => rentals.filter((rental) => rental.ownerId === ownerId),
+    () => rentals.filter((rental) => (rental.owner_id ?? rental.ownerId) === ownerId),
     [rentals, ownerId],
   );
 
@@ -22,7 +22,7 @@ export const useOwnerRequests = ({
         const tenant = tenantOf(rental);
         return (
           (equipment.name ?? '').toLowerCase().includes(term) ||
-          (rental.orderNum ?? '').toLowerCase().includes(term) ||
+            (rental.order_num ?? rental.orderNum ?? '').toLowerCase().includes(term) ||
           (tenant.name ?? '').toLowerCase().includes(term)
         );
       });
