@@ -22,33 +22,11 @@ export default function AddEquipmentPage() {
     governorate: equipment?.governorate ?? '',
     address: equipment?.address ?? '',
     description: equipment?.description ?? '',
-    condition: 'excellent',
-    delivery_method: 'both',
     price_per_day: equipment?.price_per_day ?? '',
-    weekly_rate: '',
-    monthly_rate: '',
     insurance_amount: equipment?.insurance_amount ?? '',
-    rental_terms: equipment?.rental_terms ?? '',
-    min_rental: 'يوم واحد',
-    max_rental: '',
-    discount: '',
-    specs: [{ key: '', value: '' }],
+    rental_terms: equipment?.rental_terms ?? 'لا توجد شروط إضافية.',
     images: (equipment?.images ?? []) as any[],
   });
-
-  const addSpec = () => {
-    form.setData('specs', [...form.data.specs, { key: '', value: '' }]);
-  };
-
-  const removeSpec = (index: number) => {
-    form.setData('specs', form.data.specs.filter((_, i) => i !== index));
-  };
-
-  const updateSpec = (index: number, key: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
-    form.setData('specs', form.data.specs.map((spec, i) =>
-      i === index ? { ...spec, [key]: event.target.value } : spec
-    ));
-  };
 
   const updateDraft = (key: string) => (event: any) => {
     form.setData(key as any, event.target.value);
@@ -61,13 +39,7 @@ export default function AddEquipmentPage() {
     form.transform((data) => ({
       ...data,
       images: data.images.filter((image) => image instanceof File),
-      rental_terms: data.rental_terms || [
-        data.condition ? `Condition: ${data.condition}` : '',
-        data.delivery_method ? `Delivery: ${data.delivery_method}` : '',
-        data.min_rental ? `Minimum rental: ${data.min_rental}` : '',
-        data.max_rental ? `Maximum rental days: ${data.max_rental}` : '',
-        ...data.specs.filter(s => s.key && s.value).map(s => `${s.key}: ${s.value}`)
-      ].filter(Boolean).join('\n'),
+      rental_terms: data.rental_terms || 'لا توجد شروط إضافية.',
     }));
 
     const options = {
@@ -89,11 +61,7 @@ export default function AddEquipmentPage() {
         return (
           <BasicInfoStep
             draft={form.data}
-            specs={form.data.specs}
-            addSpec={addSpec}
-            removeSpec={removeSpec}
             updateDraft={updateDraft}
-            updateSpec={updateSpec}
           />
         );
       case 1:

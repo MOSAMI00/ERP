@@ -11,7 +11,7 @@ export const useOwnerRentals = ({
 }) => {
   const visibleRentals = useMemo(() => (
     rentals
-      .filter((rental) => rental.ownerId === ownerId)
+      .filter((rental) => (rental.owner_id ?? rental.ownerId) === ownerId)
       .filter((rental) => activeTab === 'all' || rental.status === activeTab)
       .filter((rental) => {
         const equipment = fallbackEquipment(rental);
@@ -19,14 +19,14 @@ export const useOwnerRentals = ({
         const term = search.toLowerCase();
         return (
           (equipment.name ?? '').toLowerCase().includes(term) ||
-          (rental.orderNum ?? '').toLowerCase().includes(term) ||
-          (tenant.name ?? '').includes(search)
+          (rental.order_num ?? rental.orderNum ?? '').toLowerCase().includes(term) ||
+          (tenant.name ?? tenant.full_name ?? '').toLowerCase().includes(term)
         );
       })
   ), [activeTab, ownerId, rentals, search]);
 
   const selectedRental = useMemo(
-    () => rentals.find((rental) => rental.id === selectedRentalId),
+    () => rentals.find((rental) => String(rental.id) === String(selectedRentalId)),
     [rentals, selectedRentalId],
   );
 

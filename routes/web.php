@@ -199,7 +199,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/contracts', function () {
             $rentalIds = request()->user()->rentalsAsTenant()->pluck('id');
             return Inertia::render('Tenant/Contracts/ContractsPage', [
-                'contracts' => ContractModel::whereIn('rental_op_id', $rentalIds)->with('rental.equipment')->latest()->get(),
+                'contracts' => ContractModel::whereIn('rental_op_id', $rentalIds)->with(['rental.equipment', 'rental.owner', 'rental.tenant'])->latest()->get(),
             ]);
         })->name('contracts');
         Route::get('/notifications', function () {
@@ -215,7 +215,7 @@ Route::middleware(['auth'])->group(function () {
                     ->with(['rental.equipment', 'reviewer', 'target'])
                     ->latest()
                     ->get(),
-                'rentals' => $user->rentalsAsTenant()->where('status', 'completed')->with('equipment.owner')->latest()->get(),
+                'rentals' => $user->rentalsAsTenant()->where('status', 'completed')->with(['equipment.images', 'equipment.owner', 'owner'])->latest()->get(),
             ]);
         })->name('ratings');
         Route::get('/insurance', function () {
@@ -264,7 +264,7 @@ Route::middleware(['auth'])->group(function () {
             ]);
         })->name('equipment.edit');
         Route::get('/requests', function () {
-            return Inertia::render('Owner/Requests/RequestsPage', ['rentals' => request()->user()->rentalsAsOwner()->with(['equipment.images', 'tenant', 'contract', 'payments'])->where('status', 'pending')->latest()->get()]);
+            return Inertia::render('Owner/Requests/RequestsPage', ['rentals' => request()->user()->rentalsAsOwner()->with(['equipment.images', 'tenant', 'contract', 'payments'])->latest()->get()]);
         })->name('requests');
         Route::get('/rentals', function () {
             return Inertia::render('Owner/Rentals/RentalsPage', ['rentals' => request()->user()->rentalsAsOwner()->with(['equipment.images', 'tenant', 'contract', 'payments'])->latest()->get()]);
@@ -293,7 +293,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/contracts', function () {
             $user = request()->user();
             $rentalIds = $user->rentalsAsOwner()->pluck('id');
-            return Inertia::render('Owner/Contracts/ContractsPage', ['contracts' => ContractModel::whereIn('rental_op_id', $rentalIds)->with('rental.equipment')->latest()->get()]);
+            return Inertia::render('Owner/Contracts/ContractsPage', ['contracts' => ContractModel::whereIn('rental_op_id', $rentalIds)->with(['rental.equipment', 'rental.owner', 'rental.tenant'])->latest()->get()]);
         })->name('contracts');
         Route::get('/notifications', function () {
             return Inertia::render('Owner/Notifications/NotificationsPage', ['notifications' => NotificationModel::where('recipient_type', 'user')->where('recipient_id', request()->user()->id)->latest()->get()]);
@@ -308,7 +308,7 @@ Route::middleware(['auth'])->group(function () {
                     ->with(['reviewer', 'target', 'rental.equipment'])
                     ->latest()
                     ->get(),
-                'rentals' => $user->rentalsAsOwner()->where('status', 'completed')->with('tenant')->latest()->get(),
+                'rentals' => $user->rentalsAsOwner()->where('status', 'completed')->with(['equipment.images', 'tenant'])->latest()->get(),
             ]);
         })->name('reviews');
         Route::get('/profile', function () {

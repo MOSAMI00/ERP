@@ -27,33 +27,28 @@ const RentalDetailsPanel = ({
       <div>
         <span className="text-muted" style={{ fontSize: 12 }}>المستأجر</span>
         <p style={{ fontWeight: 600, margin: '2px 0' }}>{tenant?.name ?? 'مستخدم غير معروف'}</p>
-      </div>
-      <div>
-        <span className="text-muted" style={{ fontSize: 12 }}>الهاتف</span>
-        <p style={{ fontWeight: 600, margin: '2px 0', direction: 'ltr', textAlign: 'right' }}>
-          {tenant?.phone ?? '—'}
-        </p>
+        <p className="text-muted" style={{ fontSize: 12, margin: '2px 0' }}>⭐ {Number(tenant?.rating ?? 0).toFixed(1)}</p>
       </div>
       <div>
         <span className="text-muted" style={{ fontSize: 12 }}>الفترة</span>
         <p style={{ fontWeight: 600, margin: '2px 0', fontSize: 13 }}>
-          {formatRentalDateRange(rental.startDate, rental.endDate)}
+          {formatRentalDateRange(rental.start_date ?? rental.startDate, rental.end_date ?? rental.endDate)}
         </p>
       </div>
       <div>
         <span className="text-muted" style={{ fontSize: 12 }}>الدفع</span>
         <p style={{ fontWeight: 600, margin: '2px 0' }}>
-          {rental.paymentStatus === 'paid' ? 'مدفوع' : 'غير مدفوع'}
+          {(rental.payment_status ?? rental.paymentStatus) === 'paid' || ['paid', 'in_use', 'completed', 'disputed'].includes(rental.status) ? 'مدفوع' : 'غير مدفوع'}
         </p>
       </div>
     </div>
 
     <hr style={{ border: 'none', borderTop: '1px solid var(--color-border)', margin: '12px 0' }} />
-    <div className="flex-between mb-2"><span className="text-muted">مبلغ الإيجار</span><span>{formatCurrency(rental.rentalAmount)} ر.ي</span></div>
-    <div className="flex-between mb-2"><span className="text-muted">مبلغ التأمين</span><span>{formatCurrency(rental.insuranceAmount)} ر.ي</span></div>
+    <div className="flex-between mb-2"><span className="text-muted">مبلغ الإيجار</span><span>{formatCurrency(rental.rental_amount ?? rental.rentalAmount)} ر.ي</span></div>
+    <div className="flex-between mb-2"><span className="text-muted">مبلغ التأمين</span><span>{formatCurrency(rental.insurance_amount ?? rental.insuranceAmount)} ر.ي</span></div>
     <div className="flex-between" style={{ fontWeight: 700 }}>
       <span>الإجمالي</span>
-      <span style={{ color: 'var(--color-primary-green)' }}>{formatCurrency(rental.totalAmount)} ر.ي</span>
+      <span style={{ color: 'var(--color-primary-green)' }}>{formatCurrency(rental.total_amount ?? rental.totalAmount)} ر.ي</span>
     </div>
 
     {handovers.length > 0 && (

@@ -70,7 +70,7 @@ export default function RentalDetailsPage() {
     }
   };
 
-  const backUrl = isOwner ? '/owner/rentals' : '/dashboard';
+  const backUrl = isOwner ? '/owner/requests' : '/dashboard';
 
 
   return (
@@ -141,12 +141,12 @@ export default function RentalDetailsPage() {
                 </div>
                 <div>
                   <div className="font-bold">{isOwner ? rental.tenant.full_name : rental.owner.full_name}</div>
-                  <div className="text-sm text-muted-foreground">{isOwner ? rental.tenant.phone : rental.owner.phone}</div>
+                  <div className="text-sm text-muted-foreground">{isOwner ? rental.tenant.governorate : rental.owner.governorate}</div>
                 </div>
                 <div className="mr-auto">
                   <div className="flex items-center gap-1 text-yellow-500 font-bold">
                     <Star size={14} fill="currentColor" />
-                    <span>4.8</span>
+                    <span>{isOwner ? rental.tenant.rating : rental.owner.rating}</span>
                   </div>
                 </div>
               </div>
@@ -260,7 +260,7 @@ export default function RentalDetailsPage() {
                   </Link>
                 )}
 
-                {isOwner && rental.status === 'completed' && !rental.compensation && (
+                {isOwner && rental.status === 'return_done' && !rental.compensation && (
                   <Link
                     href={`/delivery?id=${rental.id}`}
                     className="w-full h-12 bg-orange-500 text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-orange-600 transition-colors"

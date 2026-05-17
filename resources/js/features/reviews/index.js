@@ -1,6 +1,5 @@
 export { default as ReviewsPage } from './ReviewsPage';
 export { ReviewCard } from './ui/ReviewCard';
 export { ReviewSummary } from './ui/ReviewSummary';
-export { TenantReviewsList } from './ui/TenantReviewsList';
-export { OwnerReviewsList } from './ui/OwnerReviewsList';
+export { ReviewsList } from './ui/ReviewsList';
 export { getReviewsConfig } from './lib/reviewsConfig';

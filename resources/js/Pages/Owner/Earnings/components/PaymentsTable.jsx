@@ -47,14 +47,13 @@ const PaymentsTable = ({ rows, isLoading }) => {
     },
     {
       key: 'net',
-      header: 'صافي الأرباح',
+      header: 'الأرباح',
       cell: (payment) => {
         const type = enumValue(payment.type);
-        const rentalAmount = Number(payment.rental?.rental_amount ?? 0);
-        const net = type === 'rental'
-          ? Math.max(0, rentalAmount - Number(payment.platform_fee ?? 0))
-          : Number(payment.amount ?? 0);
-        return <span style={{ fontWeight: 700 }}>{formatCurrency(net)} ر.ي</span>;
+        const profit = ['owner_transfer', 'compensation'].includes(type)
+          ? Number(payment.amount ?? 0)
+          : 0;
+        return <span style={{ fontWeight: 700 }}>{formatCurrency(profit)} ر.ي</span>;
       },
     },
     {

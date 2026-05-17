@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
-import { Eye } from 'lucide-react';
+import { Eye, XCircle } from 'lucide-react';
+import { router } from '@inertiajs/react';
 import { AppButton, DataTable, DateRangeText, MoneyText, StatusBadge } from '../../../../components/shared';
 import { fallbackEquipment, fallbackTenant } from '../rentalHelpers';
 
@@ -13,12 +14,20 @@ const RentalsTable = ({
     {
       key: 'order',
       header: '#',
-      cell: (rental) => rental.orderNum ?? '—',
+      cell: (rental) => rental.order_num ?? rental.orderNum ?? `#${rental.id}`,
     },
     {
       key: 'tenant',
       header: 'المستأجر',
-      cell: (rental) => fallbackTenant(rental).name ?? 'مستخدم غير معروف',
+      cell: (rental) => {
+        const tenant = fallbackTenant(rental);
+        return (
+          <div>
+            <div className="font-semibold">{tenant.name ?? 'مستخدم غير معروف'}</div>
+            <div className="text-xs text-[#F39C12]">⭐ {Number(tenant.rating ?? 0).toFixed(1)}</div>
+          </div>
+        );
+      },
     },
     {
       key: 'equipment',
@@ -28,12 +37,12 @@ const RentalsTable = ({
     {
       key: 'period',
       header: 'الفترة',
-      cell: (rental) => <DateRangeText start={rental.startDate} end={rental.endDate} className="text-xs" />,
+      cell: (rental) => <DateRangeText start={rental.start_date ?? rental.startDate} end={rental.end_date ?? rental.endDate} className="text-xs" />,
     },
     {
       key: 'total',
       header: 'الإجمالي',
-      cell: (rental) => <MoneyText value={rental.totalAmount} />,
+      cell: (rental) => <MoneyText value={rental.total_amount ?? rental.totalAmount} />,
     },
     {
       key: 'status',
@@ -43,15 +52,37 @@ const RentalsTable = ({
     {
       key: 'actions',
       header: 'إجراء',
-      cell: (rental) => (
-        <AppButton
-          variant="outline"
-          size="sm"
-          onClick={() => onToggleRental(rental.id)}
-        >
-          <Eye size={14} /> عرض
-        </AppButton>
-      ),
+      cell: (rental) => {
+        const isPaid = ['paid', 'in_use', 'completed', 'disputed'].includes(rental.status)
+          || rental.payments?.some?.((payment) => (typeof payment.status === 'object' ? payment.status?.value : payment.status) === 'paid');
+        const canCancel = ['pending', 'confirmed'].includes(rental.status) && !isPaid;
+
+        return (
+          <div className="flex flex-wrap gap-2">
+            <AppButton
+              variant="outline"
+              size="sm"
+              onClick={() => onToggleRental(rental.id)}
+            >
+              <Eye size={14} /> عرض
+            </AppButton>
+            {canCancel ? (
+              <AppButton
+                variant="danger"
+                size="sm"
+                onClick={() => {
+                  if (!confirm('هل أنت متأكد من إلغاء العملية؟')) return;
+                  router.post(`/rentals/${rental.id}/cancel`, {
+                    cancellation_reason: 'ألغى المؤجر العملية قبل الدفع',
+                  }, { preserveScroll: true });
+                }}
+              >
+                <XCircle size={14} /> إلغاء
+              </AppButton>
+            ) : null}
+          </div>
+        );
+      },
     },
   ], [onToggleRental]);
 

@@ -39,36 +39,46 @@ function PartyCard({ tone, title, user, noteTitle, note }) {
 }
 
 function EvidenceGroup({ title, icon: Icon, reports }) {
-  const images = reports.flatMap((report) => report.images ?? []);
-
   return (
     <div>
       <p className="text-sm font-bold mb-3 flex items-center">
         <Icon size={16} className="ml-1 text-brand-text-muted" />
         {title}
       </p>
-      {images.length > 0 ? (
-        <div className="grid grid-cols-2 gap-2">
-          {images.map((image, index) => (
-            <a key={`${image}-${index}`} href={image} target="_blank" rel="noreferrer" className="block">
-              <img src={image} alt={`${title} ${index + 1}`} className="w-full h-24 object-cover rounded-lg hover:opacity-80 transition-opacity border border-brand-border" />
-            </a>
-          ))}
-        </div>
-      ) : (
-        <div className="h-24 bg-brand-content rounded-lg flex items-center justify-center border border-brand-border border-dashed text-brand-text-muted text-xs">
-          لا توجد صور مرفوعة
-        </div>
-      )}
-      <div className="mt-2 space-y-1">
-        {reports.length > 0 ? reports.map((report) => (
-          <p key={report.id} className="text-xs text-brand-text-muted">
-            {report.submitted_by_role === 'owner' ? 'المؤجر' : 'المستأجر'}:
-            {' '}
-            {conditionLabels[report.condition_status] ?? report.condition_status ?? 'غير محدد'}
-            {report.notes ? ` - ${report.notes}` : ''}
-          </p>
-        )) : (
+      <div className="space-y-3">
+        {reports.length > 0 ? reports.map((report) => {
+          const images = report.images ?? [];
+          return (
+            <div key={report.id} className="rounded-xl border border-brand-border bg-brand-content/40 p-3">
+              <div className="flex flex-wrap justify-between gap-2 text-xs">
+                <span className="font-bold text-brand-text-primary">
+                  {report.submitted_by_role === 'owner' ? 'محضر المؤجر' : 'محضر المستأجر'}
+                </span>
+                <span className="text-brand-text-muted">{String(report.created_at ?? report.createdAt ?? '').slice(0, 10)}</span>
+              </div>
+              <p className="mt-2 text-xs text-brand-text-muted">
+                الحالة: <strong>{conditionLabels[report.condition_status] ?? report.condition_status ?? 'غير محدد'}</strong>
+                {' '}| توجد ملاحظات/مشاكل: <strong>{report.has_issues ? 'نعم' : 'لا'}</strong>
+              </p>
+              {report.notes ? (
+                <p className="mt-2 rounded-lg bg-white p-2 text-xs leading-6 text-brand-text-primary">{report.notes}</p>
+              ) : null}
+              {images.length > 0 ? (
+                <div className="mt-3 grid grid-cols-2 gap-2 md:grid-cols-3">
+                  {images.map((image, index) => (
+                    <a key={`${image}-${index}`} href={image} target="_blank" rel="noreferrer" className="block">
+                      <img src={image} alt={`${title} ${index + 1}`} className="h-24 w-full object-cover rounded-lg hover:opacity-80 transition-opacity border border-brand-border" />
+                    </a>
+                  ))}
+                </div>
+              ) : (
+                <div className="mt-3 h-20 bg-white rounded-lg flex items-center justify-center border border-brand-border border-dashed text-brand-text-muted text-xs">
+                  لا توجد صور مرفوعة
+                </div>
+              )}
+            </div>
+          );
+        }) : (
           <p className="text-xs text-brand-text-muted">لا توجد محاضر مسجلة لهذه المرحلة.</p>
         )}
       </div>

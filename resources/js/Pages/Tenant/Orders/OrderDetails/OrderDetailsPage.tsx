@@ -119,7 +119,11 @@ export default function OrderDetailPage() {
   }
 
   const st = STATUS_CONFIG[rental.status] ?? { label: rental.status, color: '#888', bg: '#F2F3F4' };
-  const showPayForm = rental.status === 'confirmed' && (rental.payment_status ?? rental.paymentStatus) === 'unpaid';
+  const hasPaidPayment = rental.payments?.some?.((payment) => {
+    const status = typeof payment.status === 'object' ? payment.status?.value : payment.status;
+    return status === 'paid';
+  });
+  const showPayForm = rental.status === 'confirmed' && !hasPaidPayment;
   const orderNum = rental.order_num ?? rental.orderNum;
   const durationDays = rental.duration_days ?? rental.durationDays;
   const rentalAmount = rental.rental_amount ?? rental.rentalAmount;
