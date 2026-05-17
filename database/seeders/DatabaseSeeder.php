@@ -17,14 +17,20 @@ class DatabaseSeeder extends Seeder
         $this->call([
             CategorySeeder::class,
             AdminSeeder::class,
+            UserSeeder::class,
             // RentalWorkflowSeeder::class,
         ]);
-        User::factory()->create([
-            'full_name' => 'Test User',
-            'email' => 'test@example.com',
-            'phone' => '0500000000',
-            'type' => 'tenant',
-            'governorate' => 'Riyadh',
-        ]);
+        User::updateOrCreate(
+            ['email' => 'test@example.com'],
+            [
+                'full_name' => 'Test User',
+                'phone' => '0500000000',
+                'type' => 'tenant',
+                'governorate' => 'Riyadh',
+                'status' => 'active',
+                'kyc_status' => 'approved',
+                'password_hash' => \Illuminate\Support\Facades\Hash::make('password'),
+            ]
+        );
     }
 }
