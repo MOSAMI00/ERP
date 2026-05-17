@@ -106,13 +106,20 @@ export function OwnerCompensationCard({
         استخدم هذا النموذج فقط إذا أثبت تقرير الإرجاع وجود تلفيات أو خصم مستحق. ستظهر للمستأجر قيمة الخصم مع ملاحظاتك وصور تقرير الإرجاع.
       </p>
 
-      <div className="mt-4 grid grid-cols-1 gap-3">
+       <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
         <input
           type="number"
           value={form.amount}
           onChange={(event) => onChange('amount', event.target.value)}
           placeholder="قيمة الخصم المطلوب من التأمين (ر.ي)"
           className="h-11 rounded-xl border border-[#E0E0E0] bg-white px-3 text-sm focus:border-[#2D5A27] focus:outline-none"
+        />
+        <input
+          type="file"
+          accept="image/*"
+          multiple
+          onChange={(event) => onChange('photos', Array.from(event.target.files || []).map((file) => file.name))}
+          className="block w-full rounded-xl border border-dashed border-[#F3C77B] bg-white px-3 py-2 text-sm"
         />
       </div>
       <textarea
@@ -123,13 +130,24 @@ export function OwnerCompensationCard({
         className="mt-3 w-full resize-none rounded-xl border border-[#E0E0E0] bg-white p-3 text-sm focus:border-[#2D5A27] focus:outline-none"
       />
 
-      <AppButton
-        className="mt-3"
-        disabled={loading || !Number(form.amount) || !form.notes.trim()}
-        onClick={onSubmit}
-      >
-        {loading ? 'جاري الإرسال...' : 'إرسال طلب التعويض'}
-      </AppButton>
+      <div className="flex gap-3 mt-3">
+        <AppButton
+          className="flex-1"
+          disabled={loading || !Number(form.amount) || !form.notes.trim()}
+          onClick={onSubmit}
+        >
+          {loading ? 'جاري الإرسال...' : 'إرسال طلب التعويض'}
+        </AppButton>
+        
+        <AppButton
+          variant="outline"
+          className="flex-1 border-[#F3C77B] text-[#B9770E] hover:bg-[#F3C77B]/10"
+          disabled={loading}
+          onClick={() => onSubmit('skip')}
+        >
+          لا أريد تعويض
+        </AppButton>
+      </div>
     </div>
   );
 }

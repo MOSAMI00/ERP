@@ -18,6 +18,7 @@ class StoreRentalRequest extends FormRequest
             'start_date'        => ['required', 'date', 'after_or_equal:today'],
             'end_date'          => ['required', 'date', 'after:start_date'],
             'delivery_location' => ['nullable', 'string'],
+            'time_slot'         => ['nullable', 'string', 'in:morning,afternoon,evening'],
         ];
     }
 }

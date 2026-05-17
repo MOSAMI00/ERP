@@ -29,11 +29,12 @@ class RentalOperation extends Model
         'rental_amount',
         'insurance_amount',
         'total_amount',
-        
+
         'status',
         'cancellation_reason',
         'payment_deadline',
         'delivery_location',
+        'preferred_time_slot',
         'delivery_time',
         'delivery_confirmed_at',
         'return_confirmed_at',

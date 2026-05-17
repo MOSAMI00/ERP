@@ -45,6 +45,10 @@ class UserStatusService
             throw InvalidStateTransitionException::expected('non-active', 'active');
         }
 
+        // if ($user->status === UserStatus::Banned) {
+        //     throw InvalidStateTransitionException::expected('non-banned', 'banned');
+        // }
+
         ($this->updateStatus)($user, UserStatus::Active);
         $user->update(['ban_reason' => null]);
 

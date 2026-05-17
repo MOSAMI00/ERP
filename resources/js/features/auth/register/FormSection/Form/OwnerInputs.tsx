@@ -107,6 +107,62 @@ export function OwnerInputs({ formData, setFormData, selectedCategories, toggleC
               ))}
             </select>
           </div>
+
+          {formData.paymentMethod === 'تحويل بنكي' && (
+            <div className="space-y-4 p-4 bg-[#F8F8F8] rounded-lg border border-[#E0E0E0]">
+              <div>
+                <label className="block text-xs font-medium mb-1 text-[#666666]">اسم البنك *</label>
+                <input
+                  type="text"
+                  value={formData.bank_name}
+                  onChange={(e) => setFormData({ ...formData, bank_name: e.target.value })}
+                  placeholder="مثال: بنك الكريمي"
+                  className="w-full px-4 h-10 rounded-lg border border-[#E0E0E0] focus:border-[#2D5A27] focus:outline-none text-sm"
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-medium mb-1 text-[#666666]">رقم الحساب *</label>
+                  <input
+                    type="text"
+                    value={formData.account_number}
+                    onChange={(e) => setFormData({ ...formData, account_number: e.target.value })}
+                    placeholder="123456789"
+                    className="w-full px-4 h-10 rounded-lg border border-[#E0E0E0] focus:border-[#2D5A27] focus:outline-none text-sm"
+                    style={{ direction: 'ltr' }}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium mb-1 text-[#666666]">اسم صاحب الحساب *</label>
+                  <input
+                    type="text"
+                    value={formData.account_name}
+                    onChange={(e) => setFormData({ ...formData, account_name: e.target.value })}
+                    placeholder="كما هو في البنك"
+                    className="w-full px-4 h-10 rounded-lg border border-[#E0E0E0] focus:border-[#2D5A27] focus:outline-none text-sm"
+                    required
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {formData.paymentMethod === 'محفظة إلكترونية' && (
+            <div className="p-4 bg-[#F8F8F8] rounded-lg border border-[#E0E0E0]">
+              <label className="block text-xs font-medium mb-1 text-[#666666]">رقم المحفظة / الهاتف *</label>
+              <input
+                type="text"
+                value={formData.wallet_number}
+                onChange={(e) => setFormData({ ...formData, wallet_number: e.target.value })}
+                placeholder="77XXXXXXX"
+                className="w-full px-4 h-10 rounded-lg border border-[#E0E0E0] focus:border-[#2D5A27] focus:outline-none text-sm"
+                style={{ direction: 'ltr' }}
+                required
+              />
+            </div>
+          )}
         </div>
       </div>
 

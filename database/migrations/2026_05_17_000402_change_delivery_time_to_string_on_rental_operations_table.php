@@ -11,21 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->enum('kyc_status', ['pending', 'approved', 'rejected'])->default('pending')->change();
-        });
-
         Schema::table('rental_operations', function (Blueprint $table) {
             $table->string('delivery_time')->nullable()->change();
         });
     }
 
+    /**
+     * Reverse the migrations.
+     */
     public function down(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->enum('kyc_status', ['pending', 'verified', 'rejected'])->default('pending')->change();
-        });
-
         Schema::table('rental_operations', function (Blueprint $table) {
             $table->timestamp('delivery_time')->nullable()->change();
         });

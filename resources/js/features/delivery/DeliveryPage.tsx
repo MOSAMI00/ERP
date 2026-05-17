@@ -353,12 +353,27 @@ export default function DeliveryPage({ role: roleProp }) {
     }));
   };
 
-  const handleRequestCompensation = () => {
+  const handleRequestCompensation = (action = 'submit') => {
     if (!selectedRental || !ownerReturnReport || isSubmittingCompensation) return;
     const amount = Number(activeCompensationForm.amount || 0);
     if (!amount || !activeCompensationForm.notes.trim()) return;
     const handover = selectedRental.equipment_handover ?? selectedRental.equipmentHandover;
     if (!handover?.id) return;
+
+    if (action === 'skip') {
+      if (!confirm('هل أنت متأكد أنك لا تريد طلب تعويض؟ سيتم إكمال العملية وإعادة مبلغ التأمين للمستأجر.')) return;
+      
+      setIsSubmittingCompensation(true);
+      router.post(`/equipment-handovers/${handover.id}/decide`, {
+        owner_decision: 'full_refund',
+        final_condition: activeForm.conditionStatus || 'good',
+        final_notes: 'اختار المؤجر عدم طلب تعويض.',
+      }, {
+        preserveScroll: true,
+        onFinish: () => setIsSubmittingCompensation(false)
+      });
+      return;
+    }
 
     setIsSubmittingCompensation(true);
     const insuranceAmount = Number(selectedRental.insurance_amount ?? selectedRental.insuranceAmount ?? 0);
