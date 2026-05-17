@@ -9,42 +9,59 @@ const escrowStatusMeta = {
   pending: { label: 'بانتظار', color: '#95A5A6', bg: 'rgba(149,165,166,0.12)' },
 };
 
+const enumValue = (value) => (typeof value === 'object' ? value?.value : value);
+const paymentTypeLabels = {
+  rental: 'إيجار في الضمان',
+  owner_transfer: 'تحويل أرباح',
+  compensation: 'تعويض',
+  insurance_refund: 'استرداد تأمين',
+};
+
 const PaymentsTable = ({ rows, isLoading }) => {
   const columns = [
     {
       key: 'order',
       header: 'الطلب',
-      cell: (rental) => rental.orderNum ?? '—',
+      cell: (payment) => `#${payment.rental_op_id ?? payment.rentalOpId ?? payment.rental?.id ?? '—'}`,
     },
     {
       key: 'tenant',
       header: 'المستأجر',
-      cell: (rental) => rental.tenant?.name ?? 'مستخدم غير معروف',
+      cell: (payment) => payment.rental?.tenant?.full_name ?? payment.rental?.tenant?.name ?? 'مستخدم غير معروف',
     },
     {
-      key: 'rentalAmount',
-      header: 'مبلغ الإيجار',
-      cell: (rental) => `${formatCurrency(rental.rentalAmount)} ر.ي`,
+      key: 'type',
+      header: 'نوع العملية',
+      cell: (payment) => paymentTypeLabels[enumValue(payment.type)] ?? enumValue(payment.type) ?? '—',
+    },
+    {
+      key: 'amount',
+      header: 'المبلغ',
+      cell: (payment) => `${formatCurrency(payment.amount ?? 0)} ر.ي`,
     },
     {
       key: 'fee',
       header: 'عمولة المنصة',
       className: 'text-muted',
-      cell: (rental) => `${formatCurrency(Math.round(rental.rentalAmount * 0.05))} ر.ي`,
+      cell: (payment) => `${formatCurrency(payment.platform_fee ?? 0)} ر.ي`,
     },
     {
       key: 'net',
       header: 'صافي الأرباح',
-      cell: (rental) => {
-        const fee = Math.round(rental.rentalAmount * 0.05);
-        return <span style={{ fontWeight: 700 }}>{formatCurrency(rental.rentalAmount - fee)} ر.ي</span>;
+      cell: (payment) => {
+        const type = enumValue(payment.type);
+        const rentalAmount = Number(payment.rental?.rental_amount ?? 0);
+        const net = type === 'rental'
+          ? Math.max(0, rentalAmount - Number(payment.platform_fee ?? 0))
+          : Number(payment.amount ?? 0);
+        return <span style={{ fontWeight: 700 }}>{formatCurrency(net)} ر.ي</span>;
       },
     },
     {
       key: 'status',
       header: 'حالة التحويل',
-      cell: (rental) => {
-        const status = rental.escrowStatus ?? 'pending';
+      cell: (payment) => {
+        const status = enumValue(payment.escrow_status) ?? 'pending';
         return <StatusBadge status={status} meta={escrowStatusMeta[status]} />;
       },
     },

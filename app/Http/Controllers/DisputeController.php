@@ -49,7 +49,7 @@ class DisputeController extends Controller
             (float) ($data['requested_amount'] ?? 0),
         );
 
-        return redirect()->route('disputes.index')
+        return redirect()->back()
             ->with('success', 'Dispute opened.');
     }
 

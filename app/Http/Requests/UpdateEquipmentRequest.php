@@ -14,6 +14,7 @@ class UpdateEquipmentRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'category_id'      => ['sometimes', 'required', 'exists:categories,id'],
             'name'             => ['sometimes', 'required', 'string', 'max:255'],
             'description'      => ['sometimes', 'required', 'string'],
             'governorate'      => ['sometimes', 'required', 'string'],
@@ -21,6 +22,8 @@ class UpdateEquipmentRequest extends FormRequest
             'price_per_day'    => ['sometimes', 'required', 'numeric', 'min:0'],
             'insurance_amount' => ['sometimes', 'required', 'numeric', 'min:0'],
             'rental_terms'     => ['sometimes', 'required', 'string'],
+            'images'           => ['nullable', 'array'],
+            'images.*'         => ['image', 'mimes:jpeg,png,jpg,webp', 'max:5120'],
             'status'           => ['nullable', 'in:active,hidden'],
         ];
     }

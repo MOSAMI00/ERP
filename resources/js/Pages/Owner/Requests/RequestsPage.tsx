@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import { usePage, router } from '@inertiajs/react';
 import { useOwnerPageProps } from '../../../inertia/owner-page-props';
 import { PageHeader } from '../../../components/shared';
-import ConfirmModal from '../../../components/shared/ConfirmModal';
+import AcceptRequestModal from './components/AcceptRequestModal';
 import RequestDetailsModal from './components/RequestDetailsModal';
 import RequestFilters from './components/RequestFilters';
 import RequestGrid from './components/RequestGrid';
@@ -53,10 +53,10 @@ const Requests = () => {
     });
   };
 
-  const confirmReject = () => {
+  const confirmReject = (reason = 'Rejected by owner') => {
     if (!selectedRental?.id) return;
     router.post(`/rentals/${selectedRental.id}/cancel`, {
-      cancellation_reason: 'Rejected by owner',
+      cancellation_reason: reason,
     }, {
       onSuccess: () => {
         toast.success('تم رفض الطلب وإشعار المستأجر');
@@ -81,12 +81,9 @@ const Requests = () => {
         onOpenModal={openModal}
       />
 
-      <ConfirmModal
-        isOpen={modal === 'accept' && Boolean(selectedRental)}
-        title="تأكيد قبول الطلب؟"
-        description="سيتم إشعار المستأجر لإتمام الدفع، ثم حفظ المبلغ في الضمان بعد الدفع."
-        confirmLabel="تأكيد القبول"
-        variant="success"
+      <AcceptRequestModal
+        isOpen={modal === 'acceptReview' && Boolean(selectedRental)}
+        rental={selectedRental}
         onClose={closeModal}
         onConfirm={confirmApprove}
       />

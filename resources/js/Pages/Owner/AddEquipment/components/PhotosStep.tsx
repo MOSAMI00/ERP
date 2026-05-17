@@ -2,8 +2,8 @@ import React, { useRef } from 'react';
 import { Image as ImageIcon, Plus, X } from 'lucide-react';
 
 interface PhotosStepProps {
-  images: File[];
-  setImages: (images: File[]) => void;
+  images: any[];
+  setImages: (images: any[]) => void;
 }
 
 const PhotosStep: React.FC<PhotosStepProps> = ({ images, setImages }) => {
@@ -21,6 +21,10 @@ const PhotosStep: React.FC<PhotosStepProps> = ({ images, setImages }) => {
   };
 
   const photoSlots = Array.from({ length: Math.max(5, images.length + 1) }, (_, index) => index);
+  const imageSrc = (image: any) => {
+    if (image instanceof File) return URL.createObjectURL(image);
+    return image?.image_url ?? image?.url ?? image;
+  };
 
   return (
     <div>
@@ -40,7 +44,7 @@ const PhotosStep: React.FC<PhotosStepProps> = ({ images, setImages }) => {
         {images.map((file, index) => (
           <div key={index} className="image-upload-slot has-image">
             <img
-              src={URL.createObjectURL(file)}
+              src={imageSrc(file)}
               alt={`preview ${index}`}
               className="w-full h-full object-cover rounded-xl"
             />

@@ -25,8 +25,8 @@ const PricingStep = ({ draft, updateDraft }) => (
           type="number"
           className="owner-input"
           placeholder="مثال: 90000"
-          value={draft.weeklyRate}
-          onChange={updateDraft('weeklyRate')}
+          value={draft.weekly_rate}
+          onChange={updateDraft('weekly_rate')}
         />
       </div>
 
@@ -38,8 +38,8 @@ const PricingStep = ({ draft, updateDraft }) => (
           type="number"
           className="owner-input"
           placeholder="مثال: 300000"
-          value={draft.monthlyRate}
-          onChange={updateDraft('monthlyRate')}
+          value={draft.monthly_rate}
+          onChange={updateDraft('monthly_rate')}
         />
       </div>
 
@@ -59,7 +59,7 @@ const PricingStep = ({ draft, updateDraft }) => (
 
       <div className="mb-4">
         <label className="owner-label">الحد الأدنى للإيجار</label>
-        <select className="owner-input" value={draft.minRental} onChange={updateDraft('minRental')}>
+        <select className="owner-input" value={draft.min_rental} onChange={updateDraft('min_rental')}>
           {minRentalOptions.map((option) => (
             <option key={option} value={option}>{option}</option>
           ))}
@@ -72,8 +72,8 @@ const PricingStep = ({ draft, updateDraft }) => (
           type="number"
           className="owner-input"
           placeholder="مثال: 30"
-          value={draft.maxRental}
-          onChange={updateDraft('maxRental')}
+          value={draft.max_rental}
+          onChange={updateDraft('max_rental')}
         />
       </div>
 

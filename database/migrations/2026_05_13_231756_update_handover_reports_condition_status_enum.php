@@ -12,6 +12,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (DB::getDriverName() === 'sqlite') {
+            return;
+        }
+
         // Adding 'excellent' and 'fair' to the enum
         DB::statement("ALTER TABLE handover_reports MODIFY COLUMN condition_status ENUM('excellent', 'good', 'fair', 'damaged', 'partially_damaged') NOT NULL DEFAULT 'good'");
         
@@ -24,6 +28,10 @@ return new class extends Migration
      */
     public function down(): void
     {
+        if (DB::getDriverName() === 'sqlite') {
+            return;
+        }
+
         DB::statement("ALTER TABLE handover_reports MODIFY COLUMN condition_status ENUM('good', 'damaged', 'partially_damaged') NOT NULL DEFAULT 'good'");
         DB::statement("ALTER TABLE equipment_handover MODIFY COLUMN final_condition ENUM('good', 'damaged', 'partially_damaged') NOT NULL DEFAULT 'good'");
     }

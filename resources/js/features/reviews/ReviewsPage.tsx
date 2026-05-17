@@ -23,8 +23,10 @@ export default function ReviewsPage({ role: roleProp }) {
       .filter((review) => (review.reviewer_id ?? review.reviewerId) === userId)
       .map((review) => ({
         id: review.id,
-        equipment: review.equipment_name ?? review.equipmentName ?? 'طلب إيجار',
-        person: review.target_name ?? review.targetName ?? 'مستخدم',
+        operation: `#${review.rental_op_id ?? review.rentalOpId ?? review.rental?.id ?? '—'}`,
+        equipment: review.rental?.equipment?.name ?? review.equipment_name ?? review.equipmentName ?? 'طلب إيجار',
+        person: review.target?.full_name ?? review.target?.name ?? review.target_name ?? review.targetName ?? 'مستخدم',
+        userLabel: 'قيّمت',
         stars: review.rating,
         comment: review.review_text ?? review.reviewText,
         date: formatRentalDate(review.created_at ?? review.createdAt),
@@ -37,8 +39,10 @@ export default function ReviewsPage({ role: roleProp }) {
       .filter((review) => (review.target_id ?? review.targetId) === userId)
       .map((review) => ({
         id: review.id,
-        equipment: review.equipment_name ?? review.equipmentName ?? 'طلب إيجار',
-        person: review.reviewer_name ?? review.reviewerName ?? 'مستخدم',
+        operation: `#${review.rental_op_id ?? review.rentalOpId ?? review.rental?.id ?? '—'}`,
+        equipment: review.rental?.equipment?.name ?? review.equipment_name ?? review.equipmentName ?? 'طلب إيجار',
+        person: review.reviewer?.full_name ?? review.reviewer?.name ?? review.reviewer_name ?? review.reviewerName ?? 'مستخدم',
+        userLabel: 'المستخدم',
         stars: review.rating,
         comment: review.review_text ?? review.reviewText,
         date: formatRentalDate(review.created_at ?? review.createdAt),
@@ -64,8 +68,8 @@ export default function ReviewsPage({ role: roleProp }) {
         orderNum: rental.order_num ?? rental.orderNum,
         equipment: rental.equipment?.name ?? 'معدة',
         partnerName: role === 'owner'
-          ? (rental.tenant?.name ?? 'مستأجر')
-          : (rental.equipment?.owner_name ?? rental.equipment?.ownerName ?? 'مؤجر'),
+          ? (rental.tenant?.full_name ?? rental.tenant?.name ?? 'مستأجر')
+          : (rental.equipment?.owner?.full_name ?? rental.equipment?.owner_name ?? rental.equipment?.ownerName ?? 'مؤجر'),
         targetId: role === 'owner'
           ? (rental.tenant_id ?? rental.tenantId)
           : (rental.equipment?.owner_id ?? rental.equipment?.ownerId),

@@ -80,14 +80,19 @@ function compensationCondition(status) {
 
 function normalizeDisputeForDelivery(dispute) {
   if (!dispute) return null;
+  const handover = dispute.handover ?? null;
+  const ownerRequestedAmount = Number(handover?.proposed_deduction ?? handover?.proposedDeduction ?? 0);
+  const adminDecision = enumValue(dispute.admin_decision ?? dispute.adminDecision);
+  const rawFinalCompensation = Number(dispute.final_compensation ?? dispute.finalCompensation ?? 0);
   return {
     ...dispute,
     status: enumValue(dispute.status, 'open'),
-    adminDecision: enumValue(dispute.admin_decision ?? dispute.adminDecision),
+    adminDecision,
     tenantClaim: dispute.tenant_claim ?? dispute.tenantClaim ?? '',
     tenantProposedAmount: Number(dispute.requested_amount ?? dispute.requestedAmount ?? 0),
-    finalCompensation: Number(dispute.final_compensation ?? dispute.finalCompensation ?? 0),
+    finalCompensation: adminDecision === 'accept_deduction' && rawFinalCompensation === 0 ? ownerRequestedAmount : rawFinalCompensation,
     adminNote: dispute.admin_note ?? dispute.adminNote ?? '',
+    ownerRequestedAmount,
   };
 }
 
@@ -97,8 +102,10 @@ function normalizeCompensationForDelivery(rawCompensation, rental, reports, disp
   const dispute = normalizeDisputeForDelivery(rawCompensation.dispute ?? disputes[0]);
   const ownerReturnReport = reports.find((report) => enumValue(report.phase) === 'return' && enumValue(report.submitted_by_role ?? report.submittedByRole) === 'owner');
   const ownerRequestedAmount = Number(rawCompensation.proposed_deduction ?? rawCompensation.proposedDeduction ?? rawCompensation.requestedAmount ?? 0);
+  const adminDecision = dispute?.adminDecision;
+  const resolvedFinalAmount = Number(dispute?.finalCompensation ?? 0);
   const finalAmount = dispute?.status === 'resolved'
-    ? Number(dispute.finalCompensation ?? 0)
+    ? (adminDecision === 'accept_deduction' && resolvedFinalAmount === 0 ? ownerRequestedAmount : resolvedFinalAmount)
     : ownerRequestedAmount;
 
   return {
@@ -108,6 +115,7 @@ function normalizeCompensationForDelivery(rawCompensation, rental, reports, disp
     ownerRequestedAmount,
     tenantProposedAmount: dispute?.tenantProposedAmount ?? 0,
     finalAmount,
+    adminDecision,
     requestedAmount: ownerRequestedAmount,
     notes: rawCompensation.final_notes ?? rawCompensation.finalNotes ?? rawCompensation.notes,
     finalCondition: enumValue(rawCompensation.final_condition ?? rawCompensation.finalCondition),
@@ -129,6 +137,17 @@ function getStageFeedback({ role, stage, rental, compensation, disputes }) {
   const partnerName = rental?.partnerName ?? (isOwner ? 'المستأجر' : 'المؤجر');
   const amount = compensation?.requestedAmount ? `${money(compensation.requestedAmount)} ر.ي` : 'مبلغ التعويض';
   const disputeStatus = enumValue(disputes?.[0]?.status);
+  const adminDecision = compensation?.adminDecision ?? compensation?.dispute?.adminDecision ?? enumValue(disputes?.[0]?.admin_decision);
+  const finalAmount = compensation?.finalAmount ?? disputes?.[0]?.finalCompensation ?? 0;
+  const adminDecisionFeedback = {
+    accept_deduction: isOwner
+      ? `أغلقت الإدارة النزاع بقبول مطالبتك. المبلغ المخصوم لك: ${money(finalAmount || compensation?.requestedAmount || 0)} ر.ي.`
+      : `أغلقت الإدارة النزاع بقبول مطالبة المؤجر. المبلغ المخصوم من التأمين: ${money(finalAmount || compensation?.requestedAmount || 0)} ر.ي.`,
+    reject_deduction: isOwner
+      ? 'أغلقت الإدارة النزاع برفض الخصم. لن يتم تحويل تعويض، وسيعاد التأمين للمستأجر.'
+      : 'أغلقت الإدارة النزاع لصالحك. لن يخصم من التأمين وسيتم إرجاعه لك.',
+    modify_compensation: `أغلقت الإدارة النزاع بمبلغ معدل: ${money(finalAmount)} ر.ي.`,
+  };
   const messages = {
     awaiting_payment: isOwner
       ? `طلب ${equipmentName} مؤكد، لكن التسليم يبدأ بعد إتمام الدفع وتوقيع العقد من ${partnerName}.`
@@ -150,7 +169,7 @@ function getStageFeedback({ role, stage, rental, compensation, disputes }) {
       ? `تم إرسال مطالبة تعويض بقيمة ${amount}. بانتظار قبول ${partnerName} أو فتح نزاع.`
       : `طلب ${partnerName} تعويضاً بقيمة ${amount}. راجع الملاحظات والصور ثم اقبل الخصم أو افتح نزاعاً موثقاً.`,
     disputes: `يوجد نزاع مفتوح على هذه العملية${disputeStatus ? `، حالته الحالية: ${disputeStatus}.` : '.'}`,
-    completed: `اكتملت عملية ${equipmentName} وتم إغلاق إجراءات التسليم والإرجاع.`,
+    completed: adminDecisionFeedback[adminDecision] ?? `اكتملت عملية ${equipmentName} وتم إغلاق إجراءات التسليم والإرجاع.`,
   };
 
   return messages[stage] || 'لا يوجد إجراء مطلوب منك في هذه المرحلة.';
@@ -355,8 +374,6 @@ export default function DeliveryPage({ role: roleProp }) {
 
   const handleRequestCompensation = (action = 'submit') => {
     if (!selectedRental || !ownerReturnReport || isSubmittingCompensation) return;
-    const amount = Number(activeCompensationForm.amount || 0);
-    if (!amount || !activeCompensationForm.notes.trim()) return;
     const handover = selectedRental.equipment_handover ?? selectedRental.equipmentHandover;
     if (!handover?.id) return;
 
@@ -374,6 +391,9 @@ export default function DeliveryPage({ role: roleProp }) {
       });
       return;
     }
+
+    const amount = Number(activeCompensationForm.amount || 0);
+    if (!amount || !activeCompensationForm.notes.trim()) return;
 
     setIsSubmittingCompensation(true);
     const insuranceAmount = Number(selectedRental.insurance_amount ?? selectedRental.insuranceAmount ?? 0);
