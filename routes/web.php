@@ -308,7 +308,10 @@ Route::middleware(['auth'])->group(function () {
             ]);
         })->name('overview');
         Route::get('/equipment', function () {
-            return Inertia::render('Owner/Equipment/EquipmentPage', ['equipment' => request()->user()->equipment()->with(['category', 'images'])->latest()->get()]);
+            return Inertia::render('Owner/Equipment/EquipmentPage', [
+                'equipment' => request()->user()->equipment()->with(['category', 'images'])->latest()->get(),
+                'rentals' => request()->user()->rentalsAsOwner()->latest()->get(),
+            ]);
         })->name('equipment');
         Route::get('/equipment/add', function () {
             return Inertia::render('Owner/AddEquipment/AddEquipmentPage', ['categories' => CategoryModel::orderBy('sort_order')->get()]);

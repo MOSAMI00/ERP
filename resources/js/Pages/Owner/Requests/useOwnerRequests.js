@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { equipmentOf, requestTabDefinitions, tenantOf } from './requestHelpers';
+import { equipmentOf, tenantOf } from './requestHelpers';
 
 export const useOwnerRequests = ({
   rentals,
@@ -7,6 +7,7 @@ export const useOwnerRequests = ({
   activeTab,
   search,
   selectedRentalId,
+  rentalStatuses = [],
 }) => {
   const ownerRentalPool = useMemo(
     () => rentals.filter((rental) => (rental.owner_id ?? rental.ownerId) === ownerId),
@@ -33,12 +34,15 @@ export const useOwnerRequests = ({
     ?? rentals.find((rental) => rental.id === selectedRentalId)
   ), [ownerRentalPool, rentals, selectedRentalId]);
 
-  const tabs = useMemo(() => requestTabDefinitions.map((tab) => ({
+  const tabs = useMemo(() => [
+    { id: 'all', label: 'الكل' },
+    ...rentalStatuses.map((status) => ({ id: status.value, label: status.label })),
+  ].map((tab) => ({
     ...tab,
     count: tab.id === 'all'
       ? ownerRentalPool.length
       : ownerRentalPool.filter((rental) => rental.status === tab.id).length,
-  })), [ownerRentalPool]);
+  })), [ownerRentalPool, rentalStatuses]);
 
   return {
     ownerRentalPool,

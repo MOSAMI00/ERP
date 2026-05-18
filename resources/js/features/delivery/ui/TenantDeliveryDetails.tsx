@@ -35,6 +35,7 @@ export function TenantDeliveryDetails({
   onSelectReport,
   onSubmitRating,
   hasReview,
+  isSubmittingStage,
 }) {
   const totalAmount = rental.totalAmount ?? rental.total_amount ?? rental.total ?? 0;
   const insuranceAmount = rental.insuranceAmount ?? rental.insurance_amount ?? rental.insurance ?? 0;
@@ -142,6 +143,7 @@ export function TenantDeliveryDetails({
           spec={formSpec}
           onChange={onUpdateForm}
           onSubmit={onSubmitStage}
+          loading={isSubmittingStage}
         />
       ) : (
         stage !== 'completed' && (

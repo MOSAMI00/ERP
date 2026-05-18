@@ -1,5 +1,5 @@
 import React from 'react';
-import { useForm, usePage } from '@inertiajs/react';
+import { useForm } from '@inertiajs/react';
 import { ArrowRight, ArrowLeft, X, Check } from 'lucide-react';
 import { visit } from '../../../inertia/navigation';
 import BasicInfoStep from './components/BasicInfoStep';
@@ -9,13 +9,20 @@ import ReviewStep from './components/ReviewStep';
 import { EQUIPMENT_STEPS } from './useEquipmentDraft';
 import OwnerLayout from '../../../Layouts/owner/OwnerLayout';
 import { useState } from 'react';
+import { useSharedData } from '@/inertia/useSharedData';
+import type { SharedOption } from '@/types/inertia';
 
-export default function AddEquipmentPage() {
+interface AddEquipmentPageProps {
+  categories?: Array<{ id: number | string; name_ar?: string; name?: string }>;
+  equipment?: Record<string, any> | null;
+  mode?: 'create' | 'edit' | string;
+}
+
+export default function AddEquipmentPage({ categories = [], equipment = null, mode = '' }: AddEquipmentPageProps) {
   const [step, setStep] = useState(0);
-  const { props } = usePage() as any;
-  const equipment = props.equipment ?? null;
-  const user = props.auth?.user ?? null;
-  const isEditMode = (props.mode ?? '') === 'edit' && Boolean(equipment?.id);
+  const { auth, governorates } = useSharedData();
+  const user = auth?.user ?? null;
+  const isEditMode = mode === 'edit' && Boolean(equipment?.id);
   const kycBlocked = !isEditMode && user?.kyc_status !== 'approved';
 
   const form = useForm({
@@ -66,6 +73,8 @@ export default function AddEquipmentPage() {
           <BasicInfoStep
             draft={form.data}
             updateDraft={updateDraft}
+            categories={categories}
+            governorates={governorates as SharedOption[]}
           />
         );
       case 1:

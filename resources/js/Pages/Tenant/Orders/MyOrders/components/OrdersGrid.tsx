@@ -1,6 +1,12 @@
 import { OrderCard } from './OrderCard';
+import type { SharedStatus } from '@/types/inertia';
 
-export function OrdersGrid({ filtered }) {
+interface OrdersGridProps {
+  filtered: any[];
+  rentalStatuses: SharedStatus[];
+}
+
+export function OrdersGrid({ filtered, rentalStatuses }: OrdersGridProps) {
   if (filtered.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
@@ -22,7 +28,7 @@ export function OrdersGrid({ filtered }) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
       {filtered.map(rental => (
-        <OrderCard key={rental.id} rental={rental} />
+        <OrderCard key={rental.id} rental={rental} rentalStatuses={rentalStatuses} />
       ))}
     </div>
   );

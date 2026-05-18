@@ -55,7 +55,7 @@ export const useOwnerEquipmentCatalog = ({
     const term = search.toLowerCase();
     return equipmentWithMeta
       .filter((item) => category === 'all' || item.category === category)
-      .filter((item) => status === 'all' || item.displayStatus === status)
+      .filter((item) => status === 'all' || item.status === status)
       .filter((item) => (item.name || '').toLowerCase().includes(term));
   }, [category, equipmentWithMeta, search, status]);
 

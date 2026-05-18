@@ -24,10 +24,14 @@ class AdminPaymentController extends Controller
 
     public function index(Request $request)
     {
+        $status = in_array($request->status, array_map(fn ($case) => $case->value, PaymentStatus::cases()), true)
+            ? $request->status
+            : null;
+
         $payments = Payment::with(['rental.equipment', 'rental.tenant', 'rental.owner', 'payer'])
             ->when(
-                $request->status,
-                fn($q) => $q->where('status', $request->status)
+                $status,
+                fn($q) => $q->where('status', $status)
             )
             ->when(
                 $request->type,
@@ -65,7 +69,7 @@ class AdminPaymentController extends Controller
 
         return Inertia::render('Admin/Payments/Index', [
             'payments' => $payments,
-            'filters'  => $request->only(['status', 'type', 'escrow_status', 'search']),
+            'filters'  => array_merge($request->only(['type', 'escrow_status', 'search']), ['status' => $status]),
             'summary'  => [
                 'total_completed' => Payment::where('status', PaymentStatus::Paid->value)->sum('amount'),
                 'total_pending'   => Payment::where('escrow_status', EscrowStatus::Held->value)->sum('amount'),

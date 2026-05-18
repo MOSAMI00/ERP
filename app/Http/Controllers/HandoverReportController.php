@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use App\Http\Requests\StoreHandoverReportRequest;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
+use App\Domains\Rental\Enums\RentalStatus;
 
 class HandoverReportController extends Controller
 {
@@ -34,6 +35,16 @@ class HandoverReportController extends Controller
         $rental = RentalOperation::findOrFail($data['rental_op_id']);
         $this->authorize('view', $rental);
 
+        // Check if report already exists for this user and phase to handle duplicate requests
+        $exists = $rental->handoverReports()
+            ->where('phase', $data['phase'])
+            ->where('submitted_by_id', $user->id)
+            ->exists();
+
+        if ($exists) {
+            return back()->with('success', 'Handover report already submitted.');
+        }
+
         $imageUrls = [];
 
         if ($request->hasFile('images')) {
@@ -42,16 +53,33 @@ class HandoverReportController extends Controller
             }
         }
 
-        if ($data['phase'] === 'delivery' && (int) $user->id === (int) $rental->owner_id) {
-            $this->workflow->submitOwnerDeliveryReport($rental, $user, $data, $imageUrls);
-        } elseif ($data['phase'] === 'delivery' && (int) $user->id === (int) $rental->tenant_id) {
-            $this->workflow->submitTenantDeliveryReport($rental, $user, $data, $imageUrls);
-        } elseif ($data['phase'] === 'return' && (int) $user->id === (int) $rental->tenant_id) {
-            $this->workflow->submitTenantReturnReport($rental, $user, $data, $imageUrls);
-        } elseif ($data['phase'] === 'return' && (int) $user->id === (int) $rental->owner_id) {
-            $this->workflow->submitOwnerReturnReport($rental, $user, $data, $imageUrls);
-        } else {
-            abort(403);
+        try {
+            if ($data['phase'] === 'delivery' && (int) $user->id === (int) $rental->owner_id) {
+                $this->workflow->submitOwnerDeliveryReport($rental, $user, $data, $imageUrls);
+            } elseif ($data['phase'] === 'delivery' && (int) $user->id === (int) $rental->tenant_id) {
+                $this->workflow->submitTenantDeliveryReport($rental, $user, $data, $imageUrls);
+            } elseif ($data['phase'] === 'return' && (int) $user->id === (int) $rental->tenant_id) {
+                $this->workflow->submitTenantReturnReport($rental, $user, $data, $imageUrls);
+            } elseif ($data['phase'] === 'return' && (int) $user->id === (int) $rental->owner_id) {
+                $this->workflow->submitOwnerReturnReport($rental, $user, $data, $imageUrls);
+            } else {
+                abort(403);
+            }
+        } catch (\App\Domains\Shared\Exceptions\InvalidStateTransitionException $e) {
+            // If the transaction has already been completed by a parallel request, treat as success
+            $freshRental = $rental->fresh();
+            $isReturnDone = $data['phase'] === 'return' && in_array($freshRental->status, [RentalStatus::ReturnDone, RentalStatus::Completed]);
+            $isDeliveryDone = $data['phase'] === 'delivery' && in_array($freshRental->status, [RentalStatus::InUse, RentalStatus::ReturnDone, RentalStatus::Completed]);
+
+            if ($isReturnDone || $isDeliveryDone) {
+                return back()->with('success', 'Handover report submitted.');
+            }
+
+            return back()->withErrors(['error' => $e->getMessage()]);
+        } catch (\App\Domains\Shared\Exceptions\DuplicateOperationException $e) {
+            return back()->with('success', 'Handover report already submitted.');
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => $e->getMessage()]);
         }
 
         return back()->with('success', 'Handover report submitted.');

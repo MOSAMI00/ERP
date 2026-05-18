@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Domains\Equipment\Enums\EquipmentStatus;
 use App\Domains\Equipment\Services\EquipmentManagementService;
 use App\Http\Controllers\Controller;
 use App\Models\Equipment;
@@ -16,9 +17,13 @@ class AdminEquipmentController extends Controller
 
     public function index(Request $request)
     {
+        $status = in_array($request->status, array_map(fn ($case) => $case->value, EquipmentStatus::cases()), true)
+            ? $request->status
+            : null;
+
         $equipment = Equipment::with(['owner', 'category', 'images'])
             ->withCount('rentals')
-            ->when($request->status, fn ($query) => $query->where('status', $request->status))
+            ->when($status, fn ($query) => $query->where('status', $status))
             ->when($request->category_id, fn ($query) => $query->where('category_id', $request->category_id))
             ->when($request->search, function ($query) use ($request) {
                 $term = "%{$request->search}%";
@@ -34,7 +39,7 @@ class AdminEquipmentController extends Controller
 
         return Inertia::render('Admin/Equipment/Index', [
             'equipment' => $equipment,
-            'filters' => $request->only(['status', 'category_id', 'search']),
+            'filters' => array_merge($request->only(['category_id', 'search']), ['status' => $status]),
         ]);
     }
 

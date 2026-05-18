@@ -4,17 +4,20 @@ import { AppButton } from '../../../../components/shared';
 import DetailsModal from '../../../../components/shared/DetailsModal';
 import {
   equipmentOf,
-  statusConfig,
   tenantOf,
   UNKNOWN_EQUIPMENT,
   UNKNOWN_STATUS,
   UNKNOWN_USER,
 } from '../requestHelpers';
+import { statusMap } from '@/utils/sharedStatus';
 
-const RequestDetailsModal = ({ isOpen, rental, onClose }) => {
+const RequestDetailsModal = ({ isOpen, rental, onClose, rentalStatuses = [] }) => {
+  // هذا السطر عشان صفحة الطلبات الواردة تظهر
+  if (!rental) return null;
+
   const equipment = equipmentOf(rental);
   const tenant = tenantOf(rental);
-  const status = statusConfig(rental?.status);
+  const status = statusMap(rentalStatuses)[rental?.status];
 
   return (
     <DetailsModal

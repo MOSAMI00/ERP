@@ -1,16 +1,19 @@
 import OwnerLayout from '../../../Layouts/owner/OwnerLayout';
 import React, { useEffect, useState } from 'react';
-import { usePage } from '@inertiajs/react';
 import { visit } from '../../../inertia/navigation';
-import { useOwnerPageProps } from '../../../inertia/owner-page-props';
 import EquipmentGrid from './components/EquipmentGrid';
 import EquipmentToolbar from './components/EquipmentToolbar';
 import { useOwnerEquipmentCatalog } from './useOwnerEquipmentCatalog';
+import { useSharedData } from '@/inertia/useSharedData';
 
-const MyEquipment = () => {
-  const { props } = usePage() as any;
-  const user = props.auth?.user ?? null;
-  const { rentals, equipment } = useOwnerPageProps();
+interface MyEquipmentProps {
+  equipment?: any[];
+  rentals?: any[];
+}
+
+const MyEquipment = ({ equipment = [], rentals = [] }: MyEquipmentProps) => {
+  const { auth, statuses } = useSharedData();
+  const user = auth?.user ?? null;
   const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('all');
@@ -39,6 +42,7 @@ const MyEquipment = () => {
         category={category}
         status={status}
         categories={categories}
+        equipmentStatuses={statuses.equipment}
         onSearchChange={setSearch}
         onCategoryChange={setCategory}
         onStatusChange={setStatus}

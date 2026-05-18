@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Domains\Rental\Enums\RentalStatus;
 use App\Http\Controllers\Controller;
 use App\Models\RentalOperation;
 use Illuminate\Http\Request;
@@ -11,6 +12,10 @@ class AdminRentalController extends Controller
 {
     public function index(Request $request)
     {
+        $status = in_array($request->status, array_map(fn ($case) => $case->value, RentalStatus::cases()), true)
+            ? $request->status
+            : null;
+
         $rentals = RentalOperation::with([
                 'equipment.images',
                 'tenant',
@@ -21,7 +26,7 @@ class AdminRentalController extends Controller
                 'equipmentHandover',
                 'dispute',
             ])
-            ->when($request->status, fn ($query) => $query->where('status', $request->status))
+            ->when($status, fn ($query) => $query->where('status', $status))
             ->when($request->search, function ($query) use ($request) {
                 $term = "%{$request->search}%";
 
@@ -37,7 +42,7 @@ class AdminRentalController extends Controller
 
         return Inertia::render('Admin/Rentals/Index', [
             'rentals' => $rentals,
-            'filters' => $request->only(['status', 'search']),
+            'filters' => array_merge($request->only(['search']), ['status' => $status]),
         ]);
     }
 }

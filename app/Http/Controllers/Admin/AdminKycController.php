@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Domains\User\Enums\KycStatus;
 use App\Domains\User\Services\KycVerificationService;
 use App\Http\Controllers\Controller;
 use App\Models\KycDocument;
@@ -18,8 +19,12 @@ class AdminKycController extends Controller
 
     public function index(Request $request)
     {
+        $status = in_array($request->status, array_map(fn ($case) => $case->value, KycStatus::cases()), true)
+            ? $request->status
+            : null;
+
         $docs = KycDocument::with('user')
-            ->when($request->status, fn($q) => $q->where('status', $request->status))
+            ->when($status, fn($q) => $q->where('status', $status))
             ->when($request->search, function ($q) use ($request) {
                 $term = "%{$request->search}%";
 
@@ -33,7 +38,7 @@ class AdminKycController extends Controller
 
         return Inertia::render('Admin/Kyc/Index', [
             'documents' => $docs,
-            'filters'   => $request->only(['status', 'search']),
+            'filters'   => array_merge($request->only(['search']), ['status' => $status]),
         ]);
     }
 

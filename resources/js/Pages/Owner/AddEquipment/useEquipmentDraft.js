@@ -11,29 +11,7 @@ export const categoryOptions = [
   'أخرى',
 ];
 
-export const governorateOptions = [
-  'صنعاء',
-  'عدن',
-  'تعز',
-  'إب',
-  'الحديدة',
-  'ذمار',
-  'حجة',
-  'المكلا',
-  'سيئون',
-  'مأرب',
-  'صعدة',
-  'عمران',
-  'البيضاء',
-  'لحج',
-  'أبين',
-  'شبوة',
-  'المهرة',
-  'سقطرى',
-  'الجوف',
-  'الضالع',
-  'ريمة',
-];
+
 
 export const conditionOptions = [
   { value: 'excellent', label: 'ممتاز' },

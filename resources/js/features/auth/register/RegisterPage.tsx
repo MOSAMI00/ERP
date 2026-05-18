@@ -2,8 +2,10 @@ import { useState } from 'react';
 import { useForm } from '@inertiajs/react';
 import { FormSection } from './FormSection/FormSection';
 import { InfoSection } from './InfoSection/InfoSection';
+import { useSharedData } from '@/inertia/useSharedData';
 
 export function RegisterPage() {
+  const { governorates } = useSharedData();
   const form = useForm({
     full_name: '',
     phone: '',
@@ -66,6 +68,7 @@ export function RegisterPage() {
         setAgreeToTerms={setAgreeToTerms}
         errors={form.errors}
         processing={form.processing}
+        governorates={governorates}
       />
       <InfoSection userType={userType} />
     </main>
