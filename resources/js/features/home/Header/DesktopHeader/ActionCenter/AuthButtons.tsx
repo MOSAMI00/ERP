@@ -11,7 +11,7 @@ export function AuthButtons() {
       </Link>
 
       <Link
-        href="/register"
+        href="/register?role=owner"
         className="px-6 h-12 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors flex items-center justify-center"
       >
         أضف معدتك

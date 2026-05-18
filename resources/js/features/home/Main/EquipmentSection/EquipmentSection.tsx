@@ -16,7 +16,7 @@ export function EquipmentSection({ products = [], onDetailsClick, activeCategory
   });
   
   return (
-    <section className="py-20 bg-gray-50/50">
+    <section id="equipment-section" className="py-20 bg-gray-50/50">
       <div className="container mx-auto px-4">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
           <div>
@@ -25,7 +25,7 @@ export function EquipmentSection({ products = [], onDetailsClick, activeCategory
           </div>
           <Link 
             href="/equipment" 
-            className="text-primary-green font-bold flex items-center gap-2 hover:gap-3 transition-all"
+            className="text-[#2D5A27] font-bold flex items-center gap-2 hover:gap-3 transition-all"
           >
             عرض الكل <span>←</span>
           </Link>

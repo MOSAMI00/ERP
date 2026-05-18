@@ -6,6 +6,10 @@ import { useSharedData } from '@/inertia/useSharedData';
 
 export function RegisterPage() {
   const { governorates } = useSharedData();
+  const initialRole = typeof window !== 'undefined'
+    ? (new URLSearchParams(window.location.search).get('role') || 'tenant')
+    : 'tenant';
+
   const form = useForm({
     full_name: '',
     phone: '',
@@ -14,7 +18,7 @@ export function RegisterPage() {
     password_confirmation: '',
     governorate: '',
     district: '',
-    type: 'tenant',
+    type: ['tenant', 'owner'].includes(initialRole) ? initialRole : 'tenant',
     paymentMethod: '',
     bank_name: '',
     account_number: '',

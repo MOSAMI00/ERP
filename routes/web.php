@@ -77,6 +77,10 @@ $equipmentCard = function (EquipmentModel $equipment): array {
     ];
 };
 
+Route::get('/policies', function () {
+    return Inertia::render('PoliciesPage');
+});
+
 Route::get('/', function () use ($equipmentCard) {
     $query = EquipmentModel::with(['category', 'images', 'owner'])
         ->where('status', 'active');
