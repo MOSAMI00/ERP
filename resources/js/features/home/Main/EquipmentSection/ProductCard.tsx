@@ -52,24 +52,13 @@ export function ProductCard({
           )}
         </div>
 
-        {/* Favorite Button */}
-        <motion.button 
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-          className="absolute top-4 left-4 w-10 h-10 backdrop-blur-md bg-white/70 hover:bg-white rounded-full flex items-center justify-center transition-all shadow-lg border border-white/20 text-gray-700 hover:text-red-500"
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-          }}
-        >
-          <Heart className="w-5 h-5" />
-        </motion.button>
+
 
         {/* Floating Price Tag (appears on hover) */}
         <div className="absolute bottom-4 left-4 right-4 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 z-10">
           <button 
             onClick={onRentClick}
-            className="w-full py-3 bg-white text-gray-900 rounded-xl font-bold text-sm shadow-xl hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
+            className="w-full py-3 bg-[#2D5A27] text-white rounded-xl font-bold text-sm shadow-xl hover:bg-[#20401B] transition-colors flex items-center justify-center gap-2"
           >
             استئجار سريع
           </button>
@@ -79,7 +68,7 @@ export function ProductCard({
       {/* Content Section */}
       <div className="p-5">
         <div className="flex justify-between items-start mb-2">
-          <span className="text-[10px] font-bold text-primary-green uppercase tracking-widest bg-emerald-50 px-2 py-0.5 rounded">
+          <span className="text-[10px] font-bold text-[#2D5A27] uppercase tracking-widest bg-emerald-50 px-2 py-0.5 rounded">
             {category}
           </span>
           <div className="flex items-center gap-1 bg-amber-50 px-2 py-0.5 rounded">
@@ -88,7 +77,7 @@ export function ProductCard({
           </div>
         </div>
 
-        <h3 className="text-lg font-bold text-gray-900 line-clamp-1 mb-3 group-hover:text-primary-green transition-colors">
+        <h3 className="text-lg font-bold text-gray-900 line-clamp-1 mb-3 group-hover:text-[#2D5A27] transition-colors">
           {name}
         </h3>
 
@@ -117,7 +106,7 @@ export function ProductCard({
           
           <button 
             onClick={onDetailsClick}
-            className="text-sm font-bold text-primary-green hover:text-emerald-700 transition-colors"
+            className="text-sm font-bold text-[#2D5A27] hover:text-emerald-700 transition-colors"
           >
             عرض التفاصيل
           </button>

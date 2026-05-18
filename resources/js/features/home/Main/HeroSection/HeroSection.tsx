@@ -32,6 +32,14 @@ export function HeroSection() {
     return () => clearInterval(timer);
   }, []);
 
+  const handleBrowseClick = () => {
+    document.getElementById('equipment-section')?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const handleLearnMoreClick = () => {
+    document.getElementById('how-it-works-section')?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   return (
     <div className="relative overflow-hidden">
       <div className="relative h-[520px] md:h-[420px] lg:h-[520px] max-sm:h-[280px]">
@@ -66,7 +74,10 @@ export function HeroSection() {
                 <div className="flex gap-4 max-sm:flex-col max-sm:w-full">
 
                   {/* OPTION 1: Modern Gradient Button with Icon */}
-                  <button className="group relative px-8 h-14 bg-gradient-to-r from-white to-gray-100 text-primary rounded-xl font-bold shadow-2xl hover:shadow-2xl transition-all duration-300 max-sm:w-full overflow-hidden">
+                  <button 
+                    onClick={handleBrowseClick}
+                    className="group relative px-8 h-14 bg-gradient-to-r from-white to-gray-100 text-primary rounded-xl font-bold shadow-2xl hover:shadow-2xl transition-all duration-300 max-sm:w-full overflow-hidden"
+                  >
                     <span className="relative z-10 flex items-center justify-center gap-2">
                       {slide.cta}
                       <ArrowLeft className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
@@ -99,7 +110,10 @@ export function HeroSection() {
                   </button> */}
 
                   {/* Secondary CTA */}
-                  <button className="px-8 h-14 border-2 border-white/60 text-white rounded-xl font-semibold hover:bg-white/10 hover:border-white backdrop-blur-sm transition-all duration-300 max-sm:w-full">
+                  <button 
+                    onClick={handleLearnMoreClick}
+                    className="px-8 h-14 border-2 border-white/60 text-white rounded-xl font-semibold hover:bg-white/10 hover:border-white backdrop-blur-sm transition-all duration-300 max-sm:w-full"
+                  >
                     تعرف أكثر
                   </button>
 

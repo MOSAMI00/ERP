@@ -1,8 +1,9 @@
 import { Search, Calendar, Lock, Package, Upload, DollarSign, CheckCircle, TrendingUp } from 'lucide-react';
+import { Link } from '@inertiajs/react';
 
 export function HowItWorks() {
   return (
-    <section className="py-16 bg-[#F9F9F9]">
+    <section id="how-it-works-section" className="py-16 bg-[#F9F9F9]">
       <div className="container mx-auto px-4">
         <h2 className="text-3xl font-bold text-center mb-12">كيف تعمل المنصة</h2>
 
@@ -66,9 +67,12 @@ export function HowItWorks() {
               </div>
             </div>
 
-            <button className="w-full mt-6 h-12 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
+            <Link 
+              href="/register?role=tenant" 
+              className="w-full mt-6 h-12 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors flex items-center justify-center font-bold"
+            >
               ابدأ الاستئجار
-            </button>
+            </Link>
           </div>
 
           {/* For Owners */}
@@ -130,9 +134,12 @@ export function HowItWorks() {
               </div>
             </div>
 
-            <button className="w-full mt-6 h-12 bg-[#F39C12] text-white rounded-lg hover:bg-[#F39C12]/90 transition-colors">
+            <Link 
+              href="/register?role=owner" 
+              className="w-full mt-6 h-12 bg-[#F39C12] text-white rounded-lg hover:bg-[#F39C12]/90 transition-colors flex items-center justify-center font-bold"
+            >
               أضف معدتك الآن
-            </button>
+            </Link>
           </div>
         </div>
       </div>

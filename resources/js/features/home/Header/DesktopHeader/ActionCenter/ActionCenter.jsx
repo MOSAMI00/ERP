@@ -14,10 +14,7 @@ export function ActionCenter() {
 
   return (
     <div className="flex items-center gap-4">
-      <LocationSelector />
-      <div className="w-px h-6 bg-border mx-1" />
       <HelpCenter />
-      <Wishlist />
       <NotificationBell />
       <CartButton />
       {user && isTenant ? (
