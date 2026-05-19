@@ -20,7 +20,6 @@ export default function CartPage({ cart_items, contract_template, contract_varia
     days: Number(queryParams.get('days')),
     dailyRate: Number(queryParams.get('daily_rate')),
     deposit: Number(queryParams.get('deposit')),
-    serviceFee: Number(queryParams.get('service_fee')),
     totalAmount: Number(queryParams.get('total_amount')),
     name: queryParams.get('equipment_name'),
     image: queryParams.get('equipment_image'),
@@ -51,7 +50,6 @@ export default function CartPage({ cart_items, contract_template, contract_varia
 
   const rentalCost = cartItems.reduce((acc, item) => acc + (item.daily_rate ?? item.dailyRate ?? 0) * (item.days ?? 0), 0);
   const deposit = cartItems.reduce((acc, item) => acc + (item.deposit ?? 0), 0);
-  const serviceFee = cartItems.reduce((acc, item) => acc + (item.service_fee ?? item.serviceFee ?? 0), 0);
   const total = cartItems.reduce((acc, item) => acc + (item.total_amount ?? item.totalAmount ?? 0), 0);
   const timeSlotLabels = {
     morning: 'صباحاً (8ص - 12م)',
@@ -173,7 +171,6 @@ export default function CartPage({ cart_items, contract_template, contract_varia
                 cartItems={cartItems}
                 rentalCost={rentalCost}
                 deposit={deposit}
-                serviceFee={serviceFee}
                 total={total}
               />
             </aside>

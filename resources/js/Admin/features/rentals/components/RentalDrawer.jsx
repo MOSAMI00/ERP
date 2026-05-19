@@ -36,21 +36,18 @@ export default function RentalDrawer({ isOpen, rental, onClose }) {
                 <p className="text-[10px] text-brand-text-muted uppercase font-bold tracking-wider">المستأجر</p>
                 <p className="font-bold text-sm text-brand-text-primary">{rental.tenant}</p>
               </div>
-              <Button size="sm" variant="secondary" className="text-[10px] h-7 px-2">الملف <ChevronLeft size={12} /></Button>
             </div>
             <div className="flex justify-between items-center pb-2 border-b border-brand-border border-dashed">
               <div>
                 <p className="text-[10px] text-brand-text-muted uppercase font-bold tracking-wider">المؤجر</p>
                 <p className="font-bold text-sm text-brand-text-primary">{rental.owner}</p>
               </div>
-              <Button size="sm" variant="secondary" className="text-[10px] h-7 px-2">الملف <ChevronLeft size={12} /></Button>
             </div>
             <div className="flex justify-between items-center">
               <div>
                 <p className="text-[10px] text-brand-text-muted uppercase font-bold tracking-wider">المعدة</p>
                 <p className="font-bold text-sm text-brand-text-primary">{rental.eq}</p>
               </div>
-              <Button size="sm" variant="secondary" className="text-[10px] h-7 px-2">المعدة <ChevronLeft size={12} /></Button>
             </div>
           </div>
 
@@ -86,57 +83,6 @@ export default function RentalDrawer({ isOpen, rental, onClose }) {
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Button variant="secondary" className="w-full flex items-center justify-between p-3 h-auto group text-xs font-bold">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-brand-info/10 text-brand-info flex items-center justify-center">
-                  <FileText size={16} />
-                </div>
-                <span>العقد الإلكتروني</span>
-              </div>
-              <ChevronLeft size={16} className="text-brand-text-muted group-hover:text-brand-primary transition-colors" />
-            </Button>
-
-            <div className="grid grid-cols-2 gap-2">
-              <Button variant="secondary" className="flex flex-col items-center justify-center p-3 h-auto border-dashed">
-                <ImageIcon size={20} className="text-brand-text-muted mb-1" />
-                <span className="text-[10px] font-bold">صور التسليم</span>
-              </Button>
-              <Button variant="secondary" className="flex flex-col items-center justify-center p-3 h-auto border-dashed">
-                <ImageIcon size={20} className="text-brand-text-muted mb-1" />
-                <span className="text-[10px] font-bold">صور الإرجاع</span>
-              </Button>
-            </div>
-          </div>
-
-          <div className="pt-2">
-            <h4 className="font-bold text-sm mb-4 text-brand-text-primary flex items-center gap-2">
-              <div className="w-1 h-4 bg-brand-primary rounded-full" />
-              تتبع الحالة
-            </h4>
-            <div className="space-y-4 relative pr-4 before:absolute before:right-[7px] before:top-2 before:bottom-2 before:w-0.5 before:bg-brand-border">
-              {['إنشاء الطلب', 'تأكيد المؤجر'].map((label, index) => (
-                <div key={label} className="relative flex items-center gap-4">
-                  <div className="relative z-10 w-4 h-4 bg-brand-success rounded-full flex items-center justify-center border-2 border-white shadow-sm">
-                    <CheckCircle size={8} className="text-white" />
-                  </div>
-                  <div>
-                    <h5 className="font-bold text-brand-text-primary text-xs">{label}</h5>
-                    <p className="text-[10px] text-brand-text-muted mt-0.5">12 مايو, {index === 0 ? '10:00 ص' : '14:30 م'}</p>
-                  </div>
-                </div>
-              ))}
-              <div className="relative flex items-center gap-4">
-                <div className="relative z-10 w-4 h-4 bg-brand-warning rounded-full flex items-center justify-center border-2 border-white shadow-sm">
-                  <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div>
-                </div>
-                <div>
-                  <h5 className="font-bold text-brand-warning text-xs">جارٍ الاستخدام</h5>
-                  <p className="text-[10px] text-brand-text-muted mt-0.5">15 مايو, 08:00 ص</p>
-                </div>
-              </div>
-            </div>
-          </div>
         </>
       )}
     </Drawer>

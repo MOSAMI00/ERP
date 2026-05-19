@@ -24,7 +24,7 @@ export default function SettingsPage({ settings: propSettings }) {
   });
   const tabs = [
     { id: 'roles', label: 'إدارة الأدوار والصلاحيات', icon: Users },
-    { id: 'security', label: 'الأمان والمصادقة', icon: Shield },
+    // { id: 'security', label: 'الأمان والمصادقة', icon: Shield },
     { id: 'platform', label: 'شروط وعقود المنصة', icon: FileText },
   ];
 
@@ -61,9 +61,9 @@ export default function SettingsPage({ settings: propSettings }) {
         </div>
       )}
 
-      {activeTab === 'security' && (
+      {/* {activeTab === 'security' && (
         <SecurityTab mfaEnabled={mfaEnabled} setMfaEnabled={setMfaEnabled} sessions={sessionsData} />
-      )}
+      )} */}
 
       {activeTab === 'platform' && (
         <div className="bg-brand-card rounded-xl shadow-sm border border-brand-border p-6 space-y-5 animate-in fade-in duration-300">

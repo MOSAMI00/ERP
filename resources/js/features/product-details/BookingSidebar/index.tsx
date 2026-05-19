@@ -18,9 +18,8 @@ export function BookingSidebar({ product, user }) {
   const days = calculateRentalDays(startDate, endDate);
   const dailyRate = product.price;
   const deposit = product.insurance;
-  const serviceFee = days * dailyRate * 0.05;
   const totalRental = days * dailyRate;
-  const grandTotal = totalRental + deposit + serviceFee;
+  const grandTotal = totalRental + deposit;
   const isKycApproved = user?.kyc_status === 'approved';
   const isOwnerAccount = user?.type === 'owner';
   const bookingBlocked = !user || !isKycApproved || isOwnerAccount;
@@ -71,7 +70,6 @@ export function BookingSidebar({ product, user }) {
         days: days,
         daily_rate: dailyRate,
         deposit: deposit,
-        service_fee: serviceFee,
         total_amount: grandTotal,
         equipment_name: product.name,
         equipment_image: product.image,
@@ -112,9 +110,8 @@ export function BookingSidebar({ product, user }) {
         dailyRate={dailyRate} 
         totalRental={totalRental} 
         deposit={deposit} 
-        serviceFee={serviceFee} 
         grandTotal={grandTotal} 
-        startDate={startDate} 
+        startDate={startDate}  
         endDate={endDate} 
         onBook={handleBook}
         disabled={bookingBlocked || !isValid || isChecking}
