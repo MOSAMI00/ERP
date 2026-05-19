@@ -1,0 +1,2310 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ERP Equipment Rental Platform - Executive Summary</title>
+    
+    <!-- Google Fonts for Bilingual Styling -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Define Design System Variables tailored to Brand Green & White Theme */
+        :root {
+            --bg-primary: #f4f7f6; /* Premium light grayish-green */
+            --bg-secondary: #eef2f0; /* Slightly darker clean grayish-green */
+            --bg-card: rgba(255, 255, 255, 0.75); /* Soft premium white glass */
+            --border-glow: rgba(45, 90, 39, 0.08); /* Soft primary green */
+            --border-glow-active: rgba(45, 90, 39, 0.25); /* Active primary green */
+            
+            --text-primary: #111827; /* Very rich deep charcoal */
+            --text-secondary: #374151; /* Dark gray for secondary details */
+            --text-muted: #6b7280; /* Muted gray for small subtitles */
+            
+            --color-orange: #2D5A27; /* Primary brand green (website color) */
+            --color-blue: #3D7A35; /* Secondary brand green (website color) */
+            --color-purple: #059669; /* Rich emerald green */
+            --color-emerald: #10b981; /* High-contrast bright emerald green */
+            --color-rose: #ef4444; /* Standard alert red */
+            
+            --gradient-accent: linear-gradient(135deg, var(--color-orange) 0%, var(--color-emerald) 100%);
+            --gradient-dark: linear-gradient(180deg, #ffffff 0%, #f4f7f6 100%);
+            --shadow-glow: 0 8px 32px 0 rgba(45, 90, 39, 0.05);
+            --shadow-glow-hover: 0 12px 40px 0 rgba(45, 90, 39, 0.12);
+            
+            --font-ar: 'Cairo', sans-serif;
+            --font-en: 'Plus Jakarta Sans', sans-serif;
+            
+            --transition-smooth: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            --transition-fast: all 0.2s ease;
+        }
+
+        /* Base Resets and Layout */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: var(--bg-primary);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(45, 90, 39, 0.05) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.05) 0px, transparent 50%);
+            color: var(--text-primary);
+            font-family: var(--font-ar);
+            min-height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            user-select: none;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body.lang-en {
+            font-family: var(--font-en);
+        }
+
+        /* Slide Container and Layout */
+        .presentation-wrapper {
+            position: relative;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            width: 100vw;
+            height: calc(100vh - 70px);
+        }
+
+        .slide-container {
+            width: 100%;
+            max-width: 1300px;
+            height: calc(100vh - 160px);
+            max-height: 780px;
+            position: relative;
+            perspective: 1500px;
+        }
+
+        /* Slide Styles */
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-glow);
+            border-radius: 24px;
+            padding: 2.5rem 3.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateZ(-100px) rotateX(10deg);
+            transition: var(--transition-smooth);
+            box-shadow: var(--shadow-glow);
+        }
+
+        /* Active slide transitions */
+        .slide.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateZ(0) rotateX(0);
+            z-index: 10;
+            border-color: rgba(45, 90, 39, 0.15);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.04), 0 0 40px rgba(45, 90, 39, 0.04);
+        }
+
+        /* Slide transition directions */
+        .slide.exit-left {
+            opacity: 0;
+            visibility: hidden;
+            transform: translateX(-100%) rotateY(-20deg);
+        }
+        .slide.exit-right {
+            opacity: 0;
+            visibility: hidden;
+            transform: translateX(100%) rotateY(20deg);
+        }
+
+        /* Header / Meta */
+        .slide-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+            padding-bottom: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .slide-title-area {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .slide-logo-badge {
+            width: 8px;
+            height: 24px;
+            background: var(--gradient-accent);
+            border-radius: 4px;
+            box-shadow: 0 0 10px rgba(45, 90, 39, 0.3);
+        }
+
+        .slide-title {
+            font-size: 1.8rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, var(--color-orange) 0%, #1e293b 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .slide-tag {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--color-orange);
+            background: rgba(45, 90, 39, 0.06);
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            border: 1px solid rgba(45, 90, 39, 0.15);
+        }
+
+        /* Slide Content Container */
+        .slide-body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 1.5rem;
+            overflow-y: auto;
+            padding-right: 0.5rem;
+        }
+
+        /* Scrollbar styling for content */
+        .slide-body::-webkit-scrollbar {
+            width: 6px;
+        }
+        .slide-body::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .slide-body::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 9999px;
+        }
+
+        .slide-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+            padding-top: 1rem;
+            margin-top: 1rem;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .footer-logo {
+            font-weight: 700;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .footer-logo span {
+            color: var(--color-orange);
+        }
+
+        /* Modern Typography Utilities */
+        p.lead {
+            font-size: 1.15rem;
+            line-height: 1.7;
+            color: var(--text-secondary);
+            max-width: 800px;
+        }
+
+        /* Interactive Grid Layouts */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.25rem;
+        }
+
+        .grid-4 {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+        }
+
+        /* Cards & Glassmorphism */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.4);
+            border: 1px solid rgba(45, 90, 39, 0.08);
+            border-radius: 16px;
+            padding: 1.5rem;
+            transition: var(--transition-smooth);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .glass-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(45, 90, 39, 0.04) 0%, rgba(16, 185, 129, 0.04) 100%);
+            opacity: 0;
+            transition: var(--transition-smooth);
+        }
+
+        .glass-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(45, 90, 39, 0.2);
+            box-shadow: 0 8px 24px rgba(45, 90, 39, 0.08);
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        .glass-card:hover::before {
+            opacity: 1;
+        }
+
+        .card-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.25rem;
+            background: rgba(45, 90, 39, 0.08);
+            border: 1px solid rgba(45, 90, 39, 0.2);
+            color: var(--color-orange);
+            box-shadow: 0 4px 12px rgba(45, 90, 39, 0.05);
+        }
+
+        .glass-card:nth-child(even) .card-icon {
+            background: rgba(61, 122, 53, 0.08);
+            border: 1px solid rgba(61, 122, 53, 0.2);
+            color: var(--color-blue);
+            box-shadow: 0 4px 12px rgba(61, 122, 53, 0.05);
+        }
+
+        .card-icon-danger {
+            background: rgba(239, 68, 68, 0.09) !important;
+            border: 1px solid rgba(239, 68, 68, 0.25) !important;
+            color: #dc2626 !important;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.06) !important;
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            color: var(--text-primary);
+        }
+
+        .card-desc {
+            font-size: 0.92rem;
+            line-height: 1.6;
+            color: var(--text-secondary);
+        }
+
+        /* Welcome Slide specific */
+        .welcome-slide {
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 4rem;
+        }
+
+        .welcome-logo-container {
+            position: relative;
+            margin-bottom: 2rem;
+        }
+
+        .welcome-pulse {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(45, 90, 39, 0.15) 0%, transparent 70%);
+            animation: pulse-glow 3s infinite ease-in-out;
+            z-index: 1;
+        }
+
+        .welcome-logo {
+            position: relative;
+            z-index: 2;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: var(--gradient-accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 40px rgba(45, 90, 39, 0.3);
+            border: 4px solid rgba(255, 255, 255, 0.6);
+        }
+
+        .welcome-logo svg {
+            width: 50px;
+            height: 50px;
+            color: white;
+        }
+
+        .welcome-title {
+            font-size: 3.5rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--color-orange) 0%, #1e293b 50%, #475569 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+            letter-spacing: -1.5px;
+        }
+
+        .welcome-subtitle {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--color-orange);
+            margin-bottom: 1.5rem;
+        }
+
+        .welcome-desc {
+            font-size: 1.15rem;
+            color: var(--text-secondary);
+            max-width: 650px;
+            margin: 0 auto 2.5rem auto;
+            line-height: 1.8;
+        }
+
+        .welcome-badge {
+            background: rgba(0, 0, 0, 0.02);
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            border-radius: 9999px;
+            padding: 0.5rem 1.5rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            backdrop-filter: blur(10px);
+        }
+
+        .welcome-badge span {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--color-emerald);
+            box-shadow: 0 0 8px var(--color-emerald);
+        }
+
+        /* Timeline / Stepper */
+        .timeline-container {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+            padding: 2rem 0;
+            margin-top: 1rem;
+        }
+
+        .timeline-line {
+            position: absolute;
+            top: 50%;
+            left: 5%;
+            right: 5%;
+            height: 4px;
+            background: rgba(0, 0, 0, 0.05);
+            z-index: 1;
+            transform: translateY(-50%);
+        }
+
+        .timeline-progress {
+            position: absolute;
+            top: 50%;
+            left: 5%;
+            width: 0%;
+            height: 4px;
+            background: var(--gradient-accent);
+            z-index: 2;
+            transform: translateY(-50%);
+            transition: width 1.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .slide.active .timeline-progress {
+            width: 90.9%;
+        }
+
+        .timeline-step {
+            position: relative;
+            z-index: 3;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 20%;
+            text-align: center;
+        }
+
+        .step-node {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: var(--bg-secondary);
+            border: 3px solid rgba(0, 0, 0, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+            transition: var(--transition-smooth);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+
+        .timeline-step.completed .step-node {
+            border-color: var(--color-orange);
+            color: var(--color-orange);
+            background: rgba(45, 90, 39, 0.1);
+            box-shadow: 0 4px 10px rgba(45, 90, 39, 0.15);
+        }
+
+        .timeline-step.active .step-node {
+            border-color: var(--color-blue);
+            color: var(--color-blue);
+            background: rgba(61, 122, 53, 0.1);
+            box-shadow: 0 4px 12px rgba(61, 122, 53, 0.2);
+            transform: scale(1.15);
+        }
+
+        .step-title {
+            font-weight: 700;
+            font-size: 0.95rem;
+            margin-bottom: 0.25rem;
+            color: var(--text-primary);
+        }
+
+        .step-duration {
+            font-size: 0.8rem;
+            color: var(--color-orange);
+            font-weight: 600;
+        }
+
+        /* Diagram Viewer */
+        .diagram-viewer {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            height: 100%;
+        }
+
+        .diagram-tabs {
+            display: flex;
+            gap: 0.5rem;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            padding-bottom: 0.5rem;
+        }
+
+        .diagram-tab {
+            padding: 0.5rem 1.25rem;
+            border-radius: 8px;
+            border: 1px solid transparent;
+            background: transparent;
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: var(--transition-fast);
+        }
+
+        .diagram-tab:hover {
+            color: var(--text-primary);
+            background: rgba(0, 0, 0, 0.03);
+        }
+
+        .diagram-tab.active {
+            color: var(--color-orange);
+            background: rgba(45, 90, 39, 0.08);
+            border-color: rgba(45, 90, 39, 0.2);
+        }
+
+        .diagram-display {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.4);
+            border: 1px dashed rgba(45, 90, 39, 0.15);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            min-height: 250px;
+        }
+
+        .diagram-pane {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition-smooth);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+        }
+
+        .diagram-pane.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .svg-arch {
+            width: 100%;
+            max-width: 900px;
+            height: 100%;
+            max-height: 320px;
+        }
+
+        .svg-arch text {
+            fill: var(--text-primary);
+            font-family: inherit;
+            font-weight: 600;
+        }
+
+        .svg-arch .glow-rect {
+            fill: var(--bg-secondary);
+            stroke: rgba(45, 90, 39, 0.4);
+            stroke-width: 2;
+            filter: drop-shadow(0 0 5px rgba(45, 90, 39, 0.1));
+            rx: 10px;
+            transition: var(--transition-fast);
+        }
+
+        .svg-arch .glow-rect:hover {
+            stroke: var(--color-blue);
+            fill: rgba(61, 122, 53, 0.1);
+        }
+
+        .svg-arch .flow-line {
+            fill: none;
+            stroke: var(--text-muted);
+            stroke-width: 2;
+            stroke-dasharray: 4 4;
+            animation: dash 30s linear infinite;
+        }
+
+        .svg-arch .arrow {
+            fill: var(--text-muted);
+        }
+
+        /* Stepper for Algorithms */
+        .algo-stepper {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .algo-list {
+            width: 30%;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .algo-btn {
+            padding: 1rem;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            background: rgba(0, 0, 0, 0.01);
+            color: var(--text-secondary);
+            text-align: right;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+
+        body.lang-en .algo-btn {
+            text-align: left;
+        }
+
+        .algo-btn:hover {
+            background: rgba(0, 0, 0, 0.03);
+            color: var(--text-primary);
+        }
+
+        .algo-btn.active {
+            background: rgba(61, 122, 53, 0.08);
+            border-color: rgba(61, 122, 53, 0.25);
+            color: var(--color-blue);
+            transform: translateX(-5px);
+        }
+
+        body.lang-en .algo-btn.active {
+            transform: translateX(5px);
+        }
+
+        .algo-steps {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.5);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            border-radius: 16px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .algo-content-pane {
+            display: none;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .algo-content-pane.active {
+            display: flex;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .algo-flow-step {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            background: rgba(0, 0, 0, 0.02);
+            padding: 0.75rem 1.25rem;
+            border-radius: 10px;
+            border: 1px solid rgba(0, 0, 0, 0.03);
+        }
+
+        .algo-flow-num {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--color-blue);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            font-weight: 700;
+            flex-shrink: 0;
+            box-shadow: 0 0 8px rgba(61, 122, 53, 0.25);
+        }
+
+        .algo-flow-text {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        /* Interface Switcher Grid */
+        .interface-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 1.5rem;
+            height: 100%;
+        }
+
+        .interface-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .interface-menu-btn {
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            border: 1px solid transparent;
+            background: transparent;
+            color: var(--text-secondary);
+            font-weight: 600;
+            text-align: right;
+            cursor: pointer;
+            transition: var(--transition-fast);
+        }
+
+        body.lang-en .interface-menu-btn {
+            text-align: left;
+        }
+
+        .interface-menu-btn:hover {
+            background: rgba(0, 0, 0, 0.03);
+            color: var(--text-primary);
+        }
+
+        .interface-menu-btn.active {
+            background: rgba(45, 90, 39, 0.08);
+            border-color: rgba(45, 90, 39, 0.15);
+            color: var(--color-orange);
+        }
+
+        .interface-preview {
+            background: rgba(255, 255, 255, 0.5);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            border-radius: 16px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+        }
+
+        .preview-pane {
+            position: absolute;
+            top: 1.5rem;
+            bottom: 1.5rem;
+            left: 1.5rem;
+            right: 1.5rem;
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition-smooth);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .preview-pane.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .mockup-window {
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 0.5rem;
+            margin-top: 1rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            font-size: 0.8rem;
+            font-family: monospace;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+        }
+
+        .mockup-header {
+            display: flex;
+            gap: 4px;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 0.25rem;
+        }
+
+        .mockup-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .mockup-body {
+            flex: 1;
+            background: #ffffff;
+            border-radius: 4px;
+            padding: 0.75rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            color: var(--color-orange);
+            overflow: hidden;
+        }
+
+        /* Controls Bottom Bar */
+        .controls-bar {
+            height: 70px;
+            background: rgba(255, 255, 255, 0.85);
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+            backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 3rem;
+            position: relative;
+            z-index: 100;
+        }
+
+        .nav-buttons {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .nav-btn {
+            background: rgba(0, 0, 0, 0.02);
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            color: var(--text-primary);
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+        }
+
+        .nav-btn:hover {
+            background: var(--gradient-accent);
+            border-color: transparent;
+            box-shadow: 0 0 20px rgba(45, 90, 39, 0.3);
+            transform: scale(1.05);
+            color: white;
+        }
+
+        .nav-btn:active {
+            transform: scale(0.95);
+        }
+
+        .nav-dots {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+
+        .nav-dot.active {
+            width: 24px;
+            border-radius: 4px;
+            background: var(--color-orange);
+            box-shadow: 0 0 10px rgba(45, 90, 39, 0.4);
+        }
+
+        .utility-buttons {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .util-btn {
+            background: rgba(0, 0, 0, 0.02);
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            border-radius: 10px;
+            padding: 0.5rem 1rem;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: var(--transition-fast);
+        }
+
+        .util-btn:hover {
+            background: rgba(0, 0, 0, 0.04);
+            color: var(--text-primary);
+            border-color: rgba(0, 0, 0, 0.1);
+        }
+
+        .progress-line-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: rgba(0, 0, 0, 0.03);
+        }
+
+        .progress-line-bar {
+            height: 100%;
+            width: 8.3%;
+            background: var(--gradient-accent);
+            box-shadow: 0 0 8px rgba(45, 90, 39, 0.3);
+            transition: width 0.4s ease;
+        }
+
+        /* Animations */
+        @keyframes pulse-glow {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; }
+            50% { transform: translate(-50%, -50%) scale(1.15); opacity: 0.8; }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes dash {
+            to {
+                stroke-dashoffset: -1000;
+            }
+        }
+
+        /* Language visibility rules */
+        html[lang="ar"] [data-lang="en"],
+        html[lang="ar"] [data-lang="en-flex"] {
+            display: none !important;
+        }
+
+        html[lang="en"] [data-lang="ar"],
+        html[lang="en"] [data-lang="ar-flex"] {
+            display: none !important;
+        }
+
+        html[lang="en"] body {
+            direction: ltr;
+        }
+
+        /* Printing and PDF styles */
+        @media print {
+            body {
+                background: #ffffff !important;
+                color: #000000 !important;
+                overflow: visible !important;
+                height: auto !important;
+            }
+            .presentation-wrapper {
+                display: block !important;
+                padding: 0 !important;
+                height: auto !important;
+            }
+            .slide-container {
+                max-width: 100% !important;
+                height: auto !important;
+                max-height: none !important;
+                perspective: none !important;
+            }
+            .slide {
+                position: relative !important;
+                display: flex !important;
+                opacity: 1 !important;
+                visibility: visible !important;
+                transform: none !important;
+                box-shadow: none !important;
+                border: 2px solid #e2e8f0 !important;
+                background: #ffffff !important;
+                color: #000000 !important;
+                margin-bottom: 2rem !important;
+                page-break-after: always !important;
+                height: 100vh !important;
+                max-height: 800px !important;
+                border-radius: 0 !important;
+            }
+            .controls-bar {
+                display: none !important;
+            }
+            .timeline-progress {
+                width: 90.9% !important;
+            }
+            .algo-content-pane {
+                display: flex !important;
+            }
+            .algo-list {
+                display: none !important;
+            }
+            .preview-pane {
+                position: relative !important;
+                display: flex !important;
+                opacity: 1 !important;
+                visibility: visible !important;
+                top: 0 !important;
+                bottom: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+            }
+            .interface-menu {
+                display: none !important;
+            }
+            .interface-grid {
+                grid-template-columns: 1fr !important;
+            }
+            .glass-card {
+                background: #f8fafc !important;
+                border: 1px solid #cbd5e1 !important;
+                color: #000000 !important;
+            }
+            .slide-title {
+                background: none !important;
+                -webkit-text-fill-color: initial !important;
+                color: #0f172a !important;
+            }
+            .welcome-pulse {
+                display: none !important;
+            }
+            .welcome-logo {
+                box-shadow: none !important;
+                border-color: #cbd5e1 !important;
+            }
+            .util-btn, .nav-btn, .nav-dots, .progress-line-container {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body class="lang-ar">
+
+    <div class="progress-line-container">
+        <div class="progress-line-bar" id="progressLine"></div>
+    </div>
+
+    <!-- Presentation Wrapper -->
+    <div class="presentation-wrapper">
+        <div class="slide-container">
+
+            <!-- SLIDE 1: WELCOME SCREEN (واجهة البداية) -->
+            <div class="slide active welcome-slide" id="slide1">
+                <div class="welcome-logo-container">
+                    <div class="welcome-pulse"></div>
+                    <div class="welcome-logo">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="9" y1="3" x2="9" y2="21"></line>
+                            <line x1="15" y1="3" x2="15" y2="21"></line>
+                            <line x1="3" y1="9" x2="21" y2="9"></line>
+                            <line x1="3" y1="15" x2="21" y2="15"></line>
+                        </svg>
+                    </div>
+                </div>
+                
+                <div data-lang="ar">
+                    <h1 class="welcome-title">رينت فلو | RENTFLOW ERP</h1>
+                    <h2 class="welcome-subtitle">منصة إدارية موحدة لتأجير المعدات الثقيلة واللوجستية</h2>
+                    <p class="welcome-desc">حل برمجي متكامل لإدارة العقود، تتبع تسليم المعدات، إدارة مدفوعات الملاك، وحجز مبالغ التأمين، لرقمنة وتأمين كافة قطاع التأجير التجاري.</p>
+                </div>
+                
+                <div data-lang="en">
+                    <h1 class="welcome-title">RENTFLOW | رينت فلو ERP</h1>
+                    <h2 class="welcome-subtitle">Unified Heavy Machinery & Equipment Rental Platform</h2>
+                    <p class="welcome-desc">An integrated enterprise solution automating rental agreements, tracking inspections, streamlining owner payouts, and locking escrow deposits to digitize commercial logistics.</p>
+                </div>
+
+                <div class="welcome-badge">
+                    <span></span>
+                    <div data-lang="ar">لوحة تحكم ERP • عرض تنفيذي للمشروع</div>
+                    <div data-lang="en">ERP Dashboard • Executive Project Summary</div>
+                </div>
+            </div>
+
+
+            <!-- SLIDE 2: CURRENT STATE & PROBLEMS (الوضع الحالي وعيوب الإدارة التقليدية) -->
+            <div class="slide" id="slide2">
+                <div class="slide-header">
+                    <div class="slide-title-area">
+                        <div class="slide-logo-badge"></div>
+                        <h2 class="slide-title" data-lang="ar">عيوب الإدارة التقليدية لتأجير المعدات</h2>
+                        <h2 class="slide-title" data-lang="en">Legacy Equipment Rental Bottlenecks</h2>
+                    </div>
+                    <span class="slide-tag" data-lang="ar">تحديات القطاع</span>
+                    <span class="slide-tag" data-lang="en">Industry Pain-points</span>
+                </div>
+                
+                <div class="slide-body">
+                    <p class="lead" data-lang="ar">تتسبب المعاملات الورقية واليدوية في خسائر مالية فادحة ونزاعات قانونية مستمرة بين ملاك المعدات والمستأجرين.</p>
+                    <p class="lead" data-lang="en">Fragmented paper logs and offline manual agreements generate constant legal disputes and substantial leakages in rental revenues.</p>
+                    
+                    <div class="grid-3">
+                        <div class="glass-card">
+                            <div class="card-icon card-icon-danger">
+                                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                            </div>
+                            <h3 class="card-title" data-lang="ar">نزاعات التسليم والأضرار</h3>
+                            <h3 class="card-title" data-lang="en">Handover & Damage Disputes</h3>
+                            <p class="card-desc" data-lang="ar">غياب التوثيق الممنهج وتصوير حالة المعدة فوتوغرافياً عند التسليم والعودة، مما يؤدي لنزاعات مستمرة حول أضرار المعدات وتكلفتها.</p>
+                            <p class="card-desc" data-lang="en">Absence of standardized inspection checklists and timestamped photos creates friction regarding machine damage liability.</p>
+                        </div>
+                        
+                        <div class="glass-card">
+                            <div class="card-icon card-icon-danger">
+                                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            </div>
+                            <h3 class="card-title" data-lang="ar">تعقيد القيود المالية والمستحقات</h3>
+                            <h3 class="card-title" data-lang="en">Lagging Ledger & Payments</h3>
+                            <p class="card-desc" data-lang="ar">تأخر صرف أرباح ملاك المعدات، وصعوبة تتبع قنوات الدفع المتعددة، وتأخر تسييل أو رد ودائع التأمين (Security Deposits) للمستأجرين.</p>
+                            <p class="card-desc" data-lang="en">Inflexible, manual payment channels slow down owner payout transfers and lock up security deposits long after active rentals expire.</p>
+                        </div>
+                        
+                        <div class="glass-card">
+                            <div class="card-icon card-icon-danger">
+                                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                            </div>
+                            <h3 class="card-title" data-lang="ar">انعدام التوثيق الأمني الموثوق</h3>
+                            <h3 class="card-title" data-lang="en">Unverified KYC Security Risk</h3>
+                            <p class="card-desc" data-lang="ar">تأجير معدات بآلاف الدولارات لأشخاص أو شركات غير موثقة الهوية، مما يزيد من معدلات السرقة، والقرصنة أو سوء الاستخدام المدمر للمعدات.</p>
+                            <p class="card-desc" data-lang="en">Renting highly expensive capital machinery without real-time, systematic background and business license verification.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="slide-footer">
+                    <div class="footer-logo">RentFlow <span>•</span> ERP</div>
+                    <div>Slide 2 / 14</div>
+                </div>
+            </div>
+
+
+            <!-- SLIDE 3: THE PROPOSED SOLUTION (الحل المقترح - نظام رينت فلو المتكامل) -->
+            <div class="slide" id="slide3">
+                <div class="slide-header">
+                    <div class="slide-title-area">
+                        <div class="slide-logo-badge"></div>
+                        <h2 class="slide-title" data-lang="ar">الحل - نظام رينت فلو المتكامل</h2>
+                        <h2 class="slide-title" data-lang="en">The Solution - RentFlow Automation</h2>
+                    </div>
+                    <span class="slide-tag" data-lang="ar">الرؤية والهدف</span>
+                    <span class="slide-tag" data-lang="en">Vision & Goal</span>
+                </div>
+                
+                <div class="slide-body">
+                    <p class="lead" data-lang="ar">أتمتة وحوكمة كاملة لدورة تأجير المعدات من التسجيل وحتى التسليم والمدفوعات لرفع مستوى الموثوقية.</p>
+                    <p class="lead" data-lang="en">Enforcing structural data workflows to streamline logistics, secure payment gateways, and enforce accountability.</p>
+                    
+                    <div class="grid-3">
+                        <div class="glass-card">
+                            <div class="card-icon" style="color:var(--color-emerald); background:rgba(16,185,129,0.08); border-color:rgba(16,185,129,0.2)">
+                                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            </div>
+                            <h3 class="card-title" data-lang="ar">توثيق تسليم ومعاينة رقمية</h3>
+                            <h3 class="card-title" data-lang="en">Digital Handover Inspections</h3>
+                            <p class="card-desc" data-lang="ar">تتبع تسليم واستلام المعدات عبر قوائم معاينة رقمية (Checklists) مدعومة برفع الصور الفورية المؤرخة لتوثيق حالة المعدات بدقة.</p>
+                            <p class="card-desc" data-lang="en">Digital checklists and timestamped uploads track active handover and return stages, eliminating machinery damage arguments.</p>
+                        </div>
+                        
+                        <div class="glass-card">
+                            <div class="card-icon" style="color:var(--color-emerald); background:rgba(16,185,129,0.08); border-color:rgba(16,185,129,0.2)">
+                                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+                            </div>
+                            <h3 class="card-title" data-lang="ar">محفظة وبوابات دفع مرنة للملاك</h3>
+                            <h3 class="card-title" data-lang="en">Fluid Ledger & Owner Payouts</h3>
+                            <p class="card-desc" data-lang="ar">لوحة تحكم مالية كاملة تتيح لملاك المعدات ربط بطاقات وبوابات سداد متعددة، وتدفق تلقائي للأرباح بعد الإفراج عن التأمين.</p>
+                            <p class="card-desc" data-lang="en">Dynamic owner financial dashboards tracking payouts, managing multiple active cards/wallets, and automated ledger releases.</p>
+                        </div>
+                        
+                        <div class="glass-card">
+                            <div class="card-icon" style="color:var(--color-emerald); background:rgba(16,185,129,0.08); border-color:rgba(16,185,129,0.2)">
+                                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                            </div>
+                            <h3 class="card-title" data-lang="ar">حماية وضمان مالي متكامل (Escrow)</h3>
+                            <h3 class="card-title" data-lang="en">Secure Escrow & Deposit Shield</h3>
+                            <p class="card-desc" data-lang="ar">حجز مبلغ التأمين مؤقتاً في حساب الضمان وحماية المدفوعات والوساطة التلقائية للأدمن لحل النزاعات بشكل عادل وسريع.</p>
+                            <p class="card-desc" data-lang="en">Freezes renter deposits securely in escrow, protecting payouts and leveraging automated admin arbitration for damage claims.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="slide-footer">
+                    <div class="footer-logo">RentFlow <span>•</span> ERP</div>
+                    <div>Slide 3 / 14</div>
+                </div>
+            </div>
+
+            <!-- SLIDE 4: ARCHITECTURE DIAGRAMS (المخططات البرمجية ودورة الأموال) -->
+            <div class="slide" id="slide4">
+                <div class="slide-header">
+                    <div class="slide-title-area">
+                        <div class="slide-logo-badge"></div>
+                        <h2 class="slide-title" data-lang="ar">المخططات الهيكلية ودورة الدفع الآمن</h2>
+                        <h2 class="slide-title" data-lang="en">Relational & Escrow Architecture</h2>
+                    </div>
+                    <span class="slide-tag" data-lang="ar">المخططات الفنية</span>
+                    <span class="slide-tag" data-lang="en">Relational Models</span>
+                </div>
+                
+                <div class="slide-body">
+                    <div class="diagram-viewer">
+                        <div class="diagram-tabs">
+                            <button class="diagram-tab active" onclick="switchDiagram(0)">
+                                <span data-lang="ar">سياق البيانات (Context Level)</span>
+                                <span data-lang="en">Context Level Diagram</span>
+                            </button>
+                            <button class="diagram-tab" onclick="switchDiagram(1)">
+                                <span data-lang="ar">دورة الدفع والضمان (Escrow Flow)</span>
+                                <span data-lang="en">Escrow Payment Cycle</span>
+                            </button>
+                            <button class="diagram-tab" onclick="switchDiagram(2)">
+                                <span data-lang="ar">جدول علاقات قاعدة البيانات (DB Tables)</span>
+                                <span data-lang="en">Database Table Relations</span>
+                            </button>
+                        </div>
+                        
+                        <div class="diagram-display">
+                            
+                            <!-- Context Level SVG -->
+                            <div class="diagram-pane active" id="pane0">
+                                <svg class="svg-arch" viewBox="0 0 800 300">
+                                    <!-- Central System Node -->
+                                    <rect x="300" y="100" width="200" height="80" class="glow-rect" />
+                                    <text x="400" y="145" text-anchor="middle" font-size="16">RentFlow ERP</text>
+                                    
+                                    <!-- Tenant Node -->
+                                    <rect x="50" y="100" width="120" height="60" class="glow-rect" />
+                                    <text x="110" y="135" text-anchor="middle" font-size="14" data-lang="ar">المستأجر</text>
+                                    <text x="110" y="135" text-anchor="middle" font-size="14" data-lang="en">Tenant</text>
+                                    
+                                    <!-- Owner Node -->
+                                    <rect x="630" y="100" width="120" height="60" class="glow-rect" />
+                                    <text x="690" y="135" text-anchor="middle" font-size="14" data-lang="ar">مالك المعدة</text>
+                                    <text x="690" y="135" text-anchor="middle" font-size="14" data-lang="en">Equipment Owner</text>
+                                    
+                                    <!-- Flows Tenant -> System -->
+                                    <path d="M 170 120 L 300 120" class="flow-line" />
+                                    <polygon points="300,120 290,115 290,125" class="arrow" />
+                                    <text x="235" y="112" text-anchor="middle" font-size="10" data-lang="ar">حجز ودفع تأمين</text>
+                                    <text x="235" y="112" text-anchor="middle" font-size="10" data-lang="en">Book & deposit hold</text>
+
+                                    <!-- Flows System -> Tenant -->
+                                    <path d="M 300 150 L 170 150" class="flow-line" />
+                                    <polygon points="170,150 180,145 180,155" class="arrow" />
+                                    <text x="235" y="167" text-anchor="middle" font-size="10" data-lang="ar">رخصة تسليم المعدة</text>
+                                    <text x="235" y="167" text-anchor="middle" font-size="10" data-lang="en">Handover receipt</text>
+                                    
+                                    <!-- Flows Owner -> System -->
+                                    <path d="M 630 120 L 500 120" class="flow-line" />
+                                    <polygon points="500,120 510,115 510,125" class="arrow" />
+                                    <text x="565" y="112" text-anchor="middle" font-size="10" data-lang="ar">عرض معدة وقنوات دفع</text>
+                                    <text x="565" y="112" text-anchor="middle" font-size="10" data-lang="en">Add fleet & cards</text>
+
+                                    <!-- Flows System -> Owner -->
+                                    <path d="M 500 150 L 630 150" class="flow-line" />
+                                    <polygon points="630,150 620,145 620,155" class="arrow" />
+                                    <text x="565" y="167" text-anchor="middle" font-size="10" data-lang="ar">صرف أرباح دورية</text>
+                                    <text x="565" y="167" text-anchor="middle" font-size="10" data-lang="en">Discharge earnings</text>
+                                </svg>
+                            </div>
+                            
+                            <!-- Escrow Flow SVG -->
+                            <div class="diagram-pane" id="pane1">
+                                <svg class="svg-arch" viewBox="0 0 800 300">
+                                    <!-- State 1 -->
+                                    <rect x="50" y="110" width="160" height="60" class="glow-rect" />
+                                    <text x="130" y="145" text-anchor="middle" font-size="12" data-lang="ar">1. حجز الوديعة (Hold)</text>
+                                    <text x="130" y="145" text-anchor="middle" font-size="12" data-lang="en">1. Hold Deposit</text>
+                                    
+                                    <!-- State 2 -->
+                                    <rect x="320" y="110" width="160" height="60" class="glow-rect" />
+                                    <text x="400" y="145" text-anchor="middle" font-size="12" data-lang="ar">2. معاينة رقمية (Handover)</text>
+                                    <text x="400" y="145" text-anchor="middle" font-size="12" data-lang="en">2. Handover Audit</text>
+
+                                    <!-- State 3 -->
+                                    <rect x="590" y="110" width="160" height="60" class="glow-rect" />
+                                    <text x="670" y="145" text-anchor="middle" font-size="12" data-lang="ar">3. الإفراج وصرف المستحقات</text>
+                                    <text x="670" y="145" text-anchor="middle" font-size="12" data-lang="en">3. Release & Payout</text>
+                                    
+                                    <!-- Flow lines -->
+                                    <path d="M 210 140 L 320 140" class="flow-line" />
+                                    <polygon points="320,140 310,135 310,145" class="arrow" />
+                                    
+                                    <path d="M 480 140 L 590 140" class="flow-line" />
+                                    <polygon points="590,140 580,135 580,145" class="arrow" />
+                                </svg>
+                            </div>
+                            
+                            <!-- Database Table Relation SVG -->
+                            <div class="diagram-pane" id="pane2">
+                                <svg class="svg-arch" viewBox="0 0 800 300">
+                                    <!-- Users -->
+                                    <rect x="60" y="40" width="140" height="90" class="glow-rect" />
+                                    <text x="130" y="70" text-anchor="middle" font-size="12" font-weight="700">users (ID)</text>
+                                    <text x="130" y="95" text-anchor="middle" font-size="10" fill="var(--text-secondary)">role: tenant/owner</text>
+                                    <text x="130" y="115" text-anchor="middle" font-size="10" fill="var(--text-secondary)">kyc_verified</text>
+                                    
+                                    <!-- Handovers -->
+                                    <rect x="330" y="40" width="140" height="90" class="glow-rect" />
+                                    <text x="400" y="70" text-anchor="middle" font-size="12" font-weight="700">handovers</text>
+                                    <text x="400" y="95" text-anchor="middle" font-size="10" fill="var(--text-secondary)">rental_id (FK)</text>
+                                    <text x="400" y="115" text-anchor="middle" font-size="10" fill="var(--text-secondary)">inspection_photos</text>
+
+                                    <!-- Payout Methods -->
+                                    <rect x="600" y="40" width="140" height="90" class="glow-rect" />
+                                    <text x="670" y="70" text-anchor="middle" font-size="12" font-weight="700">payout_methods</text>
+                                    <text x="670" y="95" text-anchor="middle" font-size="10" fill="var(--text-secondary)">owner_id (FK)</text>
+                                    <text x="670" y="115" text-anchor="middle" font-size="10" fill="var(--text-secondary)">is_default: bool</text>
+                                    
+                                    <!-- Relational links -->
+                                    <path d="M 200 85 L 330 85" stroke="var(--color-orange)" stroke-width="1.5" stroke-dasharray="2 2" fill="none" />
+                                    <path d="M 470 85 L 600 85" stroke="var(--color-blue)" stroke-width="1.5" stroke-dasharray="2 2" fill="none" />
+                                </svg>
+                            </div>
+                            
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="slide-footer">
+                    <div class="footer-logo">RentFlow <span>•</span> ERP</div>
+                    <div>Slide 4 / 14</div>
+                </div>
+            </div>
+
+
+            <!-- SLIDE 5: END-TO-END BUSINESS LIFECYCLE FLOW (دورة العمل الشاملة لتشغيل الإيجار والضمان) -->
+            <div class="slide" id="slide5">
+                <div class="slide-header">
+                    <div class="slide-title-area">
+                        <div class="slide-logo-badge"></div>
+                        <h2 class="slide-title" data-lang="ar">دورة العمل الشاملة لتشغيل الإيجار والضمان</h2>
+                        <h2 class="slide-title" data-lang="en">End-to-End Business Lifecycle & Escrow</h2>
+                    </div>
+                    <span class="slide-tag" data-lang="ar">دورة حياة النظام</span>
+                    <span class="slide-tag" data-lang="en">Business Lifecycle</span>
+                </div>
+                
+                <div class="slide-body">
+                    <p class="lead" data-lang="ar">يتبع رينت فلو دورة حياة أوتوماتيكية متماسكة تبدأ من التحقق من الهوية الرقمية وحتى صرف الأرباح أو التحكيم في النزاعات.</p>
+                    <p class="lead" data-lang="en">RentFlow enforces a seamless chronological workflow linking customer verification, financial protection, and field operations.</p>
+                    
+                    <div class="grid-3">
+                        <div class="glass-card">
+                            <div class="card-icon" style="color:var(--color-orange)">
+                                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                            </div>
+                            <h3 class="card-title" data-lang="ar">1. التحقق والهوية (KYC)</h3>
+                            <h3 class="card-title" data-lang="en">1. KYC & Verification</h3>
+                            <p class="card-desc" data-lang="ar">رفع البطاقة الشخصية/جواز السفر والسجل التجاري للشركات وتفعيل حالة الحساب لضمان أمان المعاملات.</p>
+                            <p class="card-desc" data-lang="en">Document upload (ID, passport, commercial registry) and admin verification status checks to prevent security leaks.</p>
+                        </div>
+                        
+                        <div class="glass-card">
+                            <div class="card-icon" style="color:var(--color-blue)">
+                                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                            </div>
+                            <h3 class="card-title" data-lang="ar">2. عرض الأصول وجدولة التوفر</h3>
+                            <h3 class="card-title" data-lang="en">2. Fleet Listing & Availability</h3>
+                            <p class="card-desc" data-lang="ar">يقوم المالك بإدراج المعدة، وتعيين أسعار التأجير اليومية، وجدولة تقويم الأيام النشطة لمنع تداخل الحجوزات.</p>
+                            <p class="card-desc" data-lang="en">Machinery owners upload asset details, daily pricing models, and coordinate visual calendars to prevent calendar clashes.</p>
+                        </div>
+                        
+                        <div class="glass-card">
+                            <div class="card-icon" style="color:var(--color-purple)">
+                                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                            </div>
+                            <h3 class="card-title" data-lang="ar">3. حجز الضمان والوديعة</h3>
+                            <h3 class="card-title" data-lang="en">3. Escrow Booking & Deposit</h3>
+                            <p class="card-desc" data-lang="ar">جدولة فترة التأجير وحجز مبلغ التأمين المؤقت مع الإيجار في حساب الضمان (Escrow) لحماية مصالح الطرفين.</p>
+                            <p class="card-desc" data-lang="en">Renters schedule rental periods and freeze security deposits along with booking fees in escrow for risk reduction.</p>
+                        </div>
+                        
+                        <div class="glass-card">
+                            <div class="card-icon" style="color:var(--color-emerald)">
+                                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a2 2 0 11-4 0M19 16a2 2 0 11-4 0"/></svg>
+                            </div>
+                            <h3 class="card-title" data-lang="ar">4. المعاينة والتسليم الميداني</h3>
+                            <h3 class="card-title" data-lang="en">4. Handover Inspection</h3>
+                            <p class="card-desc" data-lang="ar">فحص الهيكل الخارجي، الوقود، الأعطال، وتوثيق صور الفحص وحالة التشغيل لحظياً لإثبات الحالة.</p>
+                            <p class="card-desc" data-lang="en">Visual structural review, fuel logging, damage check-list execution, and timestamped photo audit uploads at physical pickup.</p>
+                        </div>
+                        
+                        <div class="glass-card">
+                            <div class="card-icon" style="color:var(--color-orange)">
+                                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+                            </div>
+                            <h3 class="card-title" data-lang="ar">5. الرجوع وتقييم الأضرار</h3>
+                            <h3 class="card-title" data-lang="en">5. Return & Damage Valuation</h3>
+                            <p class="card-desc" data-lang="ar">مقارنة صور الاستلام بصور التسليم وتحديد وجود أي أضرار أو تأخير في التسليم للتعويض والخصم العادل.</p>
+                            <p class="card-desc" data-lang="en">Compare checkout logs with check-in files to gauge cracks, fuel depletion, or late fees against original assets.</p>
+                        </div>
+                        
+                        <div class="glass-card">
+                            <div class="card-icon" style="color:var(--color-emerald)">
+                                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7V4m0 0l7 2m-7-2H3m18 2l-3 1m0 0l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9V4m0 0l-7 2m7-2h3M12 21V12"/></svg>
+                            </div>
+                            <h3 class="card-title" data-lang="ar">6. صرف المستحقات والتحكيم</h3>
+                            <h3 class="card-title" data-lang="en">6. Escrow Payout & Arbitration</h3>
+                            <p class="card-desc" data-lang="ar">الإفراج عن مبلغ التأمين، تحويل أرباح المالك الصافية، أو بدء الوساطة القانونية للأدمن بالنزاعات لحلها.</p>
+                            <p class="card-desc" data-lang="en">Automatic release of deposit, net payout to owner's default channel, or system-admin arbitration for disputes.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="slide-footer">
+                    <div class="footer-logo">RentFlow <span>•</span> ERP</div>
+                    <div>Slide 5 / 14</div>
+                </div>
+            </div>
+
+
+            <!-- SLIDE 6: MODULAR DOMAIN ARCHITECTURE & OWNERSHIP (البنية البرمجية والمجالات الوظيفية وتوزيعها) -->
+            <div class="slide" id="slide6">
+                <div class="slide-header">
+                    <div class="slide-title-area">
+                        <div class="slide-logo-badge"></div>
+                        <h2 class="slide-title" data-lang="ar">البنية البرمجية والمجالات الوظيفية وتوزيعها</h2>
+                        <h2 class="slide-title" data-lang="en">Modular Domain Architecture & Code Ownership</h2>
+                    </div>
+                    <span class="slide-tag" data-lang="ar">هيكلية الكود</span>
+                    <span class="slide-tag" data-lang="en">Codebase Domains</span>
+                </div>
+                
+                <div class="slide-body">
+                    <p class="lead" data-lang="ar">تم تنظيم المشروع إلى مجالات برمجية مستقلة (Domain-Driven Core) مقسمة بشكل واضح بين المهندسين الثلاثة تمنع التداخل البرمجي.</p>
+                    <p class="lead" data-lang="en">The system is structured into domain layers with clear boundaries, assigning ownership to maintain optimal code quality.</p>
+                    
+                    <div class="grid-3">
+                        <div class="glass-card" style="border-top: 3px solid var(--color-blue)">
+                            <h3 class="card-title" style="color:var(--color-blue)" data-lang="ar">🔵 Mosami — التأسيس والعمليات (40 مهمة)</h3>
+                            <h3 class="card-title" style="color:var(--color-blue)" data-lang="en">🔵 Mosami — Fleet & Operations (40 Tasks)</h3>
+                            <p class="card-desc" data-lang="ar">البنية التحتية الأساسية والعمليات الميدانية والتحصيل العادل للأضرار.</p>
+                            <p class="card-desc" data-lang="en">Platform Initialization, Relational Schemas, and Rental Handover.</p>
+                            <ul style="list-style-type: none; font-size: 0.85rem; line-height: 1.6; color: var(--text-secondary); padding: 0; margin-top: 0.75rem;">
+                                <li data-lang="ar">✓ <strong>التهيئة:</strong> إعداد Laravel+Inertia، والتوجيه Web.php.</li>
+                                <li data-lang="en">✓ <strong>Setup:</strong> Scaffolding Laravel+Inertia, routing pipelines.</li>
+                                <li data-lang="ar">✓ <strong>كل الـ Migrations:</strong> جداول أصول المنصة والبيانات.</li>
+                                <li data-lang="en">✓ <strong>All Migrations:</strong> Schema creation, Users, Rentals, Handovers.</li>
+                                <li data-lang="ar">✓ <strong>الاستلام والتعويض:</strong> نماذج وقواعد فحص وتوثيق الصور.</li>
+                                <li data-lang="en">✓ <strong>Handover & Damage:</strong> Inspection checklists, photo audit.</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="glass-card" style="border-top: 3px solid var(--color-emerald)">
+                            <h3 class="card-title" style="color:var(--color-emerald)" data-lang="ar">🟢 Taha — الرقابة والضمان المالي (35 مهمة)</h3>
+                            <h3 class="card-title" style="color:var(--color-emerald)" data-lang="en">🟢 Taha — Admin & Escrow Security (35 Tasks)</h3>
+                            <p class="card-desc" data-lang="ar">لوحة تحكيم الإدارة العامة وتأمين وحجز مبالغ التأمين المالي وحل الخلافات.</p>
+                            <p class="card-desc" data-lang="en">Admin System, Escrow Payment Core, and Dispute Mediation.</p>
+                            <ul style="list-style-type: none; font-size: 0.85rem; line-height: 1.6; color: var(--text-secondary); padding: 0; margin-top: 0.75rem;">
+                                <li data-lang="ar">✓ <strong>لوحة الأدمن:</strong> إدارة المستخدمين، توثيق الهويات والـ KYC.</li>
+                                <li data-lang="en">✓ <strong>Admin Console:</strong> User listings, KYC verification, logs.</li>
+                                <li data-lang="ar">✓ <strong>محرك الدفع والضمان:</strong> حجز الوديعة، الإفراج وصرف الملاك.</li>
+                                <li data-lang="en">✓ <strong>Escrow & Payments:</strong> Hold, release, refund, defaults card settings.</li>
+                                <li data-lang="ar">✓ <strong>فصل النزاعات:</strong> خوارزميات تحكيم الأدمن وإصدار القرارات.</li>
+                                <li data-lang="en">✓ <strong>Dispute Mediation:</strong> Arbitration claims, security overriding.</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="glass-card" style="border-top: 3px solid var(--color-orange)">
+                            <h3 class="card-title" style="color:var(--color-orange)" data-lang="ar">🟠 Ahmed — الأصول والعقود (30 مهمة)</h3>
+                            <h3 class="card-title" style="color:var(--color-orange)" data-lang="en">🟠 Ahmed — Inventory & Legal Contracts (30 Tasks)</h3>
+                            <p class="card-desc" data-lang="ar">كتالوج المعدات، وجدولة تواريخ الحجز، وصياغة العقود التوثيقية.</p>
+                            <p class="card-desc" data-lang="en">Fleet Inventory, Availability Engine, and Smart Contracts.</p>
+                            <ul style="list-style-type: none; font-size: 0.85rem; line-height: 1.6; color: var(--text-secondary); padding: 0; margin-top: 0.75rem;">
+                                <li data-lang="ar">✓ <strong>لوحة المالك:</strong> إضافة وتعديل المعدات عبر خطوات المساعد.</li>
+                                <li data-lang="en">✓ <strong>Owner Cockpit:</strong> Multi-step AddEquipment wizard, assets logs.</li>
+                                <li data-lang="ar">✓ <strong>كتالوج المعدات:</strong> فلاتر التوفر، الفئات، والتسعير الديناميكي.</li>
+                                <li data-lang="en">✓ <strong>Equipment Domain:</strong> Availability calendars, categories catalog.</li>
+                                <li data-lang="ar">✓ <strong>العقود والمراجعات:</strong> صياغة وتوقيع وثيقة التأجير، مراجعات الأداء.</li>
+                                <li data-lang="en">✓ <strong>Contracts & Reviews:</strong> Legal sign-off actions, feedback loops.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="slide-footer">
+                    <div class="footer-logo">RentFlow <span>•</span> ERP</div>
+                    <div>Slide 6 / 14</div>
+                </div>
+            </div>
+
+
+            <!-- SLIDE 7: DEVELOPMENT TOOLS (بيئة التطوير والأدوات البرمجية) -->
+            <div class="slide" id="slide7">
+                <div class="slide-header">
+                    <div class="slide-title-area">
+                        <div class="slide-logo-badge"></div>
+                        <h2 class="slide-title" data-lang="ar">بيئة التطوير والتقنيات البرمجية للمنصة</h2>
+                        <h2 class="slide-title" data-lang="en">System Technology Stack & Environment</h2>
+                    </div>
+                    <span class="slide-tag" data-lang="ar">التقنيات</span>
+                    <span class="slide-tag" data-lang="en">Tech Stack</span>
+                </div>
+                
+                <div class="slide-body">
+                    <p class="lead" data-lang="ar">تعتمد المنصة على بنية تحتية برمجية حديثة تضمن تزامناً فورياً للبيانات وتعاملاً آمناً مع البوابات المالية.</p>
+                    <p class="lead" data-lang="en">Utilizing state-of-the-art frameworks to build real-time financial portals and fluid, SPA responsive interfaces.</p>
+                    
+                    <div class="grid-2">
+                        <div class="glass-card">
+                            <div class="card-icon" style="color:var(--color-orange)">
+                                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                            </div>
+                            <h3 class="card-title" data-lang="ar">البنية الخلفية وقواعد البيانات (Backend)</h3>
+                            <h3 class="card-title" data-lang="en">Core Backend & Database</h3>
+                            <ul style="list-style-type: none; font-size: 0.95rem; line-height: 1.8; color: var(--text-secondary); padding: 0;">
+                                <li data-lang="ar">✓ <strong>Laravel Framework:</strong> كقالب خلفي متين وآمن للمصادقة وتدفق البيانات.</li>
+                                <li data-lang="en">✓ <strong>Laravel Framework:</strong> Robust database transaction controller and auth gate.</li>
+                                <li data-lang="ar">✓ <strong>MySQL Database:</strong> لحفظ بيانات أصول المعدات، جداول الحجوزات، والمدفوعات.</li>
+                                <li data-lang="en">✓ <strong>MySQL Database:</strong> Relational schema managing listings, handovers, and ledger cards.</li>
+                                <li data-lang="ar">✓ <strong>Escrow API Handlers:</strong> لمراقبة مبالغ الودائع والربط بجهات الدفع المحددة للملاك.</li>
+                                <li data-lang="en">✓ <strong>Escrow API Handlers:</strong> Escrow security checkouts and multi-method wallet card updates.</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="glass-card">
+                            <div class="card-icon" style="color:var(--color-blue)">
+                                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/></svg>
+                            </div>
+                            <h3 class="card-title" data-lang="ar">البنية الأمامية وتجربة المستخدم (Frontend)</h3>
+                            <h3 class="card-title" data-lang="en">Frontend SPA Architecture</h3>
+                            <ul style="list-style-type: none; font-size: 0.95rem; line-height: 1.8; color: var(--text-secondary); padding: 0;">
+                                <li data-lang="ar">✓ <strong>React.js & Inertia.js:</strong> تقديم واجهات ذات صفحة واحدة فائقة السرعة والاستجابة.</li>
+                                <li data-lang="en">✓ <strong>React.js & Inertia.js:</strong> SPA routing rendering rich components with zero delay.</li>
+                                <li data-lang="ar">✓ <strong>TailwindCSS v4:</strong> تصميم صناعي أنيق وجذاب للواجهات متوافق مع كافة الأجهزة.</li>
+                                <li data-lang="en">✓ <strong>TailwindCSS v4:</strong> Fluid custom design tokens optimized for machinery rental operators.</li>
+                                <li data-lang="ar">✓ <strong>Motion Animations:</strong> لتسريع وتجميل التغذية البصرية عند الانتقال وحفظ النماذج.</li>
+                                <li data-lang="en">✓ <strong>Motion Animations:</strong> Slick interactive transitions, micro-effects and visual toasts.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="slide-footer">
+                    <div class="footer-logo">RentFlow <span>•</span> ERP</div>
+                    <div>Slide 7 / 14</div>
+                </div>
+            </div>
+
+
+            <!-- SLIDE 8: PROJECT SCOPE & BOUNDARIES (الحدود المكانية والزمانية للمشروع) -->
+            <div class="slide" id="slide8">
+                <div class="slide-header">
+                    <div class="slide-title-area">
+                        <div class="slide-logo-badge"></div>
+                        <h2 class="slide-title" data-lang="ar">الحدود الزمانية والمكانية للمشروع</h2>
+                        <h2 class="slide-title" data-lang="en">Deployment Reach & Scope</h2>
+                    </div>
+                    <span class="slide-tag" data-lang="ar">حدود المشروع</span>
+                    <span class="slide-tag" data-lang="en">Project Scope</span>
+                </div>
+                
+                <div class="slide-body">
+                    <p class="lead" data-lang="ar">يستهدف رينت فلو تنظيم وتغطية سوق تأجير المعدات الثقيلة والإنشائية بالكامل جغرافياً مع الالتزام بالخطة الزمنية.</p>
+                    <p class="lead" data-lang="en">Structuring active logistic frameworks across national logistics networks while keeping milestone schedules.</p>
+                    
+                    <div class="grid-2">
+                        <div class="glass-card">
+                            <div class="card-icon" style="color:var(--color-purple)">
+                                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                            </div>
+                            <h3 class="card-title" data-lang="ar">الحدود المكانية (النطاق الجغرافي للتشغيل)</h3>
+                            <h3 class="card-title" data-lang="en">Spatial Scale (Territorial Reach)</h3>
+                            <p class="card-desc" data-lang="ar">يستهدف المنصة كافة معارض ومكاتب وشركات تأجير الرافعات، الحفارات، المعدات الإنشائية، واللوجستية الصناعية في الجمهورية اليمنية.</p>
+                            <p class="card-desc" data-lang="en">Covering industrial machinery operators, construction hubs, and heavy transport rental entities across the Republic of Yemen.</p>
+                        </div>
+                        
+                        <div class="glass-card">
+                            <div class="card-icon" style="color:var(--color-orange)">
+                                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            </div>
+                            <h3 class="card-title" data-lang="ar">الحدود الزمانية ومعدل الجاهزية</h3>
+                            <h3 class="card-title" data-lang="en">Temporal scope & Status</h3>
+                            <p class="card-desc" data-lang="ar">انطلقت مرحلة تصميم المخططات وقواعد البيانات في 1 نوفمبر 2025م، وانتهت عمليات البرمجة والربط المالي في 22 أبريل 2026م، بنسبة إنجاز بلغت 90.9%.</p>
+                            <p class="card-desc" data-lang="en">Project initialized on Nov 1, 2025, with backend pipelines and UI pages finalized on Apr 22, 2026, recording a highly robust 90.9% readiness.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="slide-footer">
+                    <div class="footer-logo">RentFlow <span>•</span> ERP</div>
+                    <div>Slide 8 / 14</div>
+                </div>
+            </div>
+
+
+            <!-- SLIDE 9: SYSTEM WORKFLOWS (خوارزميات العمليات الرئيسية) -->
+            <div class="slide" id="slide9">
+                <div class="slide-header">
+                    <div class="slide-title-area">
+                        <div class="slide-logo-badge"></div>
+                        <h2 class="slide-title" data-lang="ar">خوارزميات تشغيل عمليات التأجير والضمان</h2>
+                        <h2 class="slide-title" data-lang="en">Core Operational Algorithms</h2>
+                    </div>
+                    <span class="slide-tag" data-lang="ar">العمليات البرمجية</span>
+                    <span class="slide-tag" data-lang="en">Operational Logic</span>
+                </div>
+                
+                <div class="slide-body">
+                    <div class="algo-stepper">
+                        <div class="algo-list">
+                            <button class="algo-btn active" onclick="switchAlgo(0)">
+                                <span data-lang="ar">1. حجز الودائع والضمان</span>
+                                <span data-lang="en">1. Booking & Escrow Hold</span>
+                            </button>
+                            <button class="algo-btn" onclick="switchAlgo(1)">
+                                <span data-lang="ar">2. توثيق المعاينة والتسليم</span>
+                                <span data-lang="en">2. Handover Audit & Photos</span>
+                            </button>
+                            <button class="algo-btn" onclick="switchAlgo(2)">
+                                <span data-lang="ar">3. صرف المستحقات ورش الأموال</span>
+                                <span data-lang="en">3. Return, Payout & Release</span>
+                            </button>
+                        </div>
+                        
+                        <div class="algo-steps">
+                            
+                            <!-- Booking Escrow -->
+                            <div class="algo-content-pane active" id="algo0">
+                                <div class="algo-flow-step">
+                                    <div class="algo-flow-num">1</div>
+                                    <div class="algo-flow-text" data-lang="ar">يقوم المستأجر بجدول حجز المعدة؛ يتحقق النظام من خلو تواريخ الحجز.</div>
+                                    <div class="algo-flow-text" data-lang="en">Renter schedules equipment; check availability and validation rules.</div>
+                                </div>
+                                <div class="algo-flow-step">
+                                    <div class="algo-flow-num">2</div>
+                                    <div class="algo-flow-text" data-lang="ar">يتم تجميد (Hold) مبلغ التأمين بالإضافة لقيمة الحجز في خادم المحفظة (Escrow).</div>
+                                    <div class="algo-flow-text" data-lang="en">Lock the security deposit and initial payment tokens inside secure Escrow ledgers.</div>
+                                </div>
+                                <div class="algo-flow-step">
+                                    <div class="algo-flow-num">3</div>
+                                    <div class="algo-flow-text" data-lang="ar">توليد مستند استحقاق التسليم الرقمي وإرساله للملاك لبدء الفحص.</div>
+                                    <div class="algo-flow-text" data-lang="en">Generate a unique dynamic Handover record key and update status flags to ready.</div>
+                                </div>
+                            </div>
+                            
+                            <!-- Handover -->
+                            <div class="algo-content-pane" id="algo1">
+                                <div class="algo-flow-step">
+                                    <div class="algo-flow-num">1</div>
+                                    <div class="algo-flow-text" data-lang="ar">يلتقي الطرفان؛ يفتح المالك مستند المعاينة ويبدأ فحص أجزاء المعدة (الهيكل، المحرك، الوقود).</div>
+                                    <div class="algo-flow-text" data-lang="en">Owner & renter inspect machine parts (engine, fuel levels, physical cracks).</div>
+                                </div>
+                                <div class="algo-flow-step">
+                                    <div class="algo-flow-num">2</div>
+                                    <div class="algo-flow-text" data-lang="ar">يتم تصوير حالة الأضرار الحالية فوتوغرافياً ورفعها لتخزينها بالسجل برابط فوري.</div>
+                                    <div class="algo-flow-text" data-lang="en">Capture timestamped visual evidence of any current wear and log photos.</div>
+                                </div>
+                                <div class="algo-flow-step">
+                                    <div class="algo-flow-num">3</div>
+                                    <div class="algo-flow-text" data-lang="ar">تأكيد الإجراء رقمياً من الطرفين وتغيير حالة المعدة إلى "مؤجرة قيد العمل".</div>
+                                    <div class="algo-flow-text" data-lang="en">Both parties sign digitally; flag the equipment as active on the road.</div>
+                                </div>
+                            </div>
+                            
+                            <!-- Return Payout -->
+                            <div class="algo-content-pane" id="algo2">
+                                <div class="algo-flow-step">
+                                    <div class="algo-flow-num">1</div>
+                                    <div class="algo-flow-text" data-lang="ar">عند انتهاء العقد؛ يتم إجراء معاينة الرجوع ومقارنة صور الاستلام بالصور المخزنة.</div>
+                                    <div class="algo-flow-text" data-lang="en">At return; check machine state and auto-compare photos against initial handover logs.</div>
+                                </div>
+                                <div class="algo-flow-step">
+                                    <div class="algo-flow-num">2</div>
+                                    <div class="algo-flow-text" data-lang="ar">إذا كانت المعدة سليمة: يفرج النظام عن وديعة المستأجر وتصفية الدفع بالكامل تلقائياً.</div>
+                                    <div class="algo-flow-text" data-lang="en">If intact: trigger instant release of security deposit back to the renter.</div>
+                                </div>
+                                <div class="algo-flow-step">
+                                    <div class="algo-flow-num">3</div>
+                                    <div class="algo-flow-text" data-lang="ar">يتم تحويل الأرباح الصافية فوراً إلى "حساب السداد الافتراضي" لمالك المعدة مع إشعار بالدفع.</div>
+                                    <div class="algo-flow-text" data-lang="en">Directly transfer net earnings to the owner's default payment card with visual receipts.</div>
+                                </div>
+                            </div>
+                            
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="slide-footer">
+                    <div class="footer-logo">RentFlow <span>•</span> ERP</div>
+                    <div>Slide 9 / 14</div>
+                </div>
+            </div>
+
+
+            <!-- SLIDE 10: DISTRIBUTED TEAM ROLES & TASK ALLOCATION (توزيع المهام ومسؤوليات فريق التطوير) -->
+            <div class="slide" id="slide10">
+                <div class="slide-header">
+                    <div class="slide-title-area">
+                        <div class="slide-logo-badge"></div>
+                        <h2 class="slide-title" data-lang="ar">توزيع المهام ومسؤوليات فريق التطوير</h2>
+                        <h2 class="slide-title" data-lang="en">Team Roles & Distributed Engineering Tasks</h2>
+                    </div>
+                    <span class="slide-tag" data-lang="ar">فريق العمل</span>
+                    <span class="slide-tag" data-lang="en">Resource Allocation</span>
+                </div>
+                
+                <div class="slide-body">
+                    <p class="lead" data-lang="ar">تم تقسيم مهام التطوير بنسبة متوازنة تعكس الجهد الفعلي المستغرق في الواجهات والعمليات الخلفية لكل مهندس.</p>
+                    <p class="lead" data-lang="en">Task distribution leverages individual strengths, balancing heavy interface requirements against core back-end engineering logic.</p>
+                    
+                    <div class="grid-3">
+                        <div class="glass-card" style="border-top: 3px solid var(--color-blue)">
+                            <div class="card-icon" style="color:var(--color-blue)">
+                                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                            </div>
+                            <h3 class="card-title" data-lang="ar">🔵 Mosami (40 مهمة)</h3>
+                            <h3 class="card-title" data-lang="en">🔵 Mosami (40 Tasks)</h3>
+                            <p class="card-desc" data-lang="ar"><strong>المسؤولية:</strong> قائد تهيئة البنية والـ Migrations، ومطور واجهات المستأجر وتفاصيل الحجز والتقارير.</p>
+                            <p class="card-desc" data-lang="en"><strong>Scope:</strong> Infrastructure lead & Migrations architect. Focuses on Tenant screens, Handover logic, and late fees calculations.</p>
+                            <div style="font-size:0.8rem; margin-top:0.75rem; color:var(--text-secondary); background:rgba(255,255,255,0.02); padding:0.5rem; border-radius:8px;">
+                                <div data-lang="ar">✓ <strong>Frontend:</strong> 20 مهمة (الرئيسية، تفاصيل المنتج، السلة، الإيجارات)</div>
+                                <div data-lang="en">✓ <strong>Frontend:</strong> 20 tasks (Home, Cart, Product Detail, Orders)</div>
+                                <div data-lang="ar">✓ <strong>Backend:</strong> 20 مهمة (التهيئة، كل الـ Migrations، منطق التسليم)</div>
+                                <div data-lang="en">✓ <strong>Backend:</strong> 20 tasks (Scaffold, All Migrations, Handovers)</div>
+                            </div>
+                        </div>
+                        
+                        <div class="glass-card" style="border-top: 3px solid var(--color-emerald)">
+                            <div class="card-icon" style="color:var(--color-emerald)">
+                                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                            </div>
+                            <h3 class="card-title" data-lang="ar">🟢 Taha (35 مهمة)</h3>
+                            <h3 class="card-title" data-lang="en">🟢 Taha (35 Tasks)</h3>
+                            <p class="card-desc" data-lang="ar"><strong>المسؤولية:</strong> قائد لوحة الإدارة ومسؤول بوابة الأمان، وتوثيق الحسابات، وبوابة الضمان المالي ومكافحة الخلافات.</p>
+                            <p class="card-desc" data-lang="en"><strong>Scope:</strong> Admin Panel lead & Security gatekeeper. Directs central Admin cockpit, escrow wallet operations, and KYC rules.</p>
+                            <div style="font-size:0.8rem; margin-top:0.75rem; color:var(--text-secondary); background:rgba(255,255,255,0.02); padding:0.5rem; border-radius:8px;">
+                                <div data-lang="ar">✓ <strong>Frontend:</strong> 16 مهمة (لوحة الأدمن كاملة، معالجات النزاع والتأمين)</div>
+                                <div data-lang="en">✓ <strong>Frontend:</strong> 16 tasks (Central Admin Workstation, Disputes UI)</div>
+                                <div data-lang="ar">✓ <strong>Backend:</strong> 19 مهمة (المصادقة، إدارة KYC، محرك الضمان والنزاع)</div>
+                                <div data-lang="en">✓ <strong>Backend:</strong> 19 tasks (Auth system, KYC verification, Payments)</div>
+                            </div>
+                        </div>
+                        
+                        <div class="glass-card" style="border-top: 3px solid var(--color-orange)">
+                            <div class="card-icon" style="color:var(--color-orange)">
+                                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                            </div>
+                            <h3 class="card-title" data-lang="ar">🟠 Ahmed (30 مهمة)</h3>
+                            <h3 class="card-title" data-lang="en">🟠 Ahmed (30 Tasks)</h3>
+                            <p class="card-desc" data-lang="ar"><strong>المسؤولية:</strong> قائد واجهات الملاك وإدراج المعدات، ومسؤول كتالوج الأصول والعقود الرقمية والتقييمات.</p>
+                            <p class="card-desc" data-lang="en"><strong>Scope:</strong> Owner Panel lead & Legal architect. Focuses on Multi-step AddEquipment wizard, active availability, and contracts.</p>
+                            <div style="font-size:0.8rem; margin-top:0.75rem; color:var(--text-secondary); background:rgba(255,255,255,0.02); padding:0.5rem; border-radius:8px;">
+                                <div data-lang="ar">✓ <strong>Frontend:</strong> 18 مهمة (لوحات الملاك، خطوات الإضافة، الطلبات الواردة)</div>
+                                <div data-lang="en">✓ <strong>Frontend:</strong> 18 tasks (Owner panel, AddEquipment wizard, Requests)</div>
+                                <div data-lang="ar">✓ <strong>Backend:</strong> 12 مهمة (المعدات والتوفر، صياغة وتوقيع العقود، المراجعات)</div>
+                                <div data-lang="en">✓ <strong>Backend:</strong> 12 tasks (Equipment catalogs, active schedules, Contracts)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="slide-footer">
+                    <div class="footer-logo">RentFlow <span>•</span> ERP</div>
+                    <div>Slide 10 / 14</div>
+                </div>
+            </div>
+
+
+            <!-- SLIDE 11: DEVELOPMENT TIMELINE (مراحل إنجاز المشروع) -->
+            <div class="slide" id="slide11">
+                <div class="slide-header">
+                    <div class="slide-title-area">
+                        <div class="slide-logo-badge"></div>
+                        <h2 class="slide-title" data-lang="ar">الخطة الزمنية ومراحل إنجاز المشروع (Sprints)</h2>
+                        <h2 class="slide-title" data-lang="en">Development Roadmap & Sprint Schedule</h2>
+                    </div>
+                    <span class="slide-tag" data-lang="ar">خطة التطوير</span>
+                    <span class="slide-tag" data-lang="en">Project Milestones</span>
+                </div>
+                
+                <div class="slide-body">
+                    <p class="lead" data-lang="ar">تم تقسيم التطوير والاختبار إلى 4 دورات برمجية (Sprints) متكاملة لضمان استقرار العمليات وتفادي تداخل التعليمات البرمجية.</p>
+                    <p class="lead" data-lang="en">Executing 4 structured, continuous development sprints, maximizing velocity while mitigating code collision risks.</p>
+                    
+                    <div class="grid-4">
+                        <div class="glass-card" style="border-top: 2px solid var(--color-blue)">
+                            <h4 style="color:var(--color-blue); margin-bottom:0.5rem;" data-lang="ar">Sprint 1: البنية الأساسية</h4>
+                            <h4 style="color:var(--color-blue); margin-bottom:0.5rem;" data-lang="en">Sprint 1: Core Schema</h4>
+                            <p class="card-desc" style="font-size:0.8rem;" data-lang="ar">تأسيس قوالب المشروع، وتصميم وكتابة كافة جداول قاعدة البيانات والـ Migrations وتعريف النماذج والعلاقات.</p>
+                            <p class="card-desc" style="font-size:0.8rem;" data-lang="en">Scaffolding environments, executing database migrations, and building core Eloquent models and relational mappings.</p>
+                        </div>
+                        
+                        <div class="glass-card" style="border-top: 2px solid var(--color-purple)">
+                            <h4 style="color:var(--color-purple); margin-bottom:0.5rem;" data-lang="ar">Sprint 2: منطق الأعمال</h4>
+                            <h4 style="color:var(--color-purple); margin-bottom:0.5rem;" data-lang="en">Sprint 2: Domain Actions</h4>
+                            <p class="card-desc" style="font-size:0.8rem;" data-lang="ar">كتابة العمليات الخلفية (Actions) المعزولة لعمليات الحجز، تجميد مبالغ الضمان (Escrow)، فحص المعدات وإدارة التوفر.</p>
+                            <p class="card-desc" style="font-size:0.8rem;" data-lang="en">Programming business logic actions, escrow deposits, availability rules, and digital handover report scripts.</p>
+                        </div>
+                        
+                        <div class="glass-card" style="border-top: 2px solid var(--color-emerald)">
+                            <h4 style="color:var(--color-emerald); margin-bottom:0.5rem;" data-lang="ar">Sprint 3: الصلاحيات والـ APIs</h4>
+                            <h4 style="color:var(--color-emerald); margin-bottom:0.5rem;" data-lang="en">Sprint 3: Gateways & APIs</h4>
+                            <p class="card-desc" style="font-size:0.8rem;" data-lang="ar">ربط بوابات التحكم والـ Controllers والتحقق الأمني عبر الـ Policies، وتطوير خوارزميات صرف الأرباح والإشعارات.</p>
+                            <p class="card-desc" style="font-size:0.8rem;" data-lang="en">Linking resource controllers, security policy gates, audit log systems, and shared real-time notifications.</p>
+                        </div>
+                        
+                        <div class="glass-card" style="border-top: 2px solid var(--color-orange)">
+                            <h4 style="color:var(--color-orange); margin-bottom:0.5rem;" data-lang="ar">Sprint 4: الواجهات والتكامل</h4>
+                            <h4 style="color:var(--color-orange); margin-bottom:0.5rem;" data-lang="en">Sprint 4: UI Assembly</h4>
+                            <p class="card-desc" style="font-size:0.8rem;" data-lang="ar">تصميم واجهات الأدمن، المستأجر والملاك وتكامل البيانات عبر Inertia.js في تطبيق SPA واحد غاية في السلاسة.</p>
+                            <p class="card-desc" style="font-size:0.8rem;" data-lang="en">Designing reactive front-end dashboards (Admin, Tenant, Owner) and integrating systems via fluid Inertia.js.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="slide-footer">
+                    <div class="footer-logo">RentFlow <span>•</span> ERP</div>
+                    <div>Slide 11 / 14</div>
+                </div>
+            </div>
+
+
+            <!-- SLIDE 12: INTERACTIVE ERP MODULE PREVIEWS (واجهات وأقسام المنصة) -->
+            <div class="slide" id="slide12">
+                <div class="slide-header">
+                    <div class="slide-title-area">
+                        <div class="slide-logo-badge"></div>
+                        <h2 class="slide-title" data-lang="ar">واجهات ولوحات تحكم نظام رينت فلو</h2>
+                        <h2 class="slide-title" data-lang="en">Interactive ERP Dashboard Modules</h2>
+                    </div>
+                    <span class="slide-tag" data-lang="ar">واجهات النظام</span>
+                    <span class="slide-tag" data-lang="en">ERP UI Mockups</span>
+                </div>
+                
+                <div class="slide-body">
+                    <div class="interface-grid">
+                        <div class="interface-menu">
+                            <button class="interface-menu-btn active" onclick="switchInterface(0)">
+                                <span data-lang="ar">لوحة إدارة مدفوعات الملاك</span>
+                                <span data-lang="en">Owner Payout Panel</span>
+                            </button>
+                            <button class="interface-menu-btn" onclick="switchInterface(1)">
+                                <span data-lang="ar">بوابة التحقق والـ KYC</span>
+                                <span data-lang="en">KYC Verification Gate</span>
+                            </button>
+                            <button class="interface-menu-btn" onclick="switchInterface(2)">
+                                <span data-lang="ar">فحص وتسليم المعدات</span>
+                                <span data-lang="en">Handover & Inspection</span>
+                            </button>
+                            <button class="interface-menu-btn" onclick="switchInterface(3)">
+                                <span data-lang="ar">منطقة فصل النزاعات</span>
+                                <span data-lang="en">Escrow & Disputes Hub</span>
+                            </button>
+                            <button class="interface-menu-btn" onclick="switchInterface(4)">
+                                <span data-lang="ar">محرك البحث والحجز المباشر</span>
+                                <span data-lang="en">Renters Booking Desk</span>
+                            </button>
+                        </div>
+                        
+                        <div class="interface-preview">
+                            <!-- Owner Payout -->
+                            <div class="preview-pane active" id="int0">
+                                <div>
+                                    <h4 class="card-title" data-lang="ar">إدارة الأرباح وقنوات السداد للملاك</h4>
+                                    <h4 class="card-title" data-lang="en">Owner Earnings & Card Ledger</h4>
+                                    <p class="card-desc" data-lang="ar">تتبع أرباح المالك التفصيلية، إمكانية ربط حسابات بنكية وبطاقات متعددة وتعيين قناة سداد افتراضية (Default) لسحب الأموال.</p>
+                                    <p class="card-desc" data-lang="en">Allows equipment owners to sync multiple payout methods, manage cards, toggle defaults, and check analytics with zero delay.</p>
+                                </div>
+                                <div class="mockup-window">
+                                    <div class="mockup-header">
+                                        <span class="mockup-dot" style="background:#ef4444"></span>
+                                        <span class="mockup-dot" style="background:#f59e0b"></span>
+                                        <span class="mockup-dot" style="background:#10b981"></span>
+                                    </div>
+                                    <div class="mockup-body">
+                                        <div>[Owner Payout Ledger]</div>
+                                        <div>Total Balance: $14,950.00</div>
+                                        <div>Default Card: VISA (•••• 4022) [Active]</div>
+                                        <div style="color:var(--color-emerald)">✓ Sync success. Next payout scheduled for tomorrow.</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- KYC -->
+                            <div class="preview-pane" id="int1">
+                                <div>
+                                    <h4 class="card-title" data-lang="ar">توثيق وفحص هوية المستأجرين</h4>
+                                    <h4 class="card-title" data-lang="en">Secure KYC Identity Verification</h4>
+                                    <p class="card-desc" data-lang="ar">بوابة مسح ورفع البطاقة الشخصية، جواز السفر، والسجلات التجارية للشركات والتحقق التلقائي للحد من مخاطر سرقة المعدات.</p>
+                                    <p class="card-desc" data-lang="en">Scans passports, business licenses, and ID cards. Integrates real-time verification status filters before release approval.</p>
+                                </div>
+                                <div class="mockup-window">
+                                    <div class="mockup-header">
+                                        <span class="mockup-dot" style="background:#ef4444"></span>
+                                        <span class="mockup-dot" style="background:#f59e0b"></span>
+                                        <span class="mockup-dot" style="background:#10b981"></span>
+                                    </div>
+                                    <div class="mockup-body">
+                                        <div>[KYC Verification Panel]</div>
+                                        <div>Document Uploaded: Commercial_License.pdf</div>
+                                        <div>Status: PENDING ADMIN AUDIT</div>
+                                        <div style="color:var(--color-orange)">⚠ Checking license expiration metrics...</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Handover -->
+                            <div class="preview-pane" id="int2">
+                                <div>
+                                    <h4 class="card-title" data-lang="ar">مستند تسليم ومعاينة المعدات الرقمي</h4>
+                                    <h4 class="card-title" data-lang="en">Dynamic Inspection Checklist</h4>
+                                    <p class="card-desc" data-lang="ar">قائمة معاينة الهيكل الخارجي، الوقود، الأعطال السابقة وأخذ الصور الفورية التي تؤكد حالة المعدة عند الاستلام والرجوع لمنع النزاعات.</p>
+                                    <p class="card-desc" data-lang="en">Brings check-in/check-out list, allows time-stamped damage photo uploads, and issues automated return flags.</p>
+                                </div>
+                                <div class="mockup-window">
+                                    <div class="mockup-header">
+                                        <span class="mockup-dot" style="background:#ef4444"></span>
+                                        <span class="mockup-dot" style="background:#f59e0b"></span>
+                                        <span class="mockup-dot" style="background:#10b981"></span>
+                                    </div>
+                                    <div class="mockup-body">
+                                        <div>[Handover Audit #HO-904]</div>
+                                        <div>- Engine oil status: [OK]</div>
+                                        <div>- Left loader frame crack: [No]</div>
+                                        <div style="color:var(--color-blue)">+ 4 Inspection photos saved to S3 successfully.</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Disputes -->
+                            <div class="preview-pane" id="int3">
+                                <div>
+                                    <h4 class="card-title" data-lang="ar">بوابة إدارة ودائع الضمان وحل النزاعات</h4>
+                                    <h4 class="card-title" data-lang="en">Dispute & Escrow Mediation Console</h4>
+                                    <p class="card-desc" data-lang="ar">حفظ ودائع التأمين في Escrow، وعند تبليغ المالك عن أضرار تفتح حالة نزاع تتيح للأدمن التحكيم وإجراء الخصومات العادلة.</p>
+                                    <p class="card-desc" data-lang="en">Holds security funds in escrow. Enables damage claim creation, evidence uploads, and admin escrow release overrides.</p>
+                                </div>
+                                <div class="mockup-window">
+                                    <div class="mockup-header">
+                                        <span class="mockup-dot" style="background:#ef4444"></span>
+                                        <span class="mockup-dot" style="background:#f59e0b"></span>
+                                        <span class="mockup-dot" style="background:#10b981"></span>
+                                    </div>
+                                    <div class="mockup-body">
+                                        <div>[Escrow Dispute arbitration]</div>
+                                        <div>Claimant: Owner_9918 (Machinery Inc)</div>
+                                        <div>Reason: Hydraulics Overheating / Damage</div>
+                                        <div style="color:var(--color-rose)">▶ HOLDING SECURITY ESCROW DEPOSIT ($500.00)</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Booking Desk -->
+                            <div class="preview-pane" id="int4">
+                                <div>
+                                    <h4 class="card-title" data-lang="ar">تصفح المعدات وحجز المعدات للمستأجر</h4>
+                                    <h4 class="card-title" data-lang="en">Renters Real-time Fleet Booking</h4>
+                                    <p class="card-desc" data-lang="ar">بوابة تصفح تفاعلية للمستأجرين، تظهر التوفر الفعلي للمعدات على التقويم، الأسعار الدقيقة، وحساب التأمين اللازم ومسار الطلب.</p>
+                                    <p class="card-desc" data-lang="en">Allows tenants to navigate machinery listings, verify calendared dates, check active rates, and process deposit checkouts.</p>
+                                </div>
+                                <div class="mockup-window">
+                                    <div class="mockup-header">
+                                        <span class="mockup-dot" style="background:#ef4444"></span>
+                                        <span class="mockup-dot" style="background:#f59e0b"></span>
+                                        <span class="mockup-dot" style="background:#10b981"></span>
+                                    </div>
+                                    <div class="mockup-body">
+                                        <div>[Fleet Booking Scheduler]</div>
+                                        <div>Selected: CAT 320 Heavy Excavator</div>
+                                        <div>Duration: 2026/06/01 to 2026/06/10</div>
+                                        <div style="color:var(--color-orange)">▶ Escrow hold calculation: $120.00/day + $300 deposit.</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="slide-footer">
+                    <div class="footer-logo">RentFlow <span>•</span> ERP</div>
+                    <div>Slide 12 / 14</div>
+                </div>
+            </div>
+
+
+            <!-- SLIDE 13: DESIGN & UX PHILOSOPHY (فلسفة التصميم وتجربة المستخدم) -->
+            <div class="slide" id="slide13">
+                <div class="slide-header">
+                    <div class="slide-title-area">
+                        <div class="slide-logo-badge"></div>
+                        <h2 class="slide-title" data-lang="ar">فلسفة التصميم وتجربة المستخدم بنظام رينت فلو</h2>
+                        <h2 class="slide-title" data-lang="en">Design System & UX Philosophy</h2>
+                    </div>
+                    <span class="slide-tag" data-lang="ar">جماليات الواجهة</span>
+                    <span class="slide-tag" data-lang="en">UI Aesthetics</span>
+                </div>
+                
+                <div class="slide-body">
+                    <p class="lead" data-lang="ar">تم صقل الواجهات بأسلوب تصميم صناعي راقٍ يركز على تيسير إدارة العمليات الميدانية والمالية المعقدة.</p>
+                    <p class="lead" data-lang="en">A rugged industrial-theme design system combining dark aesthetics with vibrant orange/amber accents.</p>
+                    
+                    <div class="grid-2">
+                        <div class="glass-card">
+                            <div class="card-icon" style="color:var(--color-orange)">
+                                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-3.09"/></svg>
+                            </div>
+                            <h3 class="card-title" data-lang="ar">جماليات التصميم الصناعي المتين</h3>
+                            <h3 class="card-title" data-lang="en">Premium Rugged Industrial Theme</h3>
+                            <p class="card-desc" data-lang="ar">مزج الوضع الداكن الفخم مع تدرجات اللون البرتقالي والأصفر الجريء الذي يرمز للآليات والمعدات الثقيلة، مريح للعين في بيئات العمل الطويلة.</p>
+                            <p class="card-desc" data-lang="en">Premium dark obsidian canvas mapping bright machinery orange warnings and deep ERP analytics blue, easing ocular fatigue for site managers.</p>
+                        </div>
+                        
+                        <div class="glass-card">
+                            <div class="card-icon" style="color:var(--color-blue)">
+                                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                            </div>
+                            <h3 class="card-title" data-lang="ar">مرونة وتدفق بيانات فوري (Inertia.js)</h3>
+                            <h3 class="card-title" data-lang="en">Fluid Dynamic Response</h3>
+                            <p class="card-desc" data-lang="ar">التكامل العميق بين Backend و React عبر Inertia.js يلغي عمليات إعادة تحميل الصفحات، مما يجعل حفظ المعاينات والودائع فورياً.</p>
+                            <p class="card-desc" data-lang="en">Deep integration between Laravel and React using Inertia.js ensures absolute SPA speed, making database writes feel instantaneous.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="slide-footer">
+                    <div class="footer-logo">RentFlow <span>•</span> ERP</div>
+                    <div>Slide 13 / 14</div>
+                </div>
+            </div>
+
+
+            <!-- SLIDE 14: CONCLUSION (الخاتمة والتطلعات) -->
+            <div class="slide welcome-slide" id="slide14">
+                <div class="welcome-logo-container">
+                    <div class="welcome-pulse" style="background:radial-gradient(circle, rgba(37,99,235,0.2) 0%, transparent 70%)"></div>
+                    <div class="welcome-logo" style="background:var(--gradient-accent)">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                        </svg>
+                    </div>
+                </div>
+                
+                <div data-lang="ar">
+                    <h1 class="welcome-title">الخاتمة والتطلعات المستقبلية</h1>
+                    <h2 class="welcome-subtitle">نحو سوق تأجير معدات ذكي، آمن ومؤتمت</h2>
+                    <p class="welcome-desc">تعد منصة رينت فلو قفزة استراتيجية لتنظيم حركة تأجير الآليات والأصول التجارية بالقطاع، حيث نطمح في خطواتنا اللاحقة للتكامل التام مع بوابات الدفع الوطنية وشبكات الملاحة الذكية لتتبع المعدات جغرافياً ولحظياً.</p>
+                </div>
+                
+                <div data-lang="en">
+                    <h1 class="welcome-title">Conclusion & Strategic Vision</h1>
+                    <h2 class="welcome-subtitle">A Smart, Automated Ecosystem for Logistics</h2>
+                    <p class="welcome-desc">RentFlow represents a monumental evolutionary step in optimizing heavy equipment logistics. Our strategic future targets real-time geolocation fleet telematics and full integration with national commercial banking APIs.</p>
+                </div>
+
+                <div class="welcome-badge" style="border-color:rgba(37,99,235,0.2)">
+                    <span style="background:var(--color-blue); box-shadow:0 0 8px var(--color-blue)"></span>
+                    <div data-lang="ar">نشكركم على اهتمامكم وحسن استماعكم! • رينت فلو 2026</div>
+                    <div data-lang="en">Thank you very much for your attention! • RentFlow Team 2026</div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Floating Navigation Controls Bar -->
+    <div class="controls-bar">
+        
+        <!-- Left Side: Nav Buttons & Page count -->
+        <div class="nav-buttons">
+            <button class="nav-btn" onclick="prevSlide()" title="السابق / Previous">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+            </button>
+            <button class="nav-btn" onclick="nextSlide()" title="التالي / Next">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"/></svg>
+            </button>
+            
+            <div class="nav-dots" id="navDots">
+                <!-- Dots will be populated by JS -->
+            </div>
+        </div>
+
+        <!-- Right Side: Utility Buttons (Language, Fullscreen, PDF Print) -->
+        <div class="utility-buttons">
+            <button class="util-btn" onclick="toggleLanguage()">
+                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5c-.321 2.624-1.807 5.14-4.339 6.543m3.088-3.543A8.995 8.995 0 018 9.5M3 19h7"/></svg>
+                <span data-lang="ar">English</span>
+                <span data-lang="en">العربية</span>
+            </button>
+            
+            <button class="util-btn" onclick="exportPDF()" title="تحميل ملف PDF ملخص">
+                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                <span data-lang="ar">تصدير PDF</span>
+                <span data-lang="en">Export PDF</span>
+            </button>
+            
+            <button class="util-btn" onclick="toggleFullscreen()">
+                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 8V4m0 0h4M4 4l5 5m11-5h-4m4 0v4m0-4l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>
+                <span data-lang="ar">شاشة كاملة</span>
+                <span data-lang="en">Fullscreen</span>
+            </button>
+        </div>
+
+    </div>
+
+    <!-- Slideshow Control Logic -->
+    <script>
+        let currentSlideIndex = 0;
+        const slides = document.querySelectorAll('.slide');
+        const progressLine = document.getElementById('progressLine');
+        const navDotsContainer = document.getElementById('navDots');
+        let currentLang = 'ar';
+
+        // Setup dots dynamically
+        function setupDots() {
+            navDotsContainer.innerHTML = '';
+            slides.forEach((slide, index) => {
+                const dot = document.createElement('div');
+                dot.className = `nav-dot ${index === 0 ? 'active' : ''}`;
+                dot.addEventListener('click', () => jumpToSlide(index));
+                navDotsContainer.appendChild(dot);
+            });
+        }
+
+        // Jump to a specific slide
+        function jumpToSlide(index) {
+            if (index < 0 || index >= slides.length) return;
+            
+            // Remove active classes
+            slides[currentSlideIndex].classList.remove('active');
+            slides[currentSlideIndex].classList.remove('exit-left');
+            slides[currentSlideIndex].classList.remove('exit-right');
+            
+            if (index > currentSlideIndex) {
+                // Moving forward
+                slides[currentSlideIndex].classList.add('exit-left');
+            } else {
+                // Moving backward
+                slides[currentSlideIndex].classList.add('exit-right');
+            }
+            
+            currentSlideIndex = index;
+            
+            // Activate new slide
+            slides[currentSlideIndex].classList.remove('exit-left');
+            slides[currentSlideIndex].classList.remove('exit-right');
+            slides[currentSlideIndex].classList.add('active');
+            
+            // Update dots
+            const dots = document.querySelectorAll('.nav-dot');
+            dots.forEach((dot, idx) => {
+                if (idx === currentSlideIndex) {
+                    dot.classList.add('active');
+                } else {
+                    dot.classList.remove('active');
+                }
+            });
+            
+            // Update progress bar at the top
+            const percentage = ((currentSlideIndex + 1) / slides.length) * 100;
+            progressLine.style.width = `${percentage}%`;
+        }
+
+        function nextSlide() {
+            if (currentSlideIndex < slides.length - 1) {
+                jumpToSlide(currentSlideIndex + 1);
+            } else {
+                // Cycle back to slide 1
+                jumpToSlide(0);
+            }
+        }
+
+        function prevSlide() {
+            if (currentSlideIndex > 0) {
+                jumpToSlide(currentSlideIndex - 1);
+            } else {
+                // Cycle to last slide
+                jumpToSlide(slides.length - 1);
+            }
+        }
+
+        // Keyboard Controls
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') {
+                if (currentLang === 'ar') nextSlide(); else prevSlide();
+            } else if (e.key === 'ArrowRight') {
+                if (currentLang === 'ar') prevSlide(); else nextSlide();
+            } else if (e.key === ' ' || e.key === 'Enter') {
+                nextSlide();
+                e.preventDefault();
+            } else if (e.key === 'Backspace') {
+                prevSlide();
+                e.preventDefault();
+            }
+        });
+
+        // Toggle Language
+        function toggleLanguage() {
+            const body = document.body;
+            const html = document.documentElement;
+            
+            if (currentLang === 'ar') {
+                currentLang = 'en';
+                body.className = 'lang-en';
+                html.lang = 'en';
+                html.dir = 'ltr';
+            } else {
+                currentLang = 'ar';
+                body.className = 'lang-ar';
+                html.lang = 'ar';
+                html.dir = 'rtl';
+            }
+            
+            // Re-render slider styles
+            jumpToSlide(currentSlideIndex);
+        }
+
+        // Toggle Fullscreen
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.log(`Error attempting to enable full-screen mode: ${err.message}`);
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        // Export/Print PDF
+        function exportPDF() {
+            window.print();
+        }
+
+        // Interactive Slide 8 (Diagrams) Switcher
+        function switchDiagram(index) {
+            const panes = document.querySelectorAll('.diagram-pane');
+            const tabs = document.querySelectorAll('.diagram-tab');
+            
+            panes.forEach((pane, idx) => {
+                if (idx === index) {
+                    pane.classList.add('active');
+                    tabs[idx].classList.add('active');
+                } else {
+                    pane.classList.remove('active');
+                    tabs[idx].classList.remove('active');
+                }
+            });
+        }
+
+        // Interactive Slide 9 (Algorithms) Switcher
+        function switchAlgo(index) {
+            const panes = document.querySelectorAll('.algo-content-pane');
+            const btns = document.querySelectorAll('.algo-btn');
+            
+            panes.forEach((pane, idx) => {
+                if (idx === index) {
+                    pane.classList.add('active');
+                    btns[idx].classList.add('active');
+                } else {
+                    pane.classList.remove('active');
+                    btns[idx].classList.remove('active');
+                }
+            });
+        }
+
+        // Interactive Slide 10 (Interfaces) Switcher
+        function switchInterface(index) {
+            const panes = document.querySelectorAll('.preview-pane');
+            const btns = document.querySelectorAll('.interface-menu-btn');
+            
+            panes.forEach((pane, idx) => {
+                if (idx === index) {
+                    pane.classList.add('active');
+                    btns[idx].classList.add('active');
+                } else {
+                    pane.classList.remove('active');
+                    btns[idx].classList.remove('active');
+                }
+            });
+        }
+
+        // Initialize presentation
+        setupDots();
+        jumpToSlide(0);
+    </script>
+</body>
+</html>
