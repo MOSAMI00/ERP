@@ -1,10 +1,9 @@
 import { useRef, useState } from 'react';
-import { useForm, usePage } from '@inertiajs/react';
+import { useForm } from '@inertiajs/react';
 import { Camera, CheckCircle } from 'lucide-react';
 
-export function ProfileForm() {
-  const { props } = usePage();
-  const user = props.auth?.user ?? {};
+export function ProfileForm({ auth }) {
+  const user = auth?.user ?? {};
   const [saved, setSaved] = useState(false);
   const fileRef = useRef(null);
 

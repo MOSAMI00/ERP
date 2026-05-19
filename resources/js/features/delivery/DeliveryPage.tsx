@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { usePage, router } from '@inertiajs/react';
+import { router } from '@inertiajs/react';
 
 import {
   EmptyState,
@@ -218,7 +218,7 @@ function getWorkflowStage(rental, reports, handover) {
   const ownerReturn = reports.some((report) => enumValue(report.phase) === 'return' && enumValue(report.submitted_by_role ?? report.submittedByRole) === 'owner');
 
   if (status === 'confirmed') return 'awaiting_payment';
-  
+
   if (status === 'paid' && !ownerDelivery) return 'delivery';
   if (status === 'paid' && ownerDelivery && !tenantDelivery) return 'handover';
   if (status === 'in_use' && !tenantReturn) return 'in_use';
@@ -245,18 +245,25 @@ function getFormSpec({ role, stage }) {
 
 // ─── Main Page ───────────────────────────────────────────────────────────────
 
-export default function DeliveryPage({ role: roleProp }) {
-  const { props } = usePage();
-  const user = (props.auth as any)?.user ?? null;
+export default function DeliveryPage({
+  role: roleProp,
+  rentals: propRentals,
+  handover_reports: propHandoverReports,
+  disputes: propDisputes,
+  compensations: propCompensations,
+  reviews: propReviews,
+  auth,
+}: any) {
+  const user = auth?.user ?? null;
   const role = roleProp || user?.type || 'tenant';
   const config = getDeliveryConfig(role);
   const userId = user?.id;
 
-  const rentals = (props.rentals as any[]) ?? [];
-  const handoverReports = (props.handover_reports as any[]) ?? [];
-  const allDisputes = (props.disputes as any[]) ?? [];
-  const allCompensations = (props.compensations as any[]) ?? [];
-  const allReviews = (props.reviews as any[]) ?? [];
+  const rentals = (propRentals ?? (props as any).rentals ?? []) as any[];
+  const handoverReports = (propHandoverReports ?? (props as any).handover_reports ?? []) as any[];
+  const allDisputes = (propDisputes ?? (props as any).disputes ?? []) as any[];
+  const allCompensations = (propCompensations ?? (props as any).compensations ?? []) as any[];
+  const allReviews = (propReviews ?? (props as any).reviews ?? []) as any[];
 
   const routeRentalId = new URLSearchParams(window.location.search).get('id');
 
@@ -277,7 +284,7 @@ export default function DeliveryPage({ role: roleProp }) {
     return normalizedRentals.map((rental) => {
       const rentalReports = handoverReports.filter(h => relationId(h, 'rental_op_id') === rental.id);
       const rawComp = allCompensations.find(c => (c.rental_op_id ?? c.rentalId) === rental.id) || (rental.equipment_handover ?? rental.equipmentHandover);
-      
+
       const comp = rawComp ? {
         ...rawComp,
         status: enumValue(rawComp.owner_decision ?? rawComp.ownerDecision ?? rawComp.status),
@@ -285,7 +292,7 @@ export default function DeliveryPage({ role: roleProp }) {
         rentalStatus: rental.status,
         dispute: rawComp.dispute,
       } : null;
-      
+
       return {
         ...rental,
         workflowStage: getWorkflowStage(rental, rentalReports, comp),
@@ -305,17 +312,17 @@ export default function DeliveryPage({ role: roleProp }) {
 
   const reports = selectedRental ? handoverReports.filter(h => relationId(h, 'rental_op_id') === selectedRental.id) : [];
   const disputes = selectedRental ? allDisputes.filter(d => relationId(d, 'rental_op_id') === selectedRental.id).map(normalizeDisputeForDelivery) : [];
-  
-  const rawCompensation = selectedRental 
-    ? (allCompensations.find(c => (c.rental_op_id ?? c.rentalId) === selectedRental.id) 
-       || (selectedRental.equipment_handover ?? selectedRental.equipmentHandover)) 
+
+  const rawCompensation = selectedRental
+    ? (allCompensations.find(c => (c.rental_op_id ?? c.rentalId) === selectedRental.id)
+      || (selectedRental.equipment_handover ?? selectedRental.equipmentHandover))
     : undefined;
 
   const compensation = useMemo(() => {
     if (!rawCompensation || !selectedRental) return undefined;
     return normalizeCompensationForDelivery(rawCompensation, selectedRental, reports, disputes);
   }, [rawCompensation, selectedRental, reports, disputes]);
-  
+
   const ownerReturnReport = reports.find((report) => enumValue(report.phase) === 'return' && enumValue(report.submitted_by_role ?? report.submittedByRole) === 'owner');
   const selectedStage = selectedRental?.workflowStage || 'delivery';
   const formSpec = getFormSpec({ role, stage: selectedStage });
@@ -386,7 +393,7 @@ export default function DeliveryPage({ role: roleProp }) {
 
     if (action === 'skip') {
       if (!confirm('هل أنت متأكد أنك لا تريد طلب تعويض؟ سيتم إكمال العملية وإعادة مبلغ التأمين للمستأجر.')) return;
-      
+
       setIsSubmittingCompensation(true);
       router.post(`/equipment-handovers/${handover.id}/decide`, {
         owner_decision: 'full_refund',

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, router, usePage } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import {
   AlertCircle,
   ArrowRight,
@@ -174,8 +174,7 @@ function PeopleCard({ rental, isOwner }: { rental: any; isOwner: boolean }) {
   );
 }
 
-export default function RentalDetailsPage() {
-  const { rental, auth } = usePage<any>().props;
+export default function RentalDetailsPage({ rental, auth }: any) {
   const user = auth?.user;
   const isOwner = Number(user?.id) === Number(rental.owner_id);
   const isTenant = Number(user?.id) === Number(rental.tenant_id);

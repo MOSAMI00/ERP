@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { useForm, usePage } from '@inertiajs/react';
+import { useForm } from '@inertiajs/react';
 import { CartHeader } from './ui/Header';
 import { Stepper } from './ui/Stepper';
 import { ReviewItems } from './StepContent/ReviewItems';
@@ -7,8 +7,7 @@ import { DeliveryForm } from './StepContent/DeliveryForm';
 import { ContractSigning } from './StepContent/ContractSigning';
 import { SummarySidebar } from './SummarySidebar/SummarySidebar';
 
-export default function CartPage() {
-  const { props } = usePage<any>();
+export default function CartPage({ cart_items, contract_template, contract_variables }: any) {
   const [removedIds, setRemovedIds] = useState<any[]>([]);
   const [deliveryError, setDeliveryError] = useState('');
 
@@ -29,8 +28,8 @@ export default function CartPage() {
     owner: queryParams.get('owner_name'),
   } : null;
 
-  const cartItems = (props.cart_items && props.cart_items.length > 0
-    ? props.cart_items
+  const cartItems = (cart_items && cart_items.length > 0
+    ? cart_items
     : (queryItem ? [queryItem] : [])
   ).filter((item) => !removedIds.includes(item.id));
   const [currentStep, setCurrentStep] = useState(1);
@@ -66,9 +65,9 @@ export default function CartPage() {
   ].filter(Boolean).join(' - ');
 
   const contractBody = useMemo(() => {
-    const template = props.contract_template;
+    const template = contract_template;
     const variables = {
-      ...(props.contract_variables ?? {}),
+      ...(contract_variables ?? {}),
       issued_at: new Date().toISOString().slice(0, 10),
       delivery_location: form.data.delivery_location || buildDeliveryLocation() || '—',
       preferred_time_slot: timeSlotLabels[form.data.time_slot] ?? '—',
@@ -99,7 +98,7 @@ export default function CartPage() {
         .replaceAll(`{{${key}}}`, text)
         .replaceAll(alias ? `{{${alias}}}` : `{{${key}}}`, text);
     }, template);
-  }, [props.contract_template, props.contract_variables, form.data.delivery_info, form.data.delivery_location, form.data.time_slot, rentalCost, deposit]);
+  }, [contract_template, contract_variables, form.data.delivery_info, form.data.delivery_location, form.data.time_slot, rentalCost, deposit]);
 
   const handleDelete = (id) => {
     setRemovedIds((current) => [...current, id]);

@@ -1,12 +1,11 @@
 import { Grid, List as ListIcon } from 'lucide-react';
-import { router, usePage } from '@inertiajs/react';
+import { router } from '@inertiajs/react';
 import Button from '../../../components/ui/Button';
 import SearchInput from '../../../components/ui/SearchInput';
 import Select from '../../../components/ui/Select';
 
-export default function EquipmentFilterBar({ viewMode, setViewMode }) {
-  const { props } = usePage();
-  const filters = props.filters ?? {};
+export default function EquipmentFilterBar({ viewMode, setViewMode, filters: propFilters }) {
+  const filters = propFilters ?? {};
   const requestFilters = (nextFilters) => {
     router.get(route('admin.equipment.index'), nextFilters, {
       preserveState: true,

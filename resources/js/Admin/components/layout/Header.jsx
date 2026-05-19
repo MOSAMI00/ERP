@@ -1,9 +1,8 @@
 import { Bell, ChevronDown, Menu, Search } from 'lucide-react';
 import { usePage } from '@inertiajs/react';
 
-export default function Header({ currentTitle, onOpenSidebar }) {
-  const { props } = usePage();
-  const admin = props.auth.admin || { name: 'Admin', email: '' };
+export default function Header({ currentTitle, onOpenSidebar, auth }) {
+  const admin = auth?.admin || { name: 'Admin', email: '' };
 
   return (
     <header className="h-16 bg-white border-b border-brand-border flex items-center justify-between px-4 lg:px-6 z-10 w-full">

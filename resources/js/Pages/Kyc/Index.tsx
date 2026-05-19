@@ -1,12 +1,11 @@
 import React from 'react';
-import { Head, usePage } from '@inertiajs/react';
+import { Head } from '@inertiajs/react';
 import TenantLayout from '../../Layouts/tenant/TenantLayout';
 import OwnerLayout from '../../Layouts/owner/OwnerLayout';
 import { KYCUploaders } from '../../features/settings/ui/KYCUploaders';
 
-export default function KycIndex() {
-  const { props } = usePage();
-  const role = props.auth?.user?.type || 'tenant';
+export default function KycIndex({ auth }: any) {
+  const role = auth?.user?.type || 'tenant';
 
   return (
     <>

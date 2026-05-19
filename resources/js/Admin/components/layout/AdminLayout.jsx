@@ -21,8 +21,7 @@ const navItems = [
   { path: route('admin.settings.index'), label: 'الإعدادات', icon: Settings },
 ];
 
-export default function AdminLayout({ children }) {
-  const { url } = usePage();
+export default function AdminLayout({ children, url }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const currentTitle = navItems.find(item => url.startsWith(new URL(item.path, window.location.origin).pathname))?.label || 'الرئيسية';
 

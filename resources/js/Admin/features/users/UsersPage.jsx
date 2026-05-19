@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { usePage } from '@inertiajs/react';
+// import { usePage } from '@inertiajs/react';
 import UsersFilterBar from './components/UsersFilterBar';
 import UsersTable from './components/UsersTable';
 import UserDrawer from './components/UserDrawer';
@@ -8,12 +8,11 @@ import useDrawer from '../../hooks/useDrawer';
 import useModal from '../../hooks/useModal';
 import { asArray, normalizeUser, paginator } from '../../../utils/pageData';
 
-export default function UsersPage() {
-  const { props } = usePage();
+export default function UsersPage({ users: rawUsers, filters }) {
   const drawer = useDrawer();
   const modal = useModal();
   const [actionType, setActionType] = useState('warn');
-  const users = asArray(props.users).map((user) => {
+  const users = asArray(rawUsers).map((user) => {
     const normalized = normalizeUser(user);
     return {
       ...normalized,
@@ -31,8 +30,8 @@ export default function UsersPage() {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500 relative">
-      <UsersFilterBar />
-      <UsersTable users={users} pagination={paginator(props.users)} onOpenDrawer={drawer.open} onOpenActionModal={openActionModal} />
+      <UsersFilterBar filters={filters} />
+      <UsersTable users={users} pagination={paginator(rawUsers)} onOpenDrawer={drawer.open} onOpenActionModal={openActionModal} />
       <UserDrawer isOpen={drawer.isOpen} user={drawer.selectedItem} onClose={drawer.close} onOpenActionModal={openActionModal} />
       <UserActionModal isOpen={modal.isOpen} user={modal.selectedItem} actionType={actionType} setActionType={setActionType} onClose={modal.close} />
     </div>

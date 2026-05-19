@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { usePage } from '@inertiajs/react';
+
 import {
   AppInput,
   EmptyState,
@@ -91,16 +91,16 @@ function normalizeInsuranceRows({ rentals, policies, role }) {
   });
 }
 
-export default function InsurancePage({ role: roleProp }) {
-  const { props } = usePage();
-  const user = props.auth?.user ?? null;
+export default function InsurancePage({ role: roleProp, rentals: propRentals, insurance_policies: propPolicies, auth }: any) {
+  const user = auth?.user ?? null;
   const role = roleProp || user?.type || 'tenant';
   const config = getInsuranceConfig(role);
   const rows = normalizeInsuranceRows({
-    rentals: props.rentals ?? [],
-    policies: props.insurance_policies ?? [],
+    rentals: propRentals ?? [],
+    policies: propPolicies ?? [],
     role,
   });
+
   const [activeTab, setActiveTab] = useState('all');
   const [search, setSearch] = useState('');
 

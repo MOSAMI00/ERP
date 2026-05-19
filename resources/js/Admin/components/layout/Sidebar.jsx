@@ -1,9 +1,8 @@
 import { Link, router, usePage } from "@inertiajs/react";
 import { LogOut, X } from "lucide-react";
 
-export default function Sidebar({ isSidebarOpen, onClose, navItems }) {
-  const { url, props } = usePage();
-  const admin = props.auth.admin || { role: 'Admin' };
+export default function Sidebar({ isSidebarOpen, onClose, navItems, url, auth }) {
+  const admin = auth?.admin || { role: 'Admin' };
 
   return (
     <aside
