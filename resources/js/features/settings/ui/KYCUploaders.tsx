@@ -37,7 +37,7 @@ export function KYCUploaders({ kyc_documents: propDocs, kyc_status: propStatus, 
         if (file) {
             const reader = new FileReader();
             reader.onloadend = () => {
-                setPreviews(prev => ({ ...prev, [type]: reader.result }));
+                setPreviews(prev => ({ ...prev, [type]: reader.result as string | null }));
             };
             reader.readAsDataURL(file);
         } else {

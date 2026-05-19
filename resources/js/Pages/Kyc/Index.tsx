@@ -4,7 +4,7 @@ import TenantLayout from '../../Layouts/tenant/TenantLayout';
 import OwnerLayout from '../../Layouts/owner/OwnerLayout';
 import { KYCUploaders } from '../../features/settings/ui/KYCUploaders';
 
-export default function KycIndex({ auth }: any) {
+export default function KycIndex({ auth, kyc_documents, kyc_status }: any) {
   const role = auth?.user?.type || 'tenant';
 
   return (
@@ -16,14 +16,14 @@ export default function KycIndex({ auth }: any) {
             <h1 className="text-2xl font-bold text-[#222222]">توثيق الهوية</h1>
             <p className="mt-1 text-sm text-[#888888]">ارفع صور الوثائق المطلوبة ليتم مراجعتها من الإدارة.</p>
           </div>
-          <KYCUploaders />
+          <KYCUploaders auth={auth} kyc_documents={kyc_documents} kyc_status={kyc_status} />
         </div>
       </div>
     </>
   );
 }
 
-KycIndex.layout = (page: React.ReactNode) => {
+KycIndex.layout = (page: any) => {
   const role = page?.props?.auth?.user?.type || 'tenant';
   return role === 'owner' ? <OwnerLayout>{page}</OwnerLayout> : <TenantLayout>{page}</TenantLayout>;
 };

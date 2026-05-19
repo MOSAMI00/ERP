@@ -117,7 +117,7 @@ export default function CartPage({ cart_items, contract_template, contract_varia
   };
 
   const handleDeliveryNext = () => {
-    const info = form.data.delivery_info ?? {};
+    const info = (form.data.delivery_info ?? {}) as any;
     if (!info.governorate || !info.district?.trim() || !info.address?.trim() || !form.data.time_slot) {
       setDeliveryError('جميع بيانات التسليم والوقت المفضل مطلوبة قبل المتابعة للعقد.');
       return;

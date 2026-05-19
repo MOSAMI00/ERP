@@ -259,11 +259,11 @@ export default function DeliveryPage({
   const config = getDeliveryConfig(role);
   const userId = user?.id;
 
-  const rentals = (propRentals ?? (props as any).rentals ?? []) as any[];
-  const handoverReports = (propHandoverReports ?? (props as any).handover_reports ?? []) as any[];
-  const allDisputes = (propDisputes ?? (props as any).disputes ?? []) as any[];
-  const allCompensations = (propCompensations ?? (props as any).compensations ?? []) as any[];
-  const allReviews = (propReviews ?? (props as any).reviews ?? []) as any[];
+  const rentals = (propRentals ?? []) as any[];
+  const handoverReports = (propHandoverReports ?? []) as any[];
+  const allDisputes = (propDisputes ?? []) as any[];
+  const allCompensations = (propCompensations ?? []) as any[];
+  const allReviews = (propReviews ?? []) as any[];
 
   const routeRentalId = new URLSearchParams(window.location.search).get('id');
 
