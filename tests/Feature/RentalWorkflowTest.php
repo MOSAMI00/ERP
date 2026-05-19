@@ -9,8 +9,8 @@ use Carbon\Carbon;
 
 it('completes a full happy path rental workflow', function () {
     // 1. Setup
-    $owner = User::factory()->create(['type' => 'owner']);
-    $tenant = User::factory()->create(['type' => 'tenant']);
+    $owner = User::factory()->create(['type' => 'owner', 'kyc_status' => 'approved']);
+    $tenant = User::factory()->create(['type' => 'tenant', 'kyc_status' => 'approved']);
     
     $equipment = Equipment::factory()->create([
         'owner_id' => $owner->id,
@@ -26,7 +26,8 @@ it('completes a full happy path rental workflow', function () {
         'equipment_id' => $equipment->id,
         'start_date' => $start->format('Y-m-d'),
         'end_date' => $end->format('Y-m-d'),
-        'delivery_location' => '123 Main St',
+        'delivery_location' => '123 Main Street',
+        'time_slot' => 'morning',
     ]);
 
     $response->assertSessionHasNoErrors();
@@ -53,7 +54,7 @@ it('completes a full happy path rental workflow', function () {
     // 5. Payment exists and was processed through workflow
     $payment = $rental->payments()->first();
     expect($payment)->not->toBeNull()
-        ->and($payment->status)->toBe(PaymentStatus::Paid->value);
+        ->and($payment->status)->toBe(PaymentStatus::Paid);
 
     // 6. Delivery Handover — Owner submits first
     $this->actingAs($owner)->post(route('handover-reports.store'), [
@@ -99,8 +100,8 @@ it('completes a full happy path rental workflow', function () {
 });
 
 it('prevents duplicate payments for the same rental', function () {
-    $owner = User::factory()->create(['type' => 'owner']);
-    $tenant = User::factory()->create(['type' => 'tenant']);
+    $owner = User::factory()->create(['type' => 'owner', 'kyc_status' => 'approved']);
+    $tenant = User::factory()->create(['type' => 'tenant', 'kyc_status' => 'approved']);
     $equipment = Equipment::factory()->create(['owner_id' => $owner->id]);
 
     // Create and confirm rental
@@ -109,6 +110,7 @@ it('prevents duplicate payments for the same rental', function () {
         'start_date' => Carbon::tomorrow()->format('Y-m-d'),
         'end_date' => Carbon::tomorrow()->addDays(3)->format('Y-m-d'),
         'delivery_location' => 'Test location',
+        'time_slot' => 'morning',
     ]);
 
     $rental = RentalOperation::first();
@@ -131,8 +133,8 @@ it('prevents duplicate payments for the same rental', function () {
 });
 
 it('prevents cancellation of a rental that is already active', function () {
-    $owner = User::factory()->create(['type' => 'owner']);
-    $tenant = User::factory()->create(['type' => 'tenant']);
+    $owner = User::factory()->create(['type' => 'owner', 'kyc_status' => 'approved']);
+    $tenant = User::factory()->create(['type' => 'tenant', 'kyc_status' => 'approved']);
     $equipment = Equipment::factory()->create(['owner_id' => $owner->id]);
 
     $this->actingAs($tenant)->post(route('rentals.store'), [
@@ -140,6 +142,7 @@ it('prevents cancellation of a rental that is already active', function () {
         'start_date' => Carbon::tomorrow()->format('Y-m-d'),
         'end_date' => Carbon::tomorrow()->addDays(3)->format('Y-m-d'),
         'delivery_location' => 'Test location',
+        'time_slot' => 'morning',
     ]);
 
     $rental = RentalOperation::first();

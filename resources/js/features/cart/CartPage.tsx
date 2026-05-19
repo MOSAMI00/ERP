@@ -11,25 +11,9 @@ export default function CartPage({ cart_items, contract_template, contract_varia
   const [removedIds, setRemovedIds] = useState<any[]>([]);
   const [deliveryError, setDeliveryError] = useState('');
 
-  const queryParams = new URLSearchParams(window.location.search);
-  const queryItem = queryParams.get('equipment_id') ? {
-    id: queryParams.get('equipment_id'),
-    equipment_id: queryParams.get('equipment_id'),
-    startDate: queryParams.get('start_date'),
-    endDate: queryParams.get('end_date'),
-    days: Number(queryParams.get('days')),
-    dailyRate: Number(queryParams.get('daily_rate')),
-    deposit: Number(queryParams.get('deposit')),
-    totalAmount: Number(queryParams.get('total_amount')),
-    name: queryParams.get('equipment_name'),
-    image: queryParams.get('equipment_image'),
-    location: queryParams.get('location'),
-    owner: queryParams.get('owner_name'),
-  } : null;
-
   const cartItems = (cart_items && cart_items.length > 0
     ? cart_items
-    : (queryItem ? [queryItem] : [])
+    : []
   ).filter((item) => !removedIds.includes(item.id));
   const [currentStep, setCurrentStep] = useState(1);
 

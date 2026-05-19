@@ -159,11 +159,13 @@ Route::get('/product/{id}', function ($id) use ($equipmentCard) {
     ]);
 })->name('product.show');
 
-Route::get('/cart', function () {
+Route::get('/cart', function () use ($equipmentCard) {
     $contractTemplate = app(\App\Shared\Settings\PlatformSettingsService::class)->getContractTemplate();
     $contractVariables = null;
+    $cartItems = [];
+
     $equipment = request()->filled('equipment_id')
-        ? EquipmentModel::with('owner')->find(request('equipment_id'))
+        ? EquipmentModel::with(['owner', 'images', 'category'])->find(request('equipment_id'))
         : null;
 
     if ($equipment && request()->user()) {
@@ -174,6 +176,22 @@ Route::get('/cart', function () {
             $durationDays = max(1, \Carbon\Carbon::parse($start)->diffInDays(\Carbon\Carbon::parse($end)));
         }
         $rentalAmount = (float) $equipment->price_per_day * $durationDays;
+        $primaryImage = $equipment->images->firstWhere('is_primary', true) ?? $equipment->images->first();
+
+        $cartItems[] = [
+            'id' => $equipment->id,
+            'equipment_id' => $equipment->id,
+            'name' => $equipment->name,
+            'image' => $primaryImage?->image_url,
+            'location' => $equipment->governorate,
+            'owner' => $equipment->owner?->full_name,
+            'startDate' => $start,
+            'endDate' => $end,
+            'days' => $durationDays,
+            'dailyRate' => (float) $equipment->price_per_day,
+            'deposit' => (float) $equipment->insurance_amount,
+            'totalAmount' => $rentalAmount + (float) $equipment->insurance_amount,
+        ];
 
         $contractVariables = [
             'rental_id' => 'بانتظار الإنشاء',
@@ -191,6 +209,7 @@ Route::get('/cart', function () {
     }
 
     return Inertia::render('features/cart/CartPage', [
+        'cart_items' => $cartItems,
         'contract_template' => $contractTemplate,
         'contract_variables' => $contractVariables,
     ]);
@@ -224,7 +243,7 @@ Route::get('/product/{id}/unavailable-dates', function ($id) {
     ]);
 })->name('product.unavailable-dates');
 
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'active'])->group(function () {
 
     Route::prefix('dashboard')->name('dashboard.')->group(function () {
         Route::get('/', function () {
@@ -257,6 +276,7 @@ Route::middleware(['auth'])->group(function () {
                 'disputes' => DisputeModel::whereIn('rental_op_id', $rentals->pluck('id'))->with('handover')->latest()->get(),
                 'reviews' => ReviewModel::whereIn('rental_op_id', $rentals->pluck('id'))->where('reviewer_id', request()->user()->id)->get(),
                 'compensations' => \App\Models\EquipmentHandover::whereIn('rental_op_id', $rentals->pluck('id'))->with('dispute')->get(),
+                'selected_id' => request('id'),
             ]);
         })->name('delivery');
         Route::get('/contracts', function () {
@@ -351,6 +371,7 @@ Route::middleware(['auth'])->group(function () {
                 'disputes' => DisputeModel::whereIn('rental_op_id', $rentals->pluck('id'))->with('handover')->latest()->get(),
                 'reviews' => ReviewModel::whereIn('rental_op_id', $rentals->pluck('id'))->where('reviewer_id', request()->user()->id)->get(),
                 'compensations' => \App\Models\EquipmentHandover::whereIn('rental_op_id', $rentals->pluck('id'))->with('dispute')->get(),
+                'selected_id' => request('id'),
             ]);
         })->name('delivery');
         Route::get('/insurance', function () {
@@ -402,38 +423,54 @@ require __DIR__ . '/auth.php';
 // ==========================================
 // USER ROUTES (Requires Authentication)
 // ==========================================
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'active'])->group(function () {
     // User Profile (domain-specific)
     Route::get('user/profile', [UserController::class, 'profile'])->name('user.profile');
     Route::put('user/profile', [UserController::class, 'update'])->name('user.profile.update');
-    // Categories & Equipment (Publicly viewable parts can be extracted if needed, but assuming auth for now)
+    // Categories & Equipment (read-only — no KYC needed)
     Route::resource('categories', CategoryController::class)->only(['index', 'show']);
     Route::get('equipment/{equipment}/check-availability', [EquipmentController::class, 'checkAvailability']);
-    Route::resource('equipment', EquipmentController::class);
+    Route::get('equipment', [EquipmentController::class, 'index'])->name('equipment.index');
+    Route::get('equipment/{equipment}', [EquipmentController::class, 'show'])->name('equipment.show');
 
-    // Equipment Add-ons
-    Route::post('equipment/{equipment}/images', [EquipmentImageController::class, 'store'])->name('equipment.images.store');
-    Route::patch('equipment/images/{image}/primary', [EquipmentImageController::class, 'setPrimary'])->name('equipment.images.setPrimary');
-    Route::delete('equipment/images/{image}', [EquipmentImageController::class, 'destroy'])->name('equipment.images.destroy');
+    // Equipment & Rental operations requiring KYC verification
+    Route::middleware(['kyc'])->group(function () {
+        // Equipment mutations (add, edit, delete)
+        Route::get('equipment/create', [EquipmentController::class, 'create'])->name('equipment.create');
+        Route::post('equipment', [EquipmentController::class, 'store'])->name('equipment.store');
+        Route::get('equipment/{equipment}/edit', [EquipmentController::class, 'edit'])->name('equipment.edit');
+        Route::put('equipment/{equipment}', [EquipmentController::class, 'update'])->name('equipment.update');
+        Route::patch('equipment/{equipment}', [EquipmentController::class, 'update']);
+        Route::delete('equipment/{equipment}', [EquipmentController::class, 'destroy'])->name('equipment.destroy');
 
-    Route::get('equipment/{equipment}/availability', [EquipmentAvailabilityController::class, 'index'])->name('equipment.availability.index');
-    Route::post('equipment/{equipment}/availability', [EquipmentAvailabilityController::class, 'store'])->name('equipment.availability.store');
-    Route::delete('equipment/availability/{availability}', [EquipmentAvailabilityController::class, 'destroy'])->name('equipment.availability.destroy');
+        // Equipment Add-ons
+        Route::post('equipment/{equipment}/images', [EquipmentImageController::class, 'store'])->name('equipment.images.store');
+        Route::patch('equipment/images/{image}/primary', [EquipmentImageController::class, 'setPrimary'])->name('equipment.images.setPrimary');
+        Route::delete('equipment/images/{image}', [EquipmentImageController::class, 'destroy'])->name('equipment.images.destroy');
 
-    // Rentals
-    Route::get('equipment/{equipment}/rent', [RentalOperationController::class, 'create'])->name('rentals.create');
-    Route::post('rentals/{rental}/confirm', [RentalOperationController::class, 'confirm'])->name('rentals.confirm');
-    Route::post('rentals/{rental}/cancel', [RentalOperationController::class, 'cancel'])->name('rentals.cancel');
-    Route::resource('rentals', RentalOperationController::class)->only(['index', 'store', 'show']);
+        Route::get('equipment/{equipment}/availability', [EquipmentAvailabilityController::class, 'index'])->name('equipment.availability.index');
+        Route::post('equipment/{equipment}/availability', [EquipmentAvailabilityController::class, 'store'])->name('equipment.availability.store');
+        Route::delete('equipment/availability/{availability}', [EquipmentAvailabilityController::class, 'destroy'])->name('equipment.availability.destroy');
 
-    // Payments
-    Route::get('rentals/{rental}/pay', [PaymentController::class, 'create'])->name('payments.create');
-    Route::resource('payments', PaymentController::class)->only(['index', 'store', 'show']);
+        // Rentals (create & store require KYC)
+        Route::get('equipment/{equipment}/rent', [RentalOperationController::class, 'create'])->name('rentals.create');
+        Route::post('rentals/{rental}/confirm', [RentalOperationController::class, 'confirm'])->name('rentals.confirm');
+        Route::post('rentals/{rental}/cancel', [RentalOperationController::class, 'cancel'])->name('rentals.cancel');
+        Route::resource('rentals', RentalOperationController::class)->only(['store']);
 
-    // Contracts
+        // Payments (create & store require KYC)
+        Route::get('rentals/{rental}/pay', [PaymentController::class, 'create'])->name('payments.create');
+        Route::resource('payments', PaymentController::class)->only(['store']);
+
+        // Contracts (signing requires KYC)
+        Route::post('contracts/{contract}/tenant-sign', [ContractController::class, 'tenantSign'])->name('contracts.tenantSign');
+        Route::post('contracts/{contract}/owner-sign', [ContractController::class, 'ownerSign'])->name('contracts.ownerSign');
+    });
+
+    // Rentals & Payments read-only (no KYC needed)
+    Route::resource('rentals', RentalOperationController::class)->only(['index', 'show']);
+    Route::resource('payments', PaymentController::class)->only(['index', 'show']);
     Route::get('rentals/{rental}/contract', [ContractController::class, 'show'])->name('contracts.show');
-    Route::post('contracts/{contract}/tenant-sign', [ContractController::class, 'tenantSign'])->name('contracts.tenantSign');
-    Route::post('contracts/{contract}/owner-sign', [ContractController::class, 'ownerSign'])->name('contracts.ownerSign');
 
     // Handovers (Delivery / Return)
     Route::get('rentals/{rental}/handover-report', [HandoverReportController::class, 'create'])->name('handover-reports.create');

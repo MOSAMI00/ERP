@@ -17,7 +17,9 @@ class RegisteredUserController extends Controller
 {
     public function create(): Response
     {
-        return Inertia::render('features/auth/register/RegisterPage');
+        return Inertia::render('features/auth/register/RegisterPage', [
+            'role' => request('role', 'tenant'),
+        ]);
     }
 
     public function store(Request $request): RedirectResponse

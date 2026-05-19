@@ -20,4 +20,19 @@ class StoreDisputeRequest extends FormRequest
             'requested_amount'      => ['nullable', 'numeric', 'min:0'],
         ];
     }
+
+    public function withValidator(\Illuminate\Validation\Validator $validator): void
+    {
+        $validator->after(function (\Illuminate\Validation\Validator $validator) {
+            $handoverId = $this->input('equipment_handover_id');
+            $rentalId = $this->input('rental_op_id');
+
+            if ($handoverId && $rentalId) {
+                $handover = \App\Models\EquipmentHandover::query()->find($handoverId);
+                if (!$handover || (int) $handover->rental_op_id !== (int) $rentalId) {
+                    $validator->errors()->add('equipment_handover_id', 'عملية تسليم المعدة لا تطابق رقم عملية الإيجار المرفق.');
+                }
+            }
+        });
+    }
 }

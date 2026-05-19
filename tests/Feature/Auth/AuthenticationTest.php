@@ -8,23 +8,35 @@ test('login screen can be rendered', function () {
     $response->assertStatus(200);
 });
 
-test('users can authenticate using the login screen', function () {
-    $user = User::factory()->create();
+test('users can authenticate using the login screen as tenant', function () {
+    $user = User::factory()->create(['type' => 'tenant', 'phone' => '07712345678']);
 
     $response = $this->post('/login', [
-        'email' => $user->email,
+        'phone' => '07712345678',
         'password' => 'password',
     ]);
 
-    $this->assertAuthenticated();
-    $response->assertRedirect(route('dashboard', absolute: false));
+    $this->assertAuthenticatedAs($user);
+    $response->assertRedirect(route('dashboard.index'));
+});
+
+test('users can authenticate using the login screen as owner', function () {
+    $user = User::factory()->create(['type' => 'owner', 'phone' => '07787654321']);
+
+    $response = $this->post('/login', [
+        'phone' => '07787654321',
+        'password' => 'password',
+    ]);
+
+    $this->assertAuthenticatedAs($user);
+    $response->assertRedirect(route('owner.overview'));
 });
 
 test('users can not authenticate with invalid password', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->create(['phone' => '07712345678']);
 
     $this->post('/login', [
-        'email' => $user->email,
+        'phone' => '07712345678',
         'password' => 'wrong-password',
     ]);
 

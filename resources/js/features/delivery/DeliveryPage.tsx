@@ -252,6 +252,7 @@ export default function DeliveryPage({
   disputes: propDisputes,
   compensations: propCompensations,
   reviews: propReviews,
+  selected_id: propSelectedId,
   auth,
 }: any) {
   const user = auth?.user ?? null;
@@ -265,10 +266,8 @@ export default function DeliveryPage({
   const allCompensations = (propCompensations ?? []) as any[];
   const allReviews = (propReviews ?? []) as any[];
 
-  const routeRentalId = new URLSearchParams(window.location.search).get('id');
-
   const [activeTab, setActiveTab] = useState(config.tabs[0].id);
-  const [selectedRentalId, setSelectedRentalId] = useState(routeRentalId || null);
+  const [selectedRentalId, setSelectedRentalId] = useState(propSelectedId || null);
   const [selectedReport, setSelectedReport] = useState(null);
   const [forms, setForms] = useState({});
   const [compensationForms, setCompensationForms] = useState({});
@@ -276,8 +275,8 @@ export default function DeliveryPage({
   const [isSubmittingStage, setIsSubmittingStage] = useState(false);
 
   useEffect(() => {
-    if (routeRentalId) setSelectedRentalId(routeRentalId);
-  }, [routeRentalId]);
+    if (propSelectedId) setSelectedRentalId(propSelectedId);
+  }, [propSelectedId]);
 
   const rows = useMemo(() => {
     const normalizedRentals = normalizeDeliveryRows({ rentals, role, userId });
