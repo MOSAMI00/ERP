@@ -1,12 +1,11 @@
 import { Download } from 'lucide-react';
-import { router, usePage } from '@inertiajs/react';
+import { router } from '@inertiajs/react';
 import Button from '../../../components/ui/Button';
 import SearchInput from '../../../components/ui/SearchInput';
 import Select from '../../../components/ui/Select';
 
-export default function UsersFilterBar() {
-  const { props } = usePage();
-  const filters = props.filters ?? {};
+export default function UsersFilterBar({ filters: filtersProp }) {
+  const filters = filtersProp ?? {};
   const requestFilters = (nextFilters) => {
     router.get(route('admin.users.index'), nextFilters, {
       preserveState: true,

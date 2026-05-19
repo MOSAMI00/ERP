@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
-import { usePage, useForm, Link } from '@inertiajs/react';
+import { useForm, Link } from '@inertiajs/react';
 import { Camera, ClipboardList, CheckCircle2, ArrowRight, Info, AlertTriangle, Image as ImageIcon, X } from 'lucide-react';
 
-export default function HandoverCreatePage() {
-  const { rental, phase, auth } = usePage<any>().props;
+export default function HandoverCreatePage({ rental, phase, auth }: any) {
   const isOwner = auth.user.id === rental.owner_id;
   const isTenant = auth.user.id === rental.tenant_id;
   

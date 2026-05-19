@@ -1,6 +1,6 @@
 import OwnerLayout from '../../../Layouts/owner/OwnerLayout';
 import React, { useEffect, useMemo, useState } from 'react';
-import { usePage } from '@inertiajs/react';
+
 import { PageHeader } from '../../../components/shared';
 import EarningsKpis from './components/EarningsKpis';
 import EarningsChart from './components/EarningsChart';
@@ -8,12 +8,11 @@ import PayoutMethodCard from './PayoutMethodCard';
 import PaymentsTable from './components/PaymentsTable';
 import PayoutMethodModal from './PayoutMethodModal';
 
-const Earnings = () => {
+const Earnings = ({ payments: propPayments, payment_methods: propMethods, auth }: any) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const { props } = usePage();
-  const paymentMethods = (props.payment_methods as any[]) ?? [];
-  const payments = (props.payments as any[]) ?? [];
+  const paymentMethods = propMethods ?? [];
+  const payments = propPayments ?? [];
 
   useEffect(() => {
     const timer = window.setTimeout(() => setIsLoading(false), 350);

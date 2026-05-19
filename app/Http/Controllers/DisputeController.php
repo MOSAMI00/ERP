@@ -30,8 +30,16 @@ class DisputeController extends Controller
 
     public function create(EquipmentHandover $handover)
     {
+        $handover->load(['rental.equipment', 'rental.owner']);
+
+        abort_unless(
+            (int) Auth::id() === (int) $handover->rental->tenant_id,
+            403,
+            'Unauthorized access to this handover.'
+        );
+
         return Inertia::render('Disputes/Create', [
-            'handover' => $handover->load(['rental.equipment', 'rental.owner']),
+            'handover' => $handover,
         ]);
     }
 
@@ -40,7 +48,6 @@ class DisputeController extends Controller
         $data = $request->validated();
 
         $handover = EquipmentHandover::with('rental')->findOrFail($data['equipment_handover_id']);
-        abort_unless((int) $handover->rental_op_id === (int) $data['rental_op_id'], 422);
 
         $this->workflow->openDispute(
             $handover,

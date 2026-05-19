@@ -1,11 +1,10 @@
 import { Calendar } from 'lucide-react';
-import { router, usePage } from '@inertiajs/react';
+import { router } from '@inertiajs/react';
 import SearchInput from '../../../components/ui/SearchInput';
 import Select from '../../../components/ui/Select';
 
-export default function RentalsFilterBar() {
-  const { props } = usePage();
-  const filters = props.filters ?? {};
+export default function RentalsFilterBar({ filters: propFilters }) {
+  const filters = propFilters ?? {};
   const requestFilters = (nextFilters) => {
     router.get(route('admin.rentals.index'), nextFilters, {
       preserveState: true,

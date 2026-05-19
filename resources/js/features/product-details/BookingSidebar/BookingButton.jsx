@@ -4,7 +4,6 @@ export function BookingButton({
   dailyRate, 
   totalRental, 
   deposit, 
-  serviceFee, 
   grandTotal, 
   startDate, 
   endDate, 
@@ -24,10 +23,7 @@ export function BookingButton({
             <span className="text-muted-foreground">تأمين:</span>
             <span className="font-semibold">{deposit.toLocaleString('ar-YE')} ر.ي</span>
           </div>
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">رسوم الخدمة (5%):</span>
-            <span className="font-semibold">{serviceFee.toLocaleString('ar-YE')} ر.ي</span>
-          </div>
+
           <div className="flex justify-between pt-2 border-t border-border text-lg">
             <span className="font-bold">الإجمالي:</span>
             <span className="font-bold text-primary">{grandTotal.toLocaleString('ar-YE')} ر.ي</span>

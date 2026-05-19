@@ -2,13 +2,12 @@ import ReviewsFilterBar from './components/ReviewsFilterBar';
 import ReviewsTable from './components/ReviewsTable';
 import ReviewDrawer from './components/ReviewDrawer';
 import useDrawer from '../../hooks/useDrawer';
-import { router, usePage } from '@inertiajs/react';
+import { router } from '@inertiajs/react';
 import { asArray, normalizeReview } from '../../../utils/pageData';
 
-export default function ReviewsPage() {
-  const { props } = usePage();
+export default function ReviewsPage({ reviews: rawReviews, filters }) {
   const drawer = useDrawer();
-  const reviews = asArray(props.reviews).map((review) => {
+  const reviews = asArray(rawReviews).map((review) => {
     const normalized = normalizeReview(review);
     return {
       ...normalized,
@@ -42,7 +41,7 @@ export default function ReviewsPage() {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500 relative">
-      <ReviewsFilterBar />
+      <ReviewsFilterBar filters={filters} />
       <ReviewsTable reviews={reviews} onOpenDrawer={drawer.open} onHide={hideReview} onRestore={restoreReview} onDelete={deleteReview} />
       <ReviewDrawer isOpen={drawer.isOpen} review={drawer.selectedItem} onClose={drawer.close} onHide={hideReview} onRestore={restoreReview} onDelete={deleteReview} />
     </div>

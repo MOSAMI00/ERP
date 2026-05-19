@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { usePage } from '@inertiajs/react';
+
 import {
   AppInput,
   EmptyState,
@@ -27,17 +27,18 @@ const statusLabels = {
   expired: 'منتهي',
 };
 
-export default function ContractsPage({ role: roleProp }) {
-  const { props } = usePage();
-  const user = props.auth?.user ?? null;
+export default function ContractsPage({ role: roleProp, contracts: propContracts, auth }: any) {
+  const user = auth?.user ?? null;
   const role = roleProp || user?.type || "tenant";
   const config = getContractConfig(role);
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState(config.tabs[0]);
   const [selectedContract, setSelectedContract] = useState(null);
 
+  const rawContracts = propContracts ?? [];
+
   const contracts = useMemo(() => {
-    return (props.contracts ?? []).map((contract) => {
+    return rawContracts.map((contract) => {
       const rental = contract.rental ?? {};
       const equipment = rental.equipment ?? {};
       const partner = role === 'owner' ? rental.tenant : rental.owner;
@@ -55,7 +56,7 @@ export default function ContractsPage({ role: roleProp }) {
         rental,
       };
     });
-  }, [props.contracts, role]);
+  }, [rawContracts, role]);
 
   const filtered = useMemo(() => {
     const allowedStatuses = config.statusesByTab[activeTab] || [];

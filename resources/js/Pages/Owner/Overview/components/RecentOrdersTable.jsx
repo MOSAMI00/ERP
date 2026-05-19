@@ -6,7 +6,7 @@ import {
     AppButton,
     DataTable,
     StatusBadge,
-} from "../../../../components/shared";
+} from "../../../../Components/shared";
 
 const fallbackEquipment = (rental) =>
     rental?.equipment ?? { name: "معدة غير معروفة", image: "", location: "—" };

@@ -5,8 +5,14 @@ export function ContractDetailModal({ contract, config, onClose }) {
   if (!contract) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-2xl rounded-2xl bg-white p-6 shadow-xl">
+    <div
+      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/40 p-4 sm:items-center"
+      onClick={onClose}
+    >
+      <div
+        className="my-8 w-full max-w-2xl rounded-2xl bg-white p-6 shadow-xl sm:my-4"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="mb-5 flex items-start justify-between gap-4">
           <div>
             <h2 className="m-0 text-xl font-bold text-[#222222]">
@@ -58,7 +64,7 @@ export function ContractDetailModal({ contract, config, onClose }) {
           </div>
         </div>
 
-        <div className="mt-5 max-h-[520px] overflow-y-auto rounded-xl bg-[#F8FAFC] p-3">
+        <div className=" max-h-[200px] sm:max-h-[350px] md:max-h-[480px] overflow-y-auto rounded-xl bg-[#F8FAFC] p-3">
           <ContractBody body={contract.body} />
         </div>
       </div>

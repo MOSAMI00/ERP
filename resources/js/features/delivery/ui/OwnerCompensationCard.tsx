@@ -42,6 +42,34 @@ export function OwnerCompensationCard({
     let bgColor = '#FFF9ED';
     let borderColor = '#F3C77B';
 
+    if (compensation.status === 'full_refund') {
+      return (
+        <div className="mt-4 rounded-2xl border border-[#D5E8D4] bg-[#F4FAF6] p-4 text-sm text-[#222222]">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h3 className="m-0 text-base font-bold text-[#27AE60]">المعدة سليمة - استرداد كامل التأمين</h3>
+              <p className="m-0 mt-2 text-[#555555]">
+                تم استلام المعدة وإكمال العملية بنجاح. لم يتم تسجيل أي مطالبات تعويض لسلامة المعدة، وتم إرجاع مبلغ التأمين بالكامل للمستأجر.
+              </p>
+              {compensation.finalCondition ? (
+                <p className="m-0 mt-2 text-[#555555]">
+                  حالة المعدة عند الإرجاع: <strong>{CONDITION_LABELS[compensation.finalCondition] || compensation.finalCondition}</strong>
+                </p>
+              ) : null}
+              {Number(compensation.lateFee || 0) > 0 ? (
+                <p className="m-0 mt-1 text-[#555555]">
+                  رسوم التأخير المحتسبة: <strong>{formatCurrency(compensation.lateFee)} ر.ي</strong>
+                </p>
+              ) : null}
+            </div>
+            <span className="rounded-full bg-white px-3 py-1 text-xs font-bold border border-[#27AE60] text-[#27AE60]">
+              تمت العملية بنجاح
+            </span>
+          </div>
+        </div>
+      );
+    }
+
     if (compensation.rentalStatus === 'completed') {
       statusLabel = compensation.dispute?.status === 'resolved'
         ? (ADMIN_DECISION_LABELS[compensation.adminDecision ?? compensation.dispute?.adminDecision] ?? 'تمت التسوية بقرار إداري')

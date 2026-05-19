@@ -1,16 +1,15 @@
 import { useState } from 'react';
-import { router, usePage } from '@inertiajs/react';
+import { router } from '@inertiajs/react';
 import SummaryCards from './components/SummaryCards';
 import DisputesTable from './components/DisputesTable';
 import DisputeReviewPage from './components/DisputeReviewPage';
 import { asArray, normalizeDispute, paginator } from '../../../utils/pageData';
 
-export default function DisputesPage() {
-  const { props } = usePage();
+export default function DisputesPage({ disputes: rawDisputes, summary, filters }) {
   const [selectedDispute, setSelectedDispute] = useState(null);
   const [decision, setDecision] = useState('accept');
   const [adjustedAmount, setAdjustedAmount] = useState('');
-  const disputes = asArray(props.disputes).map((dispute) => {
+  const disputes = asArray(rawDisputes).map((dispute) => {
     const normalized = normalizeDispute(dispute);
     return {
       ...normalized,
@@ -68,11 +67,11 @@ export default function DisputesPage() {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
-      <SummaryCards summary={props.summary} />
+      <SummaryCards summary={summary} />
       <DisputesTable
         disputes={disputes}
-        pagination={paginator(props.disputes)}
-        filters={props.filters ?? {}}
+        pagination={paginator(rawDisputes)}
+        filters={filters ?? {}}
         onOpenReview={openReview}
       />
     </div>

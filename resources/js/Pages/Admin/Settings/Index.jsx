@@ -3,11 +3,11 @@ import { Head } from '@inertiajs/react';
 import AdminLayout from '@/Admin/components/layout/AdminLayout';
 import SettingsPage from '@/Admin/features/settings/SettingsPage';
 
-export default function SettingsIndex() {
+export default function SettingsIndex({ settings }) {
     return (
         <AdminLayout>
             <Head title="الإعدادات" />
-            <SettingsPage />
+            <SettingsPage settings={settings} />
         </AdminLayout>
     );
 }

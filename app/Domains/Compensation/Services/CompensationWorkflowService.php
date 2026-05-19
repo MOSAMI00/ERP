@@ -223,7 +223,7 @@ class CompensationWorkflowService
             ->where('submitted_by_role', 'owner')
             ->first();
 
-        return $ownerReport && ($ownerReport->condition_status !== ConditionStatus::Good || $ownerReport->has_issues);
+        return $ownerReport && (!in_array($ownerReport->condition_status,[ConditionStatus::Good,ConditionStatus::Excellent]) || $ownerReport->has_issues);
     }
 
     private function mustHaveReturnReports(RentalOperation $rental): void

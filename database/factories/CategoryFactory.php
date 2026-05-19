@@ -14,11 +14,9 @@ class CategoryFactory extends Factory
     {
         $name = fake()->unique()->word();
         return [
-            'name' => ucfirst($name),
+            'name_ar' => ucfirst($name),
             'slug' => Str::slug($name),
-            'description' => fake()->sentence(),
-            'icon_url' => fake()->imageUrl(50, 50),
-            'is_active' => true,
+            'icon' => fake()->imageUrl(50, 50),
             'sort_order' => fake()->numberBetween(1, 100),
         ];
     }

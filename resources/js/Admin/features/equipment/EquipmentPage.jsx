@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { router, usePage } from '@inertiajs/react';
+import { router } from '@inertiajs/react';
 import EquipmentFilterBar from './components/EquipmentFilterBar';
 import EquipmentGrid from './components/EquipmentGrid';
 import EquipmentList from './components/EquipmentList';
@@ -7,12 +7,11 @@ import EquipmentDrawer from './components/EquipmentDrawer';
 import useDrawer from '../../hooks/useDrawer';
 import { asArray, normalizeEquipment } from '../../../utils/pageData';
 
-export default function EquipmentPage() {
-  const { props } = usePage();
+export default function EquipmentPage({ equipment: rawEquipment, filters }) {
   const [viewMode, setViewMode] = useState('grid');
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const drawer = useDrawer();
-  const equipment = asArray(props.equipment).map(normalizeEquipment);
+  const equipment = asArray(rawEquipment).map(normalizeEquipment);
 
   const openDrawer = (equipment) => {
     setCurrentImageIndex(0);
@@ -48,7 +47,7 @@ export default function EquipmentPage() {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500 relative min-w-0">
-      <EquipmentFilterBar viewMode={viewMode} setViewMode={setViewMode} />
+      <EquipmentFilterBar viewMode={viewMode} setViewMode={setViewMode} filters={filters} />
       {viewMode === 'grid' ? (
         <EquipmentGrid equipment={equipment} onOpenDrawer={openDrawer} onToggleVisibility={toggleVisibility} onDelete={deleteEquipment} />
       ) : (

@@ -1,16 +1,21 @@
 import React, { useState } from 'react';
 // @ts-ignore
 declare var route: any;
-import { useForm, usePage } from '@inertiajs/react';
+import { useForm } from '@inertiajs/react';
 import { Upload, CheckCircle, AlertCircle, Eye, Trash2 } from 'lucide-react';
 
-export function KYCUploaders() {
-    const { props } = usePage();
-    const kyc_documents = Array.isArray(props.kyc_documents)
-        ? props.kyc_documents
-        : props.kyc_documents?.data || [];
+interface KYCUploadersProps {
+    kyc_documents?: any[];
+    kyc_status?: string;
+}
+
+export function KYCUploaders({ kyc_documents: propDocs, kyc_status: propStatus, auth }: any) {
+    const authKycStatus = auth?.user?.kyc_status;
+
+    // Use explicit props first, fallback to page props only if not passed
+    const kyc_documents = propDocs ?? [];
     const latestDocument = kyc_documents[0] || null;
-    const kyc_status = latestDocument?.status || props.kyc_status || props.auth?.user?.kyc_status || 'not_submitted';
+    const kyc_status = latestDocument?.status || propStatus || authKycStatus || 'not_submitted';
     const effectiveStatus = !latestDocument && kyc_status === 'pending' ? 'not_submitted' : kyc_status;
 
     const [previews, setPreviews] = useState<Record<string, string | null>>({
@@ -32,7 +37,7 @@ export function KYCUploaders() {
         if (file) {
             const reader = new FileReader();
             reader.onloadend = () => {
-                setPreviews(prev => ({ ...prev, [type]: reader.result }));
+                setPreviews(prev => ({ ...prev, [type]: reader.result as string | null }));
             };
             reader.readAsDataURL(file);
         } else {
@@ -44,6 +49,7 @@ export function KYCUploaders() {
         e.preventDefault();
         form.post(route('kyc.store'), {
             forceFormData: true,
+            // @ts-ignore
             preserveScroll: true,
             onSuccess: () => {
                 form.reset('front_image', 'back_image', 'selfie_image');

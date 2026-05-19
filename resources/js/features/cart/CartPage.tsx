@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { useForm, usePage } from '@inertiajs/react';
+import { useForm } from '@inertiajs/react';
 import { CartHeader } from './ui/Header';
 import { Stepper } from './ui/Stepper';
 import { ReviewItems } from './StepContent/ReviewItems';
@@ -7,31 +7,13 @@ import { DeliveryForm } from './StepContent/DeliveryForm';
 import { ContractSigning } from './StepContent/ContractSigning';
 import { SummarySidebar } from './SummarySidebar/SummarySidebar';
 
-export default function CartPage() {
-  const { props } = usePage<any>();
+export default function CartPage({ cart_items, contract_template, contract_variables }: any) {
   const [removedIds, setRemovedIds] = useState<any[]>([]);
   const [deliveryError, setDeliveryError] = useState('');
 
-  const queryParams = new URLSearchParams(window.location.search);
-  const queryItem = queryParams.get('equipment_id') ? {
-    id: queryParams.get('equipment_id'),
-    equipment_id: queryParams.get('equipment_id'),
-    startDate: queryParams.get('start_date'),
-    endDate: queryParams.get('end_date'),
-    days: Number(queryParams.get('days')),
-    dailyRate: Number(queryParams.get('daily_rate')),
-    deposit: Number(queryParams.get('deposit')),
-    serviceFee: Number(queryParams.get('service_fee')),
-    totalAmount: Number(queryParams.get('total_amount')),
-    name: queryParams.get('equipment_name'),
-    image: queryParams.get('equipment_image'),
-    location: queryParams.get('location'),
-    owner: queryParams.get('owner_name'),
-  } : null;
-
-  const cartItems = (props.cart_items && props.cart_items.length > 0
-    ? props.cart_items
-    : (queryItem ? [queryItem] : [])
+  const cartItems = (cart_items && cart_items.length > 0
+    ? cart_items
+    : []
   ).filter((item) => !removedIds.includes(item.id));
   const [currentStep, setCurrentStep] = useState(1);
 
@@ -52,7 +34,6 @@ export default function CartPage() {
 
   const rentalCost = cartItems.reduce((acc, item) => acc + (item.daily_rate ?? item.dailyRate ?? 0) * (item.days ?? 0), 0);
   const deposit = cartItems.reduce((acc, item) => acc + (item.deposit ?? 0), 0);
-  const serviceFee = cartItems.reduce((acc, item) => acc + (item.service_fee ?? item.serviceFee ?? 0), 0);
   const total = cartItems.reduce((acc, item) => acc + (item.total_amount ?? item.totalAmount ?? 0), 0);
   const timeSlotLabels = {
     morning: 'صباحاً (8ص - 12م)',
@@ -66,9 +47,9 @@ export default function CartPage() {
   ].filter(Boolean).join(' - ');
 
   const contractBody = useMemo(() => {
-    const template = props.contract_template;
+    const template = contract_template;
     const variables = {
-      ...(props.contract_variables ?? {}),
+      ...(contract_variables ?? {}),
       issued_at: new Date().toISOString().slice(0, 10),
       delivery_location: form.data.delivery_location || buildDeliveryLocation() || '—',
       preferred_time_slot: timeSlotLabels[form.data.time_slot] ?? '—',
@@ -99,7 +80,7 @@ export default function CartPage() {
         .replaceAll(`{{${key}}}`, text)
         .replaceAll(alias ? `{{${alias}}}` : `{{${key}}}`, text);
     }, template);
-  }, [props.contract_template, props.contract_variables, form.data.delivery_info, form.data.delivery_location, form.data.time_slot, rentalCost, deposit]);
+  }, [contract_template, contract_variables, form.data.delivery_info, form.data.delivery_location, form.data.time_slot, rentalCost, deposit]);
 
   const handleDelete = (id) => {
     setRemovedIds((current) => [...current, id]);
@@ -118,7 +99,7 @@ export default function CartPage() {
   };
 
   const handleDeliveryNext = () => {
-    const info = form.data.delivery_info ?? {};
+    const info = (form.data.delivery_info ?? {}) as any;
     if (!info.governorate || !info.district?.trim() || !info.address?.trim() || !form.data.time_slot) {
       setDeliveryError('جميع بيانات التسليم والوقت المفضل مطلوبة قبل المتابعة للعقد.');
       return;
@@ -174,7 +155,6 @@ export default function CartPage() {
                 cartItems={cartItems}
                 rentalCost={rentalCost}
                 deposit={deposit}
-                serviceFee={serviceFee}
                 total={total}
               />
             </aside>
