@@ -52,6 +52,7 @@ class PublicPageController extends Controller
                 ->pluck('governorate')
                 ->values(),
             'filters' => $request->all(['category', 'city']),
+            'platform_terms' => $this->settings->getPlatformTerms(),
         ]);
     }
 
