@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { usePage } from '@inertiajs/react';
 import { get } from '../../inertia/navigation';
 import { Header } from './Header/Header';
 import { Footer } from './Footer/Footer';

@@ -1,12 +1,11 @@
 import { Download, Calendar } from 'lucide-react';
-import { router, usePage } from '@inertiajs/react';
+import { router } from '@inertiajs/react';
 import Button from '../../../components/ui/Button';
 import SearchInput from '../../../components/ui/SearchInput';
 import Select from '../../../components/ui/Select';
 
-export default function AuditFilterBar() {
-  const { props } = usePage();
-  const filters = props.filters ?? {};
+export default function AuditFilterBar({ filters: propFilters }) {
+  const filters = propFilters ?? {};
   const requestFilters = (nextFilters) => {
     router.get(route('admin.audit-logs.index'), nextFilters, {
       preserveState: true,

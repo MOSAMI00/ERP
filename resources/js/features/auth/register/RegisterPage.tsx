@@ -4,11 +4,9 @@ import { FormSection } from './FormSection/FormSection';
 import { InfoSection } from './InfoSection/InfoSection';
 import { useSharedData } from '@/inertia/useSharedData';
 
-export function RegisterPage() {
+export function RegisterPage({ role }: any) {
   const { governorates } = useSharedData();
-  const initialRole = typeof window !== 'undefined'
-    ? (new URLSearchParams(window.location.search).get('role') || 'tenant')
-    : 'tenant';
+  const initialRole = ['tenant', 'owner'].includes(role) ? role : 'tenant';
 
   const form = useForm({
     full_name: '',

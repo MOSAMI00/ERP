@@ -36,6 +36,34 @@ export function CompensationResponseCard({
     compensation.status === 'partial_refund' || 
     compensation.status === 'no_refund';
 
+  if (compensation.status === 'full_refund') {
+    return (
+      <div className="mb-4 rounded-xl border-2 border-[#27AE60] bg-[#F4FAF6] p-5 text-sm text-[#222222]">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h4 className="m-0 text-base font-bold text-[#27AE60]">المعدة سليمة - استرداد كامل التأمين</h4>
+            <p className="m-0 mt-2 text-[#555555]">
+              تم إرجاع المعدة وإكمال العملية بنجاح. لم يتم طلب أي تعويض أو خصومات لسلامة المعدة، وتم إرجاع مبلغ التأمين بالكامل إلى حسابك.
+            </p>
+            {compensation.finalCondition ? (
+              <p className="m-0 mt-2 text-[#555555]">
+                حالة المعدة عند الإرجاع: <strong>{CONDITION_LABELS[compensation.finalCondition] || compensation.finalCondition}</strong>
+              </p>
+            ) : null}
+            {Number(compensation.lateFee || 0) > 0 ? (
+              <p className="m-0 mt-1 text-[#555555]">
+                رسوم التأخير المحتسبة: <strong>{formatCurrency(compensation.lateFee)} ر.ي</strong>
+              </p>
+            ) : null}
+          </div>
+          <span className="rounded-full bg-white px-3 py-1 text-xs font-bold border border-[#27AE60] text-[#27AE60]">
+            تمت العملية بنجاح
+          </span>
+        </div>
+      </div>
+    );
+  }
+
   if (isCompleted) {
     const adminDecision = compensation.adminDecision ?? compensation.dispute?.adminDecision;
     const settledByAdmin = compensation.dispute?.status === 'resolved';

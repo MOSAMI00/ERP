@@ -1,9 +1,8 @@
 import { Link, router, usePage } from "@inertiajs/react";
 import { LogOut, X } from "lucide-react";
 
-export default function Sidebar({ isSidebarOpen, onClose, navItems }) {
-  const { url, props } = usePage();
-  const admin = props.auth.admin || { role: 'Admin' };
+export default function Sidebar({ isSidebarOpen, onClose, navItems, url, auth }) {
+  const admin = auth?.admin || { role: 'Admin' };
 
   return (
     <aside
@@ -39,12 +38,12 @@ export default function Sidebar({ isSidebarOpen, onClose, navItems }) {
                 <Link
                   href={item.path}
                   onClick={onClose}
-                  className={`flex items-center space-x-3 space-x-reverse px-4 py-2.5 rounded-lg transition-colors relative ${url.startsWith(new URL(item.path, window.location.origin).pathname)
+                  className={`flex items-center space-x-3 space-x-reverse px-4 py-2.5 rounded-lg transition-colors relative ${(url || '').startsWith(new URL(item.path, window.location.origin).pathname)
                       ? "bg-brand-primary text-white"
                       : "text-gray-300 hover:bg-brand-sidebar-hover hover:text-white"
                     }`}
                 >
-                  {url.startsWith(new URL(item.path, window.location.origin).pathname) && (
+                  {(url || '').startsWith(new URL(item.path, window.location.origin).pathname) && (
                     <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-white rounded-r-full" />
                   )}
                   <Icon size={20} />

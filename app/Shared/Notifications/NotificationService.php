@@ -27,7 +27,7 @@ class NotificationService
 
     public function notifyUser(User $user, string $event): void
     {
-        $this->create('user', $user->id, $event, 'user', $user->id, $this->userActionUrl($event));
+        $this->create('user', $user->id, $event, 'user', $user->id, $this->userActionUrl($user, $event));
     }
 
     public function notifyAdmins(string $event): void
@@ -105,9 +105,10 @@ class NotificationService
         return "/rentals/{$rental->id}";
     }
 
-    private function userActionUrl(string $event): string
+    private function userActionUrl(User $user, string $event): string
     {
-        return str_starts_with($event, 'kyc_') ? '/settings?tab=kyc' : '/settings';
+        $prefix = $user->type === 'owner' ? '/owner/profile' : '/dashboard/settings';
+        return str_starts_with($event, 'kyc_') ? "{$prefix}?tab=kyc" : $prefix;
     }
 
     private function adminActionUrl(string $event): string

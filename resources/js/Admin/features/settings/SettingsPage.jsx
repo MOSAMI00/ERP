@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { router, usePage } from '@inertiajs/react';
+import { router } from '@inertiajs/react';
 import { FileText, Save, Shield, Users } from 'lucide-react';
 import AdminsTable from './components/AdminsTable';
 import PermissionsMatrix from './components/PermissionsMatrix';
@@ -7,9 +7,8 @@ import SecurityTab from './components/SecurityTab';
 import Tabs from '../../components/ui/Tabs';
 import { adminsData, permissionsData, sessionsData } from '../../data/settings';
 
-export default function SettingsPage() {
-  const { props } = usePage();
-  const settings = props.settings ?? {};
+export default function SettingsPage({ settings: propSettings }) {
+  const settings = propSettings ?? {};
   const [activeTab, setActiveTab] = useState('roles');
   const [mfaEnabled, setMfaEnabled] = useState(true);
   const [platformForm, setPlatformForm] = useState({
@@ -25,7 +24,7 @@ export default function SettingsPage() {
   });
   const tabs = [
     { id: 'roles', label: 'إدارة الأدوار والصلاحيات', icon: Users },
-    { id: 'security', label: 'الأمان والمصادقة', icon: Shield },
+    // { id: 'security', label: 'الأمان والمصادقة', icon: Shield },
     { id: 'platform', label: 'شروط وعقود المنصة', icon: FileText },
   ];
 
@@ -62,9 +61,9 @@ export default function SettingsPage() {
         </div>
       )}
 
-      {activeTab === 'security' && (
+      {/* {activeTab === 'security' && (
         <SecurityTab mfaEnabled={mfaEnabled} setMfaEnabled={setMfaEnabled} sessions={sessionsData} />
-      )}
+      )} */}
 
       {activeTab === 'platform' && (
         <div className="bg-brand-card rounded-xl shadow-sm border border-brand-border p-6 space-y-5 animate-in fade-in duration-300">

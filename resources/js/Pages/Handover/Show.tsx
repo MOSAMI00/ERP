@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
-import { usePage, useForm, router, Link } from '@inertiajs/react';
+import { useForm, router, Link } from '@inertiajs/react';
 import {
   CheckCircle2, AlertTriangle, FileText, Image as ImageIcon,
   ArrowRight, ShieldCheck, DollarSign, Info, MessageSquare, Clock
 } from 'lucide-react';
 import { formatCurrency } from '../../utils/formatters';
 
-export default function HandoverShowPage() {
-  const { rental, handover, auth } = usePage<any>().props;
+export default function HandoverShowPage({ rental, handover, auth }: any) {
   const isOwner = auth.user.id === rental.owner_id;
   const isTenant = auth.user.id === rental.tenant_id;
 

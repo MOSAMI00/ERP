@@ -1,18 +1,17 @@
 import React, { useState } from 'react';
-import { usePage, router } from '@inertiajs/react';
+import { router } from '@inertiajs/react';
 import { visit } from '../../inertia/navigation';
 import { getNotificationsConfig } from './lib/notificationsConfig';
 import { TenantNotificationsList } from './ui/TenantNotificationsList';
 import { OwnerNotificationsList } from './ui/OwnerNotificationsList';
 import { PageHeader, FilterTabs } from '../../components/shared';
 
-export default function NotificationsPage({ role: roleProp }) {
-  const { props } = usePage();
-  const user = props.auth?.user ?? null;
+export default function NotificationsPage({ role: roleProp, notifications: propNotifications, auth }: any) {
+  const user = auth?.user ?? null;
   const role = roleProp || user?.type || 'tenant';
   const config = getNotificationsConfig(role);
 
-  const rawNotifications = props.notifications ?? props.owner_notifications ?? [];
+  const rawNotifications = propNotifications ?? [];
   const allNotifications = Array.isArray(rawNotifications) ? rawNotifications : (rawNotifications.data ?? []);
   const [activeTab, setActiveTab] = useState(config.tabs[0]);
 

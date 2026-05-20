@@ -1,10 +1,9 @@
 import React from 'react';
-import { usePage, useForm, Link } from '@inertiajs/react';
+import { useForm, Link } from '@inertiajs/react';
 import { AlertCircle, Gavel, ArrowRight, Info, MessageSquare, DollarSign } from 'lucide-react';
 import { formatCurrency } from '../../utils/formatters';
 
-export default function DisputeCreatePage() {
-  const { handover } = usePage<any>().props;
+export default function DisputeCreatePage({ handover }: any) {
   const { rental } = handover;
 
   const form = useForm<any>({

@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
-import { Head, useForm, usePage } from '@inertiajs/react';
+import { Head, useForm } from '@inertiajs/react';
 import { CreditCard, Wallet, Landmark, ShieldCheck, ArrowRight, CheckCircle2, AlertCircle } from 'lucide-react';
 import TenantLayout from '../../Layouts/tenant/TenantLayout';
 
-export default function Create({ rental, paymentMethods = [] }) {
-  const { auth } = usePage().props;
+export default function Create({ rental, paymentMethods = [], auth }) {
   const [selectedMethod, setSelectedMethod] = useState('platform_wallet');
 
   const { data, setData, post, processing, errors } = useForm({

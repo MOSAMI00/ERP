@@ -69,25 +69,6 @@ export default function UserDrawer({ isOpen, user, onClose, onOpenActionModal })
             </div>
           </div>
 
-          <div>
-            <h4 className="font-bold text-lg mb-4 text-brand-text-primary border-b border-brand-border pb-2">آخر 5 عمليات التأجير</h4>
-            <div className="space-y-3">
-              {[1, 2, 3].map(i => (
-                <div key={i} className="flex justify-between items-center p-3 rounded-lg border border-brand-border hover:bg-brand-content transition-colors">
-                  <div>
-                    <p className="font-medium text-sm">حفار كاتربيلر {i}</p>
-                    <p className="text-xs text-brand-text-muted mt-1">12 مايو 2024 - 15 مايو 2024</p>
-                  </div>
-                  <span className="text-brand-success font-bold text-sm">مكتملة</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <h4 className="font-bold text-lg mb-4 text-brand-text-primary border-b border-brand-border pb-2">سجل الإجراءات الإدارية</h4>
-            <p className="text-brand-text-muted text-sm italic">لا توجد إجراءات سابقة لهذا المستخدم.</p>
-          </div>
         </>
       )}
     </Drawer>

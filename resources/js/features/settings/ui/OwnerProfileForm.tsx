@@ -1,10 +1,9 @@
 import React, { useState, useRef } from 'react';
-import { usePage, useForm } from '@inertiajs/react';
+import { useForm } from '@inertiajs/react';
 import { Camera, CheckCircle } from 'lucide-react';
 
-export function OwnerProfileForm() {
-  const { props } = usePage();
-  const user = props.auth?.user ?? {};
+export function OwnerProfileForm({ auth }) {
+  const user = auth?.user ?? {};
 
   const form = useForm({
     full_name: user.full_name ?? user.fullName ?? '',    phone: user.phone ?? '',    governorate: user.governorate ?? '',  });

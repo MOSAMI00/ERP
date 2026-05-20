@@ -7,6 +7,7 @@ use App\Domains\Equipment\Enums\EquipmentStatus;
 use App\Domains\Payment\Enums\PaymentStatus;
 use App\Domains\Rental\Enums\RentalStatus;
 use App\Domains\User\Enums\KycStatus;
+use App\Shared\Settings\PlatformSettingsService;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -47,6 +48,7 @@ class HandleInertiaRequests extends Middleware
                 'error'   => $request->session()->get('error'),
                 'warning' => $request->session()->get('warning'),
             ],
+            'platform_terms' => fn () => app(PlatformSettingsService::class)->getPlatformTerms(),
             'notifications_count' => $request->user()
                 ? \App\Models\Notification::where('recipient_id', $request->user()->id)
                     ->where('recipient_type', 'user')
@@ -61,6 +63,7 @@ class HandleInertiaRequests extends Middleware
                 : 0,
             'sharedData' => [
                 'governorates' => config('locations.governorates', []),
+                'platform_terms' => fn () => app(PlatformSettingsService::class)->getPlatformTerms(),
                 'statuses' => [
                     'rental' => $this->serializeEnum(RentalStatus::cases(), [
                         'pending' => ['label' => 'قيد المراجعة', 'tone' => 'warning'],

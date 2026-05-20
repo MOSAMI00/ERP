@@ -1,10 +1,9 @@
-import { router, usePage } from '@inertiajs/react';
+import { router } from '@inertiajs/react';
 import SearchInput from '../../../components/ui/SearchInput';
 import Select from '../../../components/ui/Select';
 
-export default function ReviewsFilterBar() {
-  const { props } = usePage();
-  const filters = props.filters ?? {};
+export default function ReviewsFilterBar({ filters: propFilters }) {
+  const filters = propFilters ?? {};
   const requestFilters = (nextFilters) => {
     router.get(route('admin.reviews.index'), nextFilters, {
       preserveState: true,

@@ -22,9 +22,10 @@ const navItems = [
 ];
 
 export default function AdminLayout({ children }) {
-  const { url } = usePage();
+  const { url, props } = usePage();
+  const auth = props.auth;
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const currentTitle = navItems.find(item => url.startsWith(new URL(item.path, window.location.origin).pathname))?.label || 'الرئيسية';
+  const currentTitle = navItems.find(item => (url || '').startsWith(new URL(item.path, window.location.origin).pathname))?.label || 'الرئيسية';
 
   return (
     <div className="flex h-screen overflow-hidden bg-brand-content font-cairo text-brand-text-primary" dir="rtl">
@@ -39,12 +40,15 @@ export default function AdminLayout({ children }) {
         isSidebarOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
         navItems={navItems}
+        url={url}
+        auth={auth}
       />
 
       <main className="flex-1 flex flex-col h-screen overflow-hidden relative">
         <Header
           currentTitle={currentTitle}
           onOpenSidebar={() => setIsSidebarOpen(true)}
+          auth={auth}
         />
 
         <div className="flex-1 overflow-y-auto p-6 scroll-smooth min-w-0">

@@ -57,16 +57,6 @@ export default function ReviewDrawer({ isOpen, review, onClose, onHide, onRestor
                 "{review.text}"
               </div>
 
-              <div className="border border-brand-border rounded-xl overflow-hidden hover:border-brand-primary transition-colors">
-                <div className="bg-brand-content/50 px-4 py-2 border-b border-brand-border text-xs font-bold text-brand-text-muted">العملية المرتبطة</div>
-                <div className="p-4 bg-white flex justify-between items-center cursor-pointer group">
-                  <div>
-                    <p className="font-bold text-brand-text-primary group-hover:text-brand-primary transition-colors" dir="ltr">{review.opId}</p>
-                    <p className="text-xs text-brand-text-muted mt-1">اضغط لعرض تفاصيل العملية</p>
-                  </div>
-                  <ChevronLeft size={20} className="text-brand-text-muted group-hover:text-brand-primary transition-colors" />
-                </div>
-              </div>
           </>
         )}
     </Drawer>

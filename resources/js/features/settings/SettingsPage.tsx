@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { User, Shield, CreditCard, Bell } from "lucide-react";
-import { usePage } from '@inertiajs/react';
+
 import { PageHeader } from "../../components/shared";
 import { getSettingsConfig } from "./lib/settingsConfig";
 
@@ -19,9 +19,8 @@ const ICONS = {
   Bell: <Bell size={18} />,
 };
 
-export default function SettingsPage({ role: roleProp }) {
-  const { props } = usePage();
-  const user = props.auth?.user ?? null;
+export default function SettingsPage({ role: roleProp, auth }) {
+  const user = auth?.user ?? null;
   const role = roleProp || user?.type || "tenant";
   const config = getSettingsConfig(role);
   const [activeTab, setActiveTab] = useState(config.tabs[0].id);

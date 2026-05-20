@@ -1,20 +1,19 @@
 import React, { useMemo, useState } from 'react';
-import { usePage, router } from '@inertiajs/react';
+import { router } from '@inertiajs/react';
 import { formatRentalDate } from '../../utils/formatters';
 import { getReviewsConfig } from './lib/reviewsConfig';
 import { ReviewSummary } from './ui/ReviewSummary';
 import { ReviewsList } from './ui/ReviewsList';
 import { PageHeader, FilterTabs } from '../../components/shared';
 
-export default function ReviewsPage({ role: roleProp }) {
-  const { props } = usePage<any>();
-  const user = props.auth?.user ?? null;
+export default function ReviewsPage({ role: roleProp, reviews: propReviews, rentals: propRentals, auth }: any) {
+  const user = auth?.user ?? null;
   const role = roleProp || user?.type || 'tenant';
   const config = getReviewsConfig(role);
   const [activeTab, setActiveTab] = useState(config.tabs[0]);
 
-  const reviews = props.reviews ?? [];
-  const rentals = props.rentals ?? [];
+  const reviews = propReviews ?? [];
+  const rentals = propRentals ?? [];
   const userId = user?.id;
 
   const sentReviews = useMemo(() => {

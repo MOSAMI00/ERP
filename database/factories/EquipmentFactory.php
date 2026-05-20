@@ -24,7 +24,7 @@ class EquipmentFactory extends Factory
             'rental_terms' => fake()->sentence(),
             'status' => EquipmentStatus::Active->value,
             'rating' => fake()->randomFloat(2, 1, 5),
-            'review_count' => fake()->numberBetween(0, 50),
+            'rentals_count' => fake()->numberBetween(0, 50),
         ];
     }
 }
