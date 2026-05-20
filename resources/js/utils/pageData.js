@@ -1,7 +1,12 @@
 export const assetUrl = (path) => {
     if (!path) return null;
-    if (path.startsWith('http')) return path;
-    return `/storage/${path.replace(/^\/+/, '')}`;
+    if (path.startsWith('http') || path.startsWith('data:')) return path;
+    
+    const cleanPath = path.replace(/^\/+/, '');
+    if (cleanPath.startsWith('storage/')) {
+        return `/${cleanPath}`;
+    }
+    return `/storage/${cleanPath}`;
 };
 
 export const normalizeUser = (user) => {

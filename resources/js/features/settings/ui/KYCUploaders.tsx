@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 // @ts-ignore
 declare var route: any;
-import { useForm } from '@inertiajs/react';
+import { useForm, usePage } from '@inertiajs/react';
 import { Upload, CheckCircle, AlertCircle, Eye, Trash2 } from 'lucide-react';
 
 interface KYCUploadersProps {
@@ -9,13 +9,16 @@ interface KYCUploadersProps {
     kyc_status?: string;
 }
 
-export function KYCUploaders({ kyc_documents: propDocs, kyc_status: propStatus, auth }: any) {
+export function KYCUploaders({ kyc_documents: propDocs, kyc_status: propStatus, auth: propAuth }: any) {
+    const { flash, auth: pageAuth, kyc_documents: pageDocs, kyc_status: pageStatus } = usePage().props as any;
+    
+    const auth = propAuth || pageAuth;
     const authKycStatus = auth?.user?.kyc_status;
 
-    // Use explicit props first, fallback to page props only if not passed
-    const kyc_documents = propDocs ?? [];
+    // Use explicit props first, fallback to page props
+    const kyc_documents = propDocs ?? pageDocs ?? [];
     const latestDocument = kyc_documents[0] || null;
-    const kyc_status = latestDocument?.status || propStatus || authKycStatus || 'not_submitted';
+    const kyc_status = latestDocument?.status || propStatus || pageStatus || authKycStatus || 'not_submitted';
     const effectiveStatus = !latestDocument && kyc_status === 'pending' ? 'not_submitted' : kyc_status;
 
     const [previews, setPreviews] = useState<Record<string, string | null>>({
@@ -81,6 +84,20 @@ export function KYCUploaders({ kyc_documents: propDocs, kyc_status: propStatus, 
 
     return (
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+            {flash?.success && (
+                <div className="p-4 rounded-xl border border-green-200 bg-green-50 flex items-start gap-3">
+                    <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                    <p className="text-sm font-semibold text-green-700">{flash.success}</p>
+                </div>
+            )}
+            
+            {flash?.error && (
+                <div className="p-4 rounded-xl border border-red-200 bg-red-50 flex items-start gap-3">
+                    <AlertCircle className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" />
+                    <p className="text-sm font-semibold text-red-700">{flash.error}</p>
+                </div>
+            )}
+
             <div className={`p-4 rounded-xl border ${currentStatus.border} ${currentStatus.bg} flex items-center gap-3`}>
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center text-xl flex-shrink-0 border ${currentStatus.border}`}>
                     {currentStatus.icon}

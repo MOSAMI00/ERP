@@ -19,9 +19,9 @@ class PaymentController extends Controller
     public function index()
     {
         $payments = Payment::whereHas('rental', function ($q) {
-                $q->where('tenant_id', Auth::id())
-                  ->orWhere('owner_id', Auth::id());
-            })
+            $q->where('tenant_id', Auth::id())
+                ->orWhere('owner_id', Auth::id());
+        })
             ->with(['rental.equipment'])
             ->latest()
             ->paginate(15);
