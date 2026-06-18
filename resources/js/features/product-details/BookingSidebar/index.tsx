@@ -80,7 +80,7 @@ export function BookingSidebar({ product, user }) {
   };
 
   return (
-    <div className="bg-white border border-border rounded-xl p-6 space-y-4 shadow-sm">
+    <div id="booking-sidebar" className="bg-white border border-border rounded-xl p-6 space-y-4 shadow-sm">
       <PriceCard product={product} dailyRate={dailyRate} deposit={deposit} />
 
       {bookingBlocked && (
