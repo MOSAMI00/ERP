@@ -1,19 +1,25 @@
 import React, { useState, useRef } from 'react';
 import { useForm } from '@inertiajs/react';
 import { Camera, CheckCircle } from 'lucide-react';
+import { assetUrl } from '../../../utils/pageData';
 
 export function OwnerProfileForm({ auth }) {
   const user = auth?.user ?? {};
+  const [saved, setSaved] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(user.avatar ? assetUrl(user.avatar) : null);
 
   const form = useForm({
-    full_name: user.full_name ?? user.fullName ?? '',    phone: user.phone ?? '',    governorate: user.governorate ?? '',  });
+    _method: 'PUT',
+    full_name: user.full_name ?? user.fullName ?? '',
+    phone: user.phone ?? '',
+    governorate: user.governorate ?? '',
+    avatar: null as File | null,
+  });
 
-  const [saved, setSaved] = useState(false);
-  const fileRef = useRef(null);
-
-  const handleSave = (e) => {
+  const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
-    form.put('/user/profile', {
+    form.post('/user/profile', {
       onSuccess: () => {
         setSaved(true);
         setTimeout(() => setSaved(false), 3000);
@@ -27,8 +33,12 @@ export function OwnerProfileForm({ auth }) {
     <form onSubmit={handleSave} className="flex flex-col gap-5">
       <div className="flex flex-col items-center gap-3 py-4">
         <div className="relative">
-          <div className="w-24 h-24 rounded-full bg-gradient-to-br from-[#2D5A27] to-[#3D7A35] text-white flex items-center justify-center text-4xl font-bold shadow-lg">
-            {ownerInitial}
+          <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-[#2D5A27] bg-[#2D5A27] text-white flex items-center justify-center text-4xl font-bold shadow-lg">
+            {previewUrl ? (
+              <img src={previewUrl} alt="Avatar" className="w-full h-full object-cover" />
+            ) : (
+              ownerInitial
+            )}
           </div>
           <button
             type="button"
@@ -37,7 +47,19 @@ export function OwnerProfileForm({ auth }) {
           >
             <Camera className="w-4 h-4" />
           </button>
-          <input ref={fileRef} type="file" accept="image/*" className="hidden" />
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0] ?? null;
+              form.setData('avatar', file);
+              if (file) {
+                setPreviewUrl(URL.createObjectURL(file));
+              }
+            }}
+          />
         </div>
         <p className="text-sm text-[#888888]">شعار النشاط / صورة المؤجر</p>
       </div>

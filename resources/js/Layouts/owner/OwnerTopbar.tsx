@@ -1,5 +1,6 @@
 import React from 'react';
 import { Bell, ChevronDown, LogOut, Menu, User } from 'lucide-react';
+import { assetUrl } from '../../utils/pageData';
 
 const OwnerTopbar = ({
   title,
@@ -36,9 +37,17 @@ const OwnerTopbar = ({
       </button>
 
       <div className="topbar-profile" onClick={onToggleProfile}>
-        <div className="flex-center" style={{ width: 32, height: 32, borderRadius: '50%', backgroundColor: 'var(--color-page-bg)', fontWeight: 700 }}>
-          {ownerInitial}
-        </div>
+        {user?.avatar ? (
+          <img
+            src={assetUrl(user.avatar)}
+            alt={user?.full_name}
+            style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover' }}
+          />
+        ) : (
+          <div className="flex-center" style={{ width: 32, height: 32, borderRadius: '50%', backgroundColor: 'var(--color-page-bg)', fontWeight: 700 }}>
+            {ownerInitial}
+          </div>
+        )}
         <span>{(user?.full_name ?? user?.fullName)?.split(' ')[0] ?? 'المؤجر'}</span>
         <ChevronDown size={16} />
         {isProfileOpen ? (

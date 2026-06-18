@@ -1,12 +1,18 @@
 import { Link } from '@inertiajs/react';
 import { Menu, Home, Bell } from 'lucide-react';
+import { assetUrl } from '../../utils/pageData';
 
 export function DashboardTopbar({
   title,
   subtitle = 'لوحة تحكم المستأجر',
   onOpenSidebar,
   unreadNotifications = 0,
+  user = null,
 }) {
+  const userName = user?.full_name || 'مستأجر';
+  const userInitial = (userName || 'أ').charAt(0);
+  const avatarUrl = user?.avatar ? assetUrl(user.avatar) : null;
+
   return (
     <header className="h-16 bg-white border-b border-[#E0E0E0] flex items-center justify-between px-4 md:px-6 flex-shrink-0">
       <div className="flex items-center gap-3">
@@ -44,9 +50,17 @@ export function DashboardTopbar({
           )}
         </Link>
 
-        <div className="w-9 h-9 rounded-full bg-[#2D5A27] text-white flex items-center justify-center font-bold text-sm cursor-pointer">
-          أ
-        </div>
+        {avatarUrl ? (
+          <img
+            src={avatarUrl}
+            alt={userName}
+            className="w-9 h-9 rounded-full object-cover cursor-pointer border border-[#2D5A27]"
+          />
+        ) : (
+          <div className="w-9 h-9 rounded-full bg-[#2D5A27] text-white flex items-center justify-center font-bold text-sm cursor-pointer">
+            {userInitial}
+          </div>
+        )}
       </div>
     </header>
   );

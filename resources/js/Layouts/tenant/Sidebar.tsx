@@ -8,6 +8,7 @@ export function SidebarContent({
   userName = 'أحمد محمد',
   userSubtitle = 'ahmed@example.com',
   userInitial = 'أ',
+  userAvatar = null,
   onLogout,
 }) {
   const { url } = usePage();
@@ -31,9 +32,17 @@ export function SidebarContent({
       {/* User Avatar */}
       <div className="px-5 py-4 border-b border-[#E0E0E0]">
         <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#2D5A27] to-[#3D7A35] text-white flex items-center justify-center font-bold text-lg flex-shrink-0 shadow-md">
-            {userInitial}
-          </div>
+          {userAvatar ? (
+            <img
+              src={userAvatar}
+              alt={userName}
+              className="w-11 h-11 rounded-full object-cover flex-shrink-0 shadow-md border border-[#2D5A27]"
+            />
+          ) : (
+            <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#2D5A27] to-[#3D7A35] text-white flex items-center justify-center font-bold text-lg flex-shrink-0 shadow-md">
+              {userInitial}
+            </div>
+          )}
           <div className="min-w-0">
             <p className="font-semibold text-[#222222] text-sm truncate">{userName}</p>
             <p className="text-xs text-[#888888] truncate">{userSubtitle}</p>
