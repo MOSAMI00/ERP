@@ -8,6 +8,7 @@ import { SidebarContent } from './Sidebar';
 import { DashboardTopbar } from './Topbar';
 import { MobileBottomNav } from './MobileBottomNav';
 import { visit } from '../../inertia/navigation';
+import { assetUrl } from '../../utils/pageData';
 
 const navItems = [
   { icon: ClipboardList, label: 'طلباتي', href: '/dashboard', emoji: '📋', exact: true },
@@ -34,6 +35,13 @@ export function TenantLayout({ children }) {
   const { props, url } = usePage();
   const pathname = url;
 
+  const auth = props.auth as any;
+  const user = auth?.user ?? null;
+  const userName = user?.full_name || 'مستأجر';
+  const userSubtitle = user?.email || '';
+  const userInitial = (userName || 'أ').charAt(0);
+  const userAvatar = user?.avatar ? assetUrl(user.avatar) : null;
+
   const unreadNotifications = props.unread_notifications_count ?? 0;
   const navItemsWithBadges = navItems.map((item) =>
     item.href === '/dashboard/notifications'
@@ -56,7 +64,14 @@ export function TenantLayout({ children }) {
 
       {/* Desktop Sidebar */}
       <aside className="hidden lg:flex flex-col w-[260px] bg-white border-l border-[#E0E0E0] flex-shrink-0 h-full">
-        <SidebarContent navItems={navItemsWithBadges} onClose={() => { }} />
+        <SidebarContent
+          navItems={navItemsWithBadges}
+          onClose={() => { }}
+          userName={userName}
+          userSubtitle={userSubtitle}
+          userInitial={userInitial}
+          userAvatar={userAvatar}
+        />
       </aside>
 
       {/* Tablet Sidebar – icon-only */}
@@ -111,7 +126,14 @@ export function TenantLayout({ children }) {
             >
               <X className="w-5 h-5 text-[#888888]" />
             </button>
-            <SidebarContent navItems={navItemsWithBadges} onClose={() => setSidebarOpen(false)} />
+            <SidebarContent
+              navItems={navItemsWithBadges}
+              onClose={() => setSidebarOpen(false)}
+              userName={userName}
+              userSubtitle={userSubtitle}
+              userInitial={userInitial}
+              userAvatar={userAvatar}
+            />
           </div>
         </div>
       )}
@@ -122,6 +144,7 @@ export function TenantLayout({ children }) {
           title={currentTitle}
           onOpenSidebar={() => setSidebarOpen(true)}
           unreadNotifications={unreadNotifications}
+          user={user}
         />
         <main className="flex-1 overflow-y-auto">
           {children}

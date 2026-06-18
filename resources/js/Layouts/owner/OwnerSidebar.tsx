@@ -1,25 +1,37 @@
 import React from 'react';
 import { LogOut } from 'lucide-react';
+import { assetUrl } from '../../utils/pageData';
 
-const OwnerProfileSummary = ({ user, ownerInitial }) => (
-  <div className="owner-profile-summary">
-    <div className="owner-profile-pic">
-      <div className="flex-center" style={{ width: '100%', height: '100%', borderRadius: '50%', backgroundColor: 'var(--color-page-bg)', fontWeight: 700 }}>
-        {ownerInitial}
+const OwnerProfileSummary = ({ user, ownerInitial }) => {
+  const avatarUrl = user?.avatar ? assetUrl(user.avatar) : null;
+  return (
+    <div className="owner-profile-summary">
+      <div className="owner-profile-pic" style={{ position: 'relative', overflow: 'hidden' }}>
+        {avatarUrl ? (
+          <img
+            src={avatarUrl}
+            alt={user?.full_name}
+            style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }}
+          />
+        ) : (
+          <div className="flex-center" style={{ width: '100%', height: '100%', borderRadius: '50%', backgroundColor: 'var(--color-page-bg)', fontWeight: 700 }}>
+            {ownerInitial}
+          </div>
+        )}
       </div>
+      <h3 style={{ margin: '8px 0 2px', fontSize: '16px' }}>{user?.full_name ?? user?.fullName ?? 'المؤجر'}</h3>
+      <span style={{ fontSize: '13px', color: 'var(--color-text-muted)', display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'center' }}>
+        {user?.email ?? 'متجر المعدات'}
+      </span>
+      <span style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginTop: 4 }}>
+        {user?.governorate ?? 'صنعاء'} | مؤجر <span style={{ color: 'var(--color-completed)' }}>{user?.kyc_status === 'approved' ? 'معتمد' : 'مسجل'}</span>
+      </span>
+      <span style={{ fontSize: '13px', color: 'var(--color-text-muted)', marginTop: 4 }}>
+        {Number(user?.rating ?? 0).toFixed(1)} | {user?.operations_count ?? 0} عملية
+      </span>
     </div>
-    <h3 style={{ margin: '8px 0 2px', fontSize: '16px' }}>{user?.full_name ?? user?.fullName ?? 'المؤجر'}</h3>
-    <span style={{ fontSize: '13px', color: 'var(--color-text-muted)', display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'center' }}>
-      {user?.email ?? 'متجر المعدات'}
-    </span>
-    <span style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginTop: 4 }}>
-      {user?.governorate ?? 'صنعاء'} | مؤجر <span style={{ color: 'var(--color-completed)' }}>{user?.kyc_status === 'approved' ? 'معتمد' : 'مسجل'}</span>
-    </span>
-    <span style={{ fontSize: '13px', color: 'var(--color-text-muted)', marginTop: 4 }}>
-      {Number(user?.rating ?? 0).toFixed(1)} | {user?.operations_count ?? 0} عملية
-    </span>
-  </div>
-);
+  );
+};
 
 const OwnerSidebar = ({
   isOpen,

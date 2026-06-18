@@ -47,6 +47,7 @@ return new class extends Migration
 
             $table->foreignId('category_id')
                 ->constrained('categories')
+                //restrictOnDelete to prevent deleting categories with equipment, or set to null if you want to allow it
                 ->cascadeOnDelete();
 
             $table->string('name');

@@ -29,22 +29,22 @@ export default function SettingsPage({ role: roleProp, auth }) {
     if (role === "owner") {
       switch (activeTab) {
         case "profile":
-          return <OwnerProfileForm />;
+          return <OwnerProfileForm auth={auth} />;
         case "security":
           return <SecurityForm />;
         case "kyc":
-          return <KYCUploaders />;
+          return <KYCUploaders auth={auth} />;
         default:
           return null;
       }
     } else {
       switch (activeTab) {
         case "profile":
-          return <ProfileForm />;
+          return <ProfileForm auth={auth} />;
         case "security":
           return <SecurityForm />;
         case "kyc":
-          return <KYCUploaders />;
+          return <KYCUploaders auth={auth} />;
         default:
           return null;
       }

@@ -1,13 +1,16 @@
 import { useRef, useState } from 'react';
 import { useForm } from '@inertiajs/react';
 import { Camera, CheckCircle } from 'lucide-react';
+import { assetUrl } from '../../../utils/pageData';
 
 export function ProfileForm({ auth }) {
   const user = auth?.user ?? {};
   const [saved, setSaved] = useState(false);
   const fileRef = useRef(null);
+  const [previewUrl, setPreviewUrl] = useState(user.avatar ? assetUrl(user.avatar) : null);
 
   const form = useForm({
+    _method: 'PUT',
     full_name: user.full_name ?? '',
     phone: user.phone ?? '',
     governorate: user.governorate ?? '',
@@ -16,7 +19,7 @@ export function ProfileForm({ auth }) {
 
   const handleSave = (event) => {
     event.preventDefault();
-    form.put('/user/profile', {
+    form.post('/user/profile', {
       onSuccess: () => {
         setSaved(true);
         setTimeout(() => setSaved(false), 3000);
@@ -28,8 +31,12 @@ export function ProfileForm({ auth }) {
     <form onSubmit={handleSave} className="flex flex-col gap-5">
       <div className="flex flex-col items-center gap-3 py-4">
         <div className="relative">
-          <div className="w-24 h-24 rounded-full bg-gradient-to-br from-[#2D5A27] to-[#3D7A35] text-white flex items-center justify-center text-4xl font-bold shadow-lg">
-            {(form.data.full_name || 'أ').charAt(0)}
+          <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-[#2D5A27] bg-[#2D5A27] text-white flex items-center justify-center text-4xl font-bold shadow-lg">
+            {previewUrl ? (
+              <img src={previewUrl} alt="Avatar" className="w-full h-full object-cover" />
+            ) : (
+              (form.data.full_name || 'أ').charAt(0)
+            )}
           </div>
           <button
             type="button"
@@ -38,7 +45,19 @@ export function ProfileForm({ auth }) {
           >
             <Camera className="w-4 h-4" />
           </button>
-          <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(event) => form.setData('avatar', event.target.files?.[0] ?? null)} />
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(event) => {
+              const file = event.target.files?.[0] ?? null;
+              form.setData('avatar', file);
+              if (file) {
+                setPreviewUrl(URL.createObjectURL(file));
+              }
+            }}
+          />
         </div>
       </div>
 

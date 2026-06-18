@@ -1,6 +1,7 @@
 import { ClipboardList, Package, FileText, Bell, Star, Settings, Shield, Home, Wrench } from 'lucide-react';
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { Link, usePage, router } from '@inertiajs/react';
+import { assetUrl } from '../../../../../utils/pageData';
 
 const tenantMenuItems = [
   { icon: ClipboardList, label: 'طلباتي', href: '/dashboard', emoji: '📋' },
@@ -48,16 +49,21 @@ export function UserProfileMenu() {
 
   const fullName = user.full_name ?? user.fullName ?? 'مستخدم';
   const firstLetter = fullName.charAt(0);
+  const avatarUrl = user.avatar ? assetUrl(user.avatar) : null;
 
   return (
     <div className="relative" ref={accountMenuRef}>
       <button
         id="account-avatar-btn"
         onClick={() => setAccountMenuOpen(!accountMenuOpen)}
-        className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm hover:bg-primary/90 transition-all ring-2 ring-transparent hover:ring-primary/30 focus:outline-none"
+        className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm hover:bg-primary/90 transition-all ring-2 ring-transparent hover:ring-primary/30 focus:outline-none overflow-hidden"
         aria-label="فتح قائمة الحساب"
       >
-        {firstLetter}
+        {avatarUrl ? (
+          <img src={avatarUrl} alt={fullName} className="w-full h-full object-cover" />
+        ) : (
+          firstLetter
+        )}
       </button>
 
       {/* Account Dropdown Menu */}
@@ -70,7 +76,11 @@ export function UserProfileMenu() {
           {/* User Info Header */}
           <div className="px-4 py-3 bg-[#F4F6F9] border-b border-border">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-bold">{firstLetter}</div>
+              {avatarUrl ? (
+                <img src={avatarUrl} alt={fullName} className="w-10 h-10 rounded-full object-cover" />
+              ) : (
+                <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-bold">{firstLetter}</div>
+              )}
               <div>
                 <p className="font-semibold text-[#222222] text-sm">{fullName}</p>
                 <p className="text-xs text-[#888888]">{user.phone || 'بدون رقم'}</p>
