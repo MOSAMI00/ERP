@@ -49,10 +49,14 @@ return new class extends Migration
 
             $table->string('governorate');
 
-            // $table->rememberToken();
+            $table->rememberToken();
 
             $table->timestamps();
             $table->softDeletes();
+
+            $table->index(['type', 'status']);
+            $table->index('kyc_status');
+            $table->index('governorate');
         });
 
         /*
@@ -115,11 +119,15 @@ return new class extends Migration
                 'rejected'
             ])->default('pending');
 
-            $table->unsignedBigInteger('reviewed_by')->nullable();
+            $table->unsignedBigInteger('reviewed_by')->nullable()->index();
+
+            $table->text('rejection_reason')->nullable();
 
             $table->timestamp('submitted_at');
 
             $table->timestamps();
+
+            $table->index(['user_id', 'status']);
         });
 
         /*
@@ -151,6 +159,8 @@ return new class extends Migration
             $table->boolean('is_verified')->default(false);
 
             $table->timestamps();
+
+            $table->index(['user_id', 'is_default']);
         });
     }
 

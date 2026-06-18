@@ -4,12 +4,17 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Review;
+use App\Domains\Review\Services\ReviewService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 class AdminReviewController extends Controller
 {
+    public function __construct(
+        private ReviewService $reviewService,
+    ) {}
+
     public function index(Request $request)
     {
         $reviews = Review::with(['reviewer', 'rental.equipment'])
@@ -23,13 +28,17 @@ class AdminReviewController extends Controller
             )
             ->when(
                 $request->search,
-                fn($q) => $q->whereHas(
-                    'reviewer',
-                    fn($q) => $q->where('full_name', 'like', "%{$request->search}%")
+                fn($q) => $q->where(fn ($searchQuery) => $searchQuery
+                    ->where('review_text', 'like', "%{$request->search}%")
+                    ->orWhereHas(
+                        'reviewer',
+                        fn($reviewerQuery) => $reviewerQuery->where('full_name', 'like', "%{$request->search}%")
+                    )
                 )
             )
             ->latest()
-            ->paginate(20);
+            ->paginate(20)
+            ->withQueryString();
 
         return Inertia::render('Admin/Reviews/Index', [
             'reviews' => $reviews,
@@ -46,53 +55,31 @@ class AdminReviewController extends Controller
 
     public function hide(Review $review)
     {
-        $review->update([
-            'status'      => 'hidden',
-            'hidden_by'   => Auth::id(),
-            'hidden_at'   => now(),
-        ]);
+        $admin = Auth::guard('admin')->user();
+        abort_unless($admin, 403);
 
-        // إعادة حساب التقييم بعد الإخفاء
-        $this->recalculateRating($review->target_type, $review->target_id);
+        $this->reviewService->hideReview($review, $admin);
 
         return back()->with('success', 'Review hidden successfully.');
     }
 
     public function restore(Review $review)
     {
-        $review->update([
-            'status'    => 'visible',
-            'hidden_by' => null,
-            'hidden_at' => null,
-        ]);
+        $admin = Auth::guard('admin')->user();
+        abort_unless($admin, 403);
 
-        $this->recalculateRating($review->target_type, $review->target_id);
+        $this->reviewService->restoreReview($review, $admin);
 
         return back()->with('success', 'Review restored successfully.');
     }
 
     public function destroy(Review $review)
     {
-        $this->recalculateRating($review->target_type, $review->target_id);
+        $admin = Auth::guard('admin')->user();
+        abort_unless($admin, 403);
 
-        $review->delete();
+        $this->reviewService->deleteReview($review, $admin);
 
         return back()->with('success', 'Review deleted permanently.');
-    }
-
-    private function recalculateRating(string $type, int $id): void
-    {
-        $avg = Review::where('target_type', $type)
-            ->where('target_id', $id)
-            ->where('status', 'visible')
-            ->avg('rating');
-
-        $newRating = $avg ? round($avg, 2) : 0;
-
-        if ($type === 'user') {
-            \App\Models\User::find($id)?->update(['rating' => $newRating]);
-        } else {
-            \App\Models\Equipment::find($id)?->update(['rating' => $newRating]);
-        }
     }
 }

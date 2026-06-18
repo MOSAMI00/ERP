@@ -22,6 +22,17 @@ class AdminRole extends Model
         'can_manage_settings',
     ];
 
+    protected $casts = [
+        'can_manage_users' => 'boolean',
+        'can_manage_equipment' => 'boolean',
+        'can_manage_rentals' => 'boolean',
+        'can_manage_disputes' => 'boolean',
+        'can_manage_financial' => 'boolean',
+        'can_manage_reviews' => 'boolean',
+        'can_view_audit_log' => 'boolean',
+        'can_manage_settings' => 'boolean',
+    ];
+
     public function admins()
     {
         return $this->hasMany(Admin::class, 'role_id');

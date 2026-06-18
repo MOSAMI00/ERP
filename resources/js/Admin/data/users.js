@@ -1,0 +1,6 @@
+export const usersData = [
+  { id: 1, name: 'أحمد محمد', phone: '+967 771 234 567', email: 'ahmed@email.com', type: 'مستأجر', typeColor: 'info', rating: 4.5, ops: 12, status: 'نشط', statusColor: 'success', gov: 'صنعاء', kyc: true, joined: '2023-05-12', avatar: 'https://ui-avatars.com/api/?name=Ahmed+M&background=3498DB&color=fff' },
+  { id: 2, name: 'شركة البناء الحديث', phone: '+967 731 234 567', email: 'info@modernbuild.com', type: 'مؤجر', typeColor: 'success', rating: 4.8, ops: 145, status: 'نشط', statusColor: 'success', gov: 'عدن', kyc: true, joined: '2022-11-04', avatar: 'https://ui-avatars.com/api/?name=MB&background=27AE60&color=fff' },
+  { id: 3, name: 'علي صالح', phone: '+967 711 234 567', email: 'ali@email.com', type: 'مستأجر', typeColor: 'info', rating: 3.2, ops: 4, status: 'محظور', statusColor: 'danger', gov: 'تعز', kyc: false, joined: '2024-01-20', avatar: 'https://ui-avatars.com/api/?name=Ali+S&background=E74C3C&color=fff' },
+  { id: 4, name: 'مؤسسة التقنية', phone: '+967 770 000 000', email: 'tech@email.com', type: 'مؤجر', typeColor: 'success', rating: 4.9, ops: 89, status: 'موقوف', statusColor: 'warning', gov: 'حضرموت', kyc: true, joined: '2023-08-15', avatar: 'https://ui-avatars.com/api/?name=Tech&background=F39C12&color=fff' },
+];

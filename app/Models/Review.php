@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Models;
+use App\Domains\Review\Enums\ReviewStatus;
 use App\Models\Admin;
 use App\Models\User;
 use App\Models\RentalOperation;
@@ -22,6 +23,11 @@ class Review extends Model
         'review_text',
         'status',
         'deleted_by_id',
+    ];
+
+    protected $casts = [
+        'status' => ReviewStatus::class,
+        'rating' => 'decimal:2',
     ];
 
     public function reviewer()

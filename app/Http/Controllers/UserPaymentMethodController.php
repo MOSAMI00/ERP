@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\UserPaymentMethod;
 use Illuminate\Http\Request;
+use App\Http\Requests\StorePaymentMethodRequest;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
@@ -20,18 +21,12 @@ class UserPaymentMethodController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function store(StorePaymentMethodRequest $request)
     {
         /** @var User $user */
         $user = Auth::user();
 
-        $data = $request->validate([
-            'method_type'    => ['required', 'in:bank_transfer,mobile_wallet'],
-            'account_name'   => ['required', 'string', 'max:255'],
-            'account_number' => ['required', 'string', 'max:255'],
-            'bank_name'      => ['nullable', 'string'],
-            'is_default'     => ['boolean'],
-        ]);
+        $data = $request->validated();
 
         if (!empty($data['is_default'])) {
             $user->paymentMethods()->update(['is_default' => false]);

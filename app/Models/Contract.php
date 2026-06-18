@@ -15,6 +15,7 @@ class Contract extends Model
         'contract_body',
         'tenant_signature',
         'owner_signature',
+        'status',
         'tenant_signed_at',
         'owner_signed_at',
     ];

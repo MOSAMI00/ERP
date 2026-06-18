@@ -1,6 +1,8 @@
 <?php
 
 namespace App\Models;
+use App\Domains\Handover\Enums\ConditionStatus;
+use App\Domains\Handover\Enums\HandoverPhase;
 use App\Models\RentalOperation;
 use App\Models\HandoverImage;
 use App\Models\User;
@@ -26,6 +28,8 @@ class HandoverReport extends Model
     ];
 
     protected $casts = [
+        'phase' => HandoverPhase::class,
+        'condition_status' => ConditionStatus::class,
         'has_issues' => 'boolean',
         'confirmed_at' => 'datetime',
     ];

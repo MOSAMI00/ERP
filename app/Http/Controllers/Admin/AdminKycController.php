@@ -2,39 +2,64 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Domains\User\Enums\KycStatus;
+use App\Domains\User\Services\KycVerificationService;
 use App\Http\Controllers\Controller;
 use App\Models\KycDocument;
 use Illuminate\Http\Request;
+use App\Http\Requests\Admin\RejectKycRequest;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 class AdminKycController extends Controller
 {
+    public function __construct(
+        private KycVerificationService $kyc,
+    ) {}
+
     public function index(Request $request)
     {
+        $status = in_array($request->status, array_map(fn ($case) => $case->value, KycStatus::cases()), true)
+            ? $request->status
+            : null;
+
         $docs = KycDocument::with('user')
-            ->when($request->status, fn($q) => $q->where('status', $request->status))
+            ->when($status, fn($q) => $q->where('status', $status))
+            ->when($request->search, function ($q) use ($request) {
+                $term = "%{$request->search}%";
+
+                $q->whereHas('user', fn ($userQuery) => $userQuery
+                    ->where('full_name', 'like', $term)
+                    ->orWhere('email', 'like', $term));
+            })
             ->latest()
-            ->paginate(20);
+            ->paginate(20)
+            ->withQueryString();
 
         return Inertia::render('Admin/Kyc/Index', [
             'documents' => $docs,
-            'filters'   => $request->only('status'),
+            'filters'   => array_merge($request->only(['search']), ['status' => $status]),
         ]);
     }
 
     public function approve(KycDocument $document)
     {
-        $document->update(['status' => 'approved', 'reviewed_by' => Auth::id()]);
-        $document->user->update(['kyc_status' => 'verified']);
+        $admin = Auth::guard('admin')->user();
+        abort_unless($admin, 403);
+
+        $this->kyc->approve($document, $admin);
 
         return back()->with('success', 'KYC approved.');
     }
 
-    public function reject(KycDocument $document)
+    public function reject(RejectKycRequest $request, KycDocument $document)
     {
-        $document->update(['status' => 'rejected', 'reviewed_by' => Auth::id()]);
-        $document->user->update(['kyc_status' => 'rejected']);
+        $admin = Auth::guard('admin')->user();
+        abort_unless($admin, 403);
+
+        $data = $request->validated();
+
+        $this->kyc->reject($document, $admin, $data['rejection_reason'] ?? 'Rejected by admin.');
 
         return back()->with('success', 'KYC rejected.');
     }

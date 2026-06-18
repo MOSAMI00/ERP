@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Models;
+use App\Domains\User\Enums\UserStatus;
 use App\Models\Equipment;
 use App\Models\RentalOperation;
 use App\Models\KycDocument;
@@ -42,12 +43,35 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
+            'status' => UserStatus::class,
+            'rating' => 'float',
+            'operations_count' => 'integer',
         ];
     }
 
     public function getAuthPassword()
     {
         return $this->password_hash;
+    }
+
+    public function getNameAttribute(): ?string
+    {
+        return $this->full_name;
+    }
+
+    public function setNameAttribute(?string $value): void
+    {
+        $this->attributes['full_name'] = $value;
+    }
+
+    public function getPasswordAttribute(): ?string
+    {
+        return $this->password_hash;
+    }
+
+    public function setPasswordAttribute(?string $value): void
+    {
+        $this->attributes['password_hash'] = $value;
     }
 
     public function equipment()

@@ -1,6 +1,8 @@
 <?php
 
 namespace App\Models;
+use App\Domains\Compensation\Enums\OwnerDecision;
+use App\Domains\Handover\Enums\ConditionStatus;
 use App\Models\RentalOperation;
 use App\Models\User;
 use App\Models\Dispute;
@@ -11,6 +13,8 @@ use Illuminate\Database\Eloquent\Model;
 class EquipmentHandover extends Model
 {
     use HasFactory;
+
+    protected $table = 'equipment_handover';
 
     protected $fillable = [
         'rental_op_id',
@@ -29,6 +33,10 @@ class EquipmentHandover extends Model
 
     protected $casts = [
         'actual_return_date' => 'date',
+        'late_fee' => 'decimal:2',
+        'final_condition' => ConditionStatus::class,
+        'proposed_deduction' => 'decimal:2',
+        'owner_decision' => OwnerDecision::class,
         'decided_at' => 'datetime',
         'objection_deadline' => 'datetime',
         'objection_submitted_at' => 'datetime',

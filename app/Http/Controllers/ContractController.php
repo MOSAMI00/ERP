@@ -4,12 +4,18 @@ namespace App\Http\Controllers;
 
 use App\Models\Contract;
 use App\Models\RentalOperation;
-use Illuminate\Http\Request;
+use App\Http\Requests\SignContractRequest;
+use App\Shared\Audit\AuditLogService;
 use Illuminate\Support\Facades\Auth;
-use Inertia\Inertia;    
+use Illuminate\Support\Facades\DB;
+use Inertia\Inertia;
 
 class ContractController extends Controller
 {
+    public function __construct(
+        private AuditLogService $audit,
+    ) {}
+
     public function show(RentalOperation $rental)
     {
         $this->authorize('view', $rental);
@@ -26,42 +32,54 @@ class ContractController extends Controller
         ]);
     }
 
-    public function tenantSign(Request $request, Contract $contract)
+    public function tenantSign(SignContractRequest $request, Contract $contract)
     {
         $this->authorize('view', $contract->rental);
 
-        $data = $request->validate([
-            'tenant_signature' => ['required', 'string'],
-        ]);
+        $request->validated();
 
-        $contract->update([
-            'tenant_signature'   => $data['tenant_signature'],
-            'tenant_signed_at'   => now(),
-        ]);
+        abort_unless((int) Auth::id() === (int) $contract->rental->tenant_id, 403);
 
-        if ($contract->owner_signature) {
-            $contract->update(['status' => 'signed']);
-        }
+        DB::transaction(function () use ($contract) {
+            $contract = Contract::query()->whereKey($contract->id)->lockForUpdate()->firstOrFail();
+
+            $contract->update([
+                'tenant_signature' => 'signed',
+                'tenant_signed_at' => now(),
+            ]);
+
+            if ($contract->owner_signature === 'signed') {
+                $contract->update(['status' => 'signed']);
+            }
+
+            $this->audit->log('contract_signed_by_tenant', $contract->rental);
+        });
 
         return back()->with('success', 'Contract signed successfully.');
     }
 
-    public function ownerSign(Request $request, Contract $contract)
+    public function ownerSign(SignContractRequest $request, Contract $contract)
     {
-        $this->authorize('update', $contract->rental);
+        $this->authorize('view', $contract->rental);
 
-        $data = $request->validate([
-            'owner_signature' => ['required', 'string'],
-        ]);
+        $request->validated();
 
-        $contract->update([
-            'owner_signature'   => $data['owner_signature'],
-            'owner_signed_at'   => now(),
-        ]);
+        abort_unless((int) Auth::id() === (int) $contract->rental->owner_id, 403);
 
-        if ($contract->tenant_signature) {
-            $contract->update(['status' => 'signed']);
-        }
+        DB::transaction(function () use ($contract) {
+            $contract = Contract::query()->whereKey($contract->id)->lockForUpdate()->firstOrFail();
+
+            $contract->update([
+                'owner_signature' => 'signed',
+                'owner_signed_at' => now(),
+            ]);
+
+            if ($contract->tenant_signature === 'signed') {
+                $contract->update(['status' => 'signed']);
+            }
+
+            $this->audit->log('contract_signed_by_owner', $contract->rental);
+        });
 
         return back()->with('success', 'Contract signed by owner.');
     }

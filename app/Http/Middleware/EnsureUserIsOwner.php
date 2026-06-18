@@ -11,7 +11,7 @@ class EnsureUserIsOwner
     public function handle(Request $request, Closure $next)
     {
         if (!$request->user() || $request->user()->type !== 'owner') {
-            return redirect()->route('dashboard')
+            return redirect()->route('dashboard.index')
                 ->with('error', 'Access denied. Owner account required.');
         }
 

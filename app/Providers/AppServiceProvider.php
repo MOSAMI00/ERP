@@ -2,23 +2,45 @@
 
 namespace App\Providers;
 
-use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
+use App\Models\Contract;
+use App\Models\Dispute;
+use App\Models\Admin;
+use App\Models\Equipment;
+use App\Models\EquipmentHandover;
+use App\Models\HandoverReport;
+use App\Models\Payment;
+use App\Models\RentalOperation;
+use App\Models\Review;
+use App\Models\User;
+use App\Policies\ContractPolicy;
+use App\Policies\DisputePolicy;
+use App\Policies\EquipmentHandoverPolicy;
+use App\Policies\EquipmentPolicy;
+use App\Policies\HandoverReportPolicy;
+use App\Policies\PaymentPolicy;
+use App\Policies\RentalOperationPolicy;
+use App\Policies\ReviewPolicy;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Support\ServiceProvider;
 
-class AuthServiceProvider extends ServiceProvider
+class AppServiceProvider extends ServiceProvider
 {
-    protected $policies = [
-        \App\Models\Equipment::class          => \App\Policies\EquipmentPolicy::class,
-        \App\Models\RentalOperation::class    => \App\Policies\RentalOperationPolicy::class,
-        \App\Models\Contract::class           => \App\Policies\ContractPolicy::class,
-        \App\Models\Payment::class            => \App\Policies\PaymentPolicy::class,
-        \App\Models\HandoverReport::class     => \App\Policies\HandoverReportPolicy::class,
-        \App\Models\EquipmentHandover::class  => \App\Policies\EquipmentHandoverPolicy::class,
-        \App\Models\Dispute::class            => \App\Policies\DisputePolicy::class,
-        \App\Models\Review::class             => \App\Policies\ReviewPolicy::class,
-    ];
-
     public function boot(): void
     {
-        $this->registerPolicies();
+        Gate::policy(Equipment::class, EquipmentPolicy::class);
+        Gate::policy(RentalOperation::class, RentalOperationPolicy::class);
+        Gate::policy(Contract::class, ContractPolicy::class);
+        Gate::policy(Payment::class, PaymentPolicy::class);
+        Gate::policy(HandoverReport::class, HandoverReportPolicy::class);
+        Gate::policy(EquipmentHandover::class, EquipmentHandoverPolicy::class);
+        Gate::policy(Dispute::class, DisputePolicy::class);
+        Gate::policy(Review::class, ReviewPolicy::class);
+
+        Relation::morphMap([
+            'admin' => Admin::class,
+            'user' => User::class,
+            'equipment' => Equipment::class,
+        ]);
     }
 }

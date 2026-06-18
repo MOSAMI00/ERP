@@ -1,0 +1,164 @@
+import React from 'react';
+import { useForm } from '@inertiajs/react';
+import { ArrowRight, ArrowLeft, X, Check } from 'lucide-react';
+import { visit } from '../../../inertia/navigation';
+import BasicInfoStep from './components/BasicInfoStep';
+import PhotosStep from './components/PhotosStep';
+import PricingStep from './components/PricingStep';
+import ReviewStep from './components/ReviewStep';
+import { EQUIPMENT_STEPS } from './useEquipmentDraft';
+import OwnerLayout from '../../../Layouts/owner/OwnerLayout';
+import { useState } from 'react';
+import { useSharedData } from '@/inertia/useSharedData';
+import type { SharedOption } from '@/types/inertia';
+
+interface AddEquipmentPageProps {
+  categories?: Array<{ id: number | string; name_ar?: string; name?: string }>;
+  equipment?: Record<string, any> | null;
+  mode?: 'create' | 'edit' | string;
+}
+
+export default function AddEquipmentPage({ categories = [], equipment = null, mode = '' }: AddEquipmentPageProps) {
+  const [step, setStep] = useState(0);
+  const { auth, governorates } = useSharedData();
+  const user = auth?.user ?? null;
+  const isEditMode = mode === 'edit' && Boolean(equipment?.id);
+  const kycBlocked = !isEditMode && user?.kyc_status !== 'approved';
+
+  const form = useForm({
+    name: equipment?.name ?? '',
+    category_id: equipment?.category_id ? String(equipment.category_id) : '',
+    governorate: equipment?.governorate ?? '',
+    address: equipment?.address ?? '',
+    description: equipment?.description ?? '',
+    price_per_day: equipment?.price_per_day ?? '',
+    insurance_amount: equipment?.insurance_amount ?? '',
+    rental_terms: equipment?.rental_terms ?? 'لا توجد شروط إضافية.',
+    images: (equipment?.images ?? []) as any[],
+  });
+
+  const updateDraft = (key: string) => (event: any) => {
+    form.setData(key as any, event.target.value);
+  };
+
+  const goNext = () => setStep((s) => Math.min(s + 1, EQUIPMENT_STEPS.length - 1));
+  const goBack = () => setStep((s) => Math.max(s - 1, 0));
+
+  const handleSubmit = () => {
+    if (kycBlocked) return;
+
+    form.transform((data) => ({
+      ...data,
+      images: data.images.filter((image) => image instanceof File),
+      rental_terms: data.rental_terms || 'لا توجد شروط إضافية.',
+    }));
+
+    const options = {
+      onSuccess: () => visit('/owner/equipment'),
+      forceFormData: true,
+    };
+
+    if (isEditMode) {
+      form.post(`/equipment/${equipment.id}?_method=PATCH`, options);
+      return;
+    }
+
+    form.post('/equipment', options);
+  };
+
+  const renderStep = () => {
+    switch (step) {
+      case 0:
+        return (
+          <BasicInfoStep
+            draft={form.data}
+            updateDraft={updateDraft}
+            categories={categories}
+            governorates={governorates as SharedOption[]}
+          />
+        );
+      case 1:
+        return (
+          <PhotosStep 
+            images={form.data.images} 
+            setImages={(imgs) => form.setData('images', imgs)} 
+          />
+        );
+      case 2:
+        return <PricingStep draft={form.data} updateDraft={updateDraft} />;
+      case 3:
+        return <ReviewStep draft={form.data} images={form.data.images} />;
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div>
+      <div className="flex-between mb-8">
+        <h2 style={{ margin: 0 }}>{isEditMode ? 'تعديل المعدة' : 'إضافة معدة جديدة'}</h2>
+        <button className="owner-btn owner-btn-outline" onClick={() => visit('/owner/equipment')}>
+          <X size={16} /> إلغاء
+        </button>
+      </div>
+
+      {/* Stepper */}
+      <div className="stepper mb-8">
+        {EQUIPMENT_STEPS.map((label, i) => (
+          <div key={i} className={`stepper-step ${i <= step ? 'active' : ''} ${i < step ? 'completed' : ''}`}>
+            <div className="stepper-circle">
+              {i < step ? <Check size={14} /> : i + 1}
+            </div>
+            <span className="stepper-label">{label}</span>
+            {i < EQUIPMENT_STEPS.length - 1 && <div className="stepper-line" />}
+          </div>
+        ))}
+      </div>
+
+      <div className="owner-card">
+        {kycBlocked && (
+          <div className="mb-6 p-4 rounded-xl border border-amber-200 bg-amber-50 text-amber-800">
+            يجب توثيق الهوية بالكامل (KYC) قبل إضافة أي معدة.
+          </div>
+        )}
+
+        {renderStep()}
+
+        {form.errors && Object.keys(form.errors).length > 0 && (
+          <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600">
+            {Object.values(form.errors).map((error, i) => (
+              <p key={i}>{error as string}</p>
+            ))}
+          </div>
+        )}
+
+        {/* Navigation */}
+        <div className="flex-between mt-8" style={{ borderTop: '1px solid var(--color-border)', paddingTop: 24 }}>
+          <button
+            className="owner-btn owner-btn-outline"
+            onClick={() => (step === 0 ? visit('/owner/equipment') : goBack())}
+          >
+            {step === 0 ? <X size={16} /> : <ArrowRight size={16} />} 
+            {step === 0 ? 'إلغاء' : 'السابق'}
+          </button>
+
+          {step < EQUIPMENT_STEPS.length - 1 ? (
+            <button className="owner-btn owner-btn-primary" onClick={goNext} disabled={kycBlocked}>
+              التالي <ArrowLeft size={16} />
+            </button>
+          ) : (
+            <button
+              className="owner-btn owner-btn-primary"
+              onClick={handleSubmit}
+              disabled={form.processing || kycBlocked}
+            >
+              <Check size={16} /> {form.processing ? 'جاري الحفظ...' : (isEditMode ? 'حفظ التعديلات' : 'نشر المعدة')}
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+AddEquipmentPage.layout = (page: React.ReactNode) => <OwnerLayout>{page}</OwnerLayout>;

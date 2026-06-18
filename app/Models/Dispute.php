@@ -1,6 +1,8 @@
 <?php
 
 namespace App\Models;
+use App\Domains\Dispute\Enums\AdminDecision;
+use App\Domains\Dispute\Enums\DisputeStatus;
 use App\Models\RentalOperation;
 use App\Models\EquipmentHandover;
 use App\Models\User;
@@ -29,6 +31,10 @@ class Dispute extends Model
     ];
 
     protected $casts = [
+        'status' => DisputeStatus::class,
+        'admin_decision' => AdminDecision::class,
+        'requested_amount' => 'decimal:2',
+        'final_compensation' => 'decimal:2',
         'resolved_at' => 'datetime',
     ];
 

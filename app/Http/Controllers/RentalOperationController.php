@@ -2,15 +2,22 @@
 
 namespace App\Http\Controllers;
 
+use App\Domains\Rental\Services\RentalWorkflowService;
 use App\Models\User;
 use App\Models\RentalOperation;
 use App\Models\Equipment;
 use Illuminate\Http\Request;
+use App\Http\Requests\StoreRentalRequest;
+use App\Http\Requests\CancelRentalRequest;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 class RentalOperationController extends Controller
 {
+    public function __construct(
+        private RentalWorkflowService $workflow,
+    ) {}
+
     public function index()
     {
         /** @var User $user */
@@ -32,41 +39,36 @@ class RentalOperationController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function store(StoreRentalRequest $request)
     {
-        $data = $request->validate([
-            'equipment_id'      => ['required', 'exists:equipment,id'],
-            'start_date'        => ['required', 'date', 'after:today'],
-            'end_date'          => ['required', 'date', 'after:start_date'],
-            'delivery_location' => ['required', 'string'],
-        ]);
-
-        $equipment = Equipment::findOrFail($data['equipment_id']);
-        $days = now()->parse($data['start_date'])->diffInDays($data['end_date']);
-
-        $rental = RentalOperation::create([
-            'equipment_id'     => $data['equipment_id'],
-            'start_date'       => $data['start_date'],
-            'end_date'         => $data['end_date'],
-            'delivery_location'=> $data['delivery_location'],
-            'tenant_id'        => Auth::id(),
-            'owner_id'         => $equipment->owner_id,
-            'duration_days'    => $days,
-            'rental_amount'    => $equipment->price_per_day * $days,
-            'insurance_amount' => $equipment->insurance_amount,
-            'total_amount'     => ($equipment->price_per_day * $days) + $equipment->insurance_amount,
-            'status'           => 'pending',
-        ]);
+        $data = $request->validated();
+        
+        try {
+            $rental = $this->workflow->createRental($data, $request->user());
+        } catch (\App\Domains\Shared\Exceptions\InvalidStateTransitionException $e) {
+            return back()->withErrors(['equipment_id' => $e->getMessage()]);
+        } catch (\App\Domains\Shared\Exceptions\UnauthorizedDomainActionException $e) {
+            return back()->withErrors(['equipment_id' => $e->getMessage()]);
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => 'حدث خطأ غير متوقع: ' . $e->getMessage()]);
+        }
 
         return redirect()->route('rentals.show', $rental)
-            ->with('success', 'Rental request sent.');
+            ->with('success', 'تم إرسال طلب التأجير بنجاح.');
     }
 
     public function show(RentalOperation $rental)
     {
         $this->authorize('view', $rental);
 
-        $rental->load(['equipment.images', 'tenant', 'owner', 'contract', 'payments']);
+        $rental->load([
+            'equipment.images',
+            'tenant',
+            'owner',
+            'contract',
+            'payments',
+            'reviews',
+        ]);
 
         return Inertia::render('Rentals/Show', [
             'rental' => $rental,
@@ -77,24 +79,23 @@ class RentalOperationController extends Controller
     {
         $this->authorize('confirm', $rental);
 
-        $rental->update(['status' => 'confirmed']);
+        $this->workflow->approveRental($rental);
 
-        return back()->with('success', 'Rental confirmed.');
+        return back()->with('success', 'تمت الموافقة على الطلب وإشعار المستأجر.');
     }
 
-    public function cancel(Request $request, RentalOperation $rental)
+    public function cancel(CancelRentalRequest $request, RentalOperation $rental)
     {
         $this->authorize('cancel', $rental);
 
-        $data = $request->validate([
-            'cancellation_reason' => ['required', 'string'],
-        ]);
+        $data = $request->validated();
 
-        $rental->update([
-            'status'              => 'cancelled',
-            'cancellation_reason' => $data['cancellation_reason'],
-        ]);
+        if ((int) Auth::id() === (int) $rental->owner_id) {
+            $this->workflow->cancelByOwner($rental, $data['cancellation_reason']);
+        } else {
+            $this->workflow->cancelByTenant($rental, $data['cancellation_reason']);
+        }
 
-        return back()->with('success', 'Rental cancelled.');
+        return back()->with('success', 'تم إلغاء عملية التأجير.');
     }
 }

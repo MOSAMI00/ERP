@@ -3,6 +3,7 @@
 
 namespace App\Policies;
 
+use App\Domains\Rental\Enums\RentalStatus;
 use App\Models\RentalOperation;
 use App\Models\User;
 
@@ -26,13 +27,13 @@ class RentalOperationPolicy
     public function confirm(User $user, RentalOperation $rental): bool
     {
         return $user->id === $rental->owner_id
-            && $rental->status === 'pending';
+            && $rental->status === RentalStatus::Pending;
     }
 
     // أي من الطرفين يقدر يلغي
     public function cancel(User $user, RentalOperation $rental): bool
     {
         return ($user->id === $rental->owner_id || $user->id === $rental->tenant_id)
-            && in_array($rental->status, ['pending', 'confirmed']);
+            && in_array($rental->status, [RentalStatus::Pending, RentalStatus::Confirmed], true);
     }
 }

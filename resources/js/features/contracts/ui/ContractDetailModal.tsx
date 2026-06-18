@@ -1,0 +1,73 @@
+import React from 'react';
+import { ContractBody } from './ContractBody';
+
+export function ContractDetailModal({ contract, config, onClose }) {
+  if (!contract) return null;
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/40 p-4 sm:items-center"
+      onClick={onClose}
+    >
+      <div
+        className="my-8 w-full max-w-2xl rounded-2xl bg-white p-6 shadow-xl sm:my-4"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="mb-5 flex items-start justify-between gap-4">
+          <div>
+            <h2 className="m-0 text-xl font-bold text-[#222222]">
+              عقد التأجير
+            </h2>
+            <p className="m-0 mt-1 text-sm text-[#888888]">
+              {contract.number}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-full border border-[#E0E0E0] px-3 py-1 text-sm font-bold text-[#555555] hover:bg-[#F4F6F9]"
+          >
+            إغلاق
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
+          <div className="rounded-xl bg-[#F8FAFC] p-4">
+            <p className="m-0 text-[#888888]">
+              {config.partnerColumnHeader}
+            </p>
+            <p className="m-0 mt-1 font-bold text-[#222222]">
+              {contract.partnerName}
+            </p>
+          </div>
+          <div className="rounded-xl bg-[#F8FAFC] p-4">
+            <p className="m-0 text-[#888888]">المعدة</p>
+            <p className="m-0 mt-1 font-bold text-[#222222]">
+              {contract.equipment}
+            </p>
+          </div>
+          <div className="rounded-xl bg-[#F8FAFC] p-4">
+            <p className="m-0 text-[#888888]">
+              {config.amountColumnHeader}
+            </p>
+            <p className="m-0 mt-1 font-bold text-[#222222]">
+              {contract.amount}
+            </p>
+          </div>
+          <div className="rounded-xl bg-[#F8FAFC] p-4">
+            <p className="m-0 text-[#888888]">
+              {config.statusColumnHeader}
+            </p>
+            <p className="m-0 mt-1 font-bold text-[#222222]">
+              {contract.statusLabel || contract.status}
+            </p>
+          </div>
+        </div>
+
+        <div className=" max-h-[200px] sm:max-h-[350px] md:max-h-[480px] overflow-y-auto rounded-xl bg-[#F8FAFC] p-3">
+          <ContractBody body={contract.body} />
+        </div>
+      </div>
+    </div>
+  );
+}

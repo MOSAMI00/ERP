@@ -17,6 +17,10 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\HandleInertiaRequests::class,
         ]);
 
+        $middleware->redirectGuestsTo(fn (\Illuminate\Http\Request $request) =>
+            $request->is('admin*') ? route('admin.login') : route('login')
+        );
+
         // Aliases مختصرة للاستخدام في Routes
         $middleware->alias([
             'owner'      => \App\Http\Middleware\EnsureUserIsOwner::class,

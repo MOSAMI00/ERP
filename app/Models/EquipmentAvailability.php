@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Models;
+use App\Domains\Equipment\Enums\AvailabilityReason;
 use App\Models\Equipment;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -20,6 +21,7 @@ class EquipmentAvailability extends Model
     ];
 
     protected $casts = [
+        'reason' => AvailabilityReason::class,
         'unavailable_from' => 'date',
         'unavailable_to' => 'date',
     ];

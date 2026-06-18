@@ -2,19 +2,26 @@
 
 namespace App\Http\Controllers;
 
+use App\Domains\Compensation\Enums\OwnerDecision;
+use App\Domains\Compensation\Services\CompensationWorkflowService;
 use App\Models\EquipmentHandover;
 use App\Models\RentalOperation;
 use Illuminate\Http\Request;
+use App\Http\Requests\DecideHandoverRequest;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 class EquipmentHandoverController extends Controller
 {
+    public function __construct(
+        private CompensationWorkflowService $workflow,
+    ) {}
+
     public function show(RentalOperation $rental)
     {
         $this->authorize('view', $rental);
 
-        $handover = $rental->finalHandover()->with(['decidedBy', 'dispute'])->first();
+        $handover = $rental->equipmentHandover()->with(['decidedBy', 'dispute'])->first();
 
         return Inertia::render('Handover/Show', [
             'rental'   => $rental->load(['equipment', 'tenant', 'owner']),
@@ -22,26 +29,42 @@ class EquipmentHandoverController extends Controller
         ]);
     }
 
-    public function decide(Request $request, EquipmentHandover $handover)
+    public function decide(DecideHandoverRequest $request, EquipmentHandover $handover)
     {
         $this->authorize('update', $handover);
 
-        $data = $request->validate([
-            'owner_decision'     => ['required', 'in:full_refund,partial_refund,no_refund'],
-            'proposed_deduction' => ['nullable', 'numeric', 'min:0'],
-            'final_condition'    => ['required', 'in:good,damaged,partially_damaged'],
-            'final_notes'        => ['nullable', 'string'],
-        ]);
+        $data = $request->validated();
 
         $handover->update([
-            ...$data,
-            'decided_by_id' => Auth::id(),
-            'decided_at'    => now(),
-            'objection_deadline' => now()->addHours(
-                config('platform.objection_window_hours', 24)
-            ),
+            'final_condition' => $data['final_condition'],
+            'final_notes' => $data['final_notes'] ?? null,
         ]);
 
+        if ($data['owner_decision'] === OwnerDecision::FullRefund->value) {
+            $this->workflow->skipCompensation($handover);
+        } else {
+            $deduction = (float) ($data['proposed_deduction'] ?? 0);
+
+            $this->workflow->requestCompensation(
+                $handover,
+                $deduction,
+                $data['final_notes'] ?? '',
+            );
+        }
+
         return back()->with('success', 'Decision submitted.');
+    }
+    public function respond(Request $request, EquipmentHandover $handover)
+    {
+        $decision = $request->input('decision');
+        $this->authorize('view', $handover->rental);
+        abort_unless((int) Auth::id() === (int) $handover->rental->tenant_id, 403);
+
+        if ($decision === 'accepted') {
+            $this->workflow->acceptCompensation($handover);
+            return back()->with('success', 'Compensation accepted.');
+        }
+
+        return back()->with('info', 'Action recorded.');
     }
 }

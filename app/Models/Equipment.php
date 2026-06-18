@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Models;
+use App\Domains\Equipment\Enums\EquipmentStatus;
 use App\Models\User;
 use App\Models\Category;
 use App\Models\EquipmentImage;
@@ -28,6 +29,14 @@ class Equipment extends Model
         'status',
     ];
 
+    protected $casts = [
+        'status' => EquipmentStatus::class,
+        'price_per_day' => 'decimal:2',
+        'insurance_amount' => 'decimal:2',
+        'rating' => 'float',
+        'rentals_count' => 'integer',
+    ];
+
     public function owner()
     {
         return $this->belongsTo(User::class, 'owner_id');
@@ -51,5 +60,11 @@ class Equipment extends Model
     public function rentals()
     {
         return $this->hasMany(RentalOperation::class, 'equipment_id');
+    }
+
+    public function reviews()
+    {
+        return $this->hasMany(Review::class, 'target_id')
+            ->where('target_type', 'equipment');
     }
 }

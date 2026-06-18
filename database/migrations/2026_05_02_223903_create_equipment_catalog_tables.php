@@ -71,6 +71,10 @@ return new class extends Migration
 
             $table->timestamps();
             $table->softDeletes();
+
+            $table->index(['owner_id', 'status']);
+            $table->index(['category_id', 'status']);
+            $table->index('governorate');
         });
 
         /*
@@ -87,9 +91,12 @@ return new class extends Migration
 
             $table->string('image_url');
 
+            $table->boolean('is_primary')->default(false);
             $table->integer('sort_order')->default(0);
 
             $table->timestamps();
+
+            $table->index(['equipment_id', 'sort_order']);
         });
 
         /*
@@ -113,6 +120,11 @@ return new class extends Migration
             ]);
 
             $table->timestamps();
+
+            $table->index(
+                ['equipment_id', 'unavailable_from', 'unavailable_to'],
+                'equipment_availability_period'
+            );
         });
     }
 

@@ -5,16 +5,41 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Equipment;
 use App\Models\Category;
+use App\Domains\Equipment\Enums\EquipmentStatus;
 use Illuminate\Http\Request;
+use App\Http\Requests\StoreEquipmentRequest;
+use App\Http\Requests\UpdateEquipmentRequest;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
+use App\Domains\Equipment\Services\EquipmentAvailabilityService;
+
 class EquipmentController extends Controller
 {
+    public function __construct(
+        private EquipmentAvailabilityService $availabilityService
+    ) {}
+
+    public function checkAvailability(Request $request, Equipment $equipment)
+    {
+        $startDate = $request->query('start_date');
+        $endDate = $request->query('end_date');
+
+        if (!$startDate || !$endDate) {
+            return response()->json(['available' => false, 'reason' => 'يرجى تحديد التواريخ']);
+        }
+
+        $available = $this->availabilityService->isAvailable($equipment->id, $startDate, $endDate);
+
+        return response()->json([
+            'available' => $available,
+            'reason' => $available ? 'المعدة متاحة للحجز' : 'المعدة غير متاحة في هذه التواريخ'
+        ]);
+    }
     public function index()
     {
         $equipment = Equipment::with(['category', 'images'])
-            ->where('status', 'active')
+            ->where('status', EquipmentStatus::Active->value)
             ->latest()
             ->paginate(12);
 
@@ -30,26 +55,35 @@ class EquipmentController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function store(StoreEquipmentRequest $request)
     {
         /** @var User $user */
         $user = Auth::user();
 
-        $data = $request->validate([
-            'category_id'      => ['required', 'exists:categories,id'],
-            'name'             => ['required', 'string', 'max:255'],
-            'description'      => ['required', 'string'],
-            'governorate'      => ['required', 'string'],
-            'address'          => ['required', 'string'],
-            'price_per_day'    => ['required', 'numeric', 'min:0'],
-            'insurance_amount' => ['required', 'numeric', 'min:0'],
-            'rental_terms'     => ['required', 'string'],
-        ]);
+        $data = $request->validated();
+        $data['status'] = EquipmentStatus::Active->value;
 
         $equipment = $user->equipment()->create($data);
 
-        return redirect()->route('equipment.show', $equipment)
-            ->with('success', 'Equipment created successfully.');
+        \Illuminate\Support\Facades\Log::info('Equipment created', ['id' => $equipment->id]);
+        \Illuminate\Support\Facades\Log::info('Request files', ['files' => $request->allFiles()]);
+
+        if ($request->hasFile('images')) {
+            \Illuminate\Support\Facades\Log::info('Images found in request', ['count' => count($request->file('images'))]);
+            foreach ($request->file('images') as $index => $image) {
+                $path = $image->store('equipment', 'public');
+                $equipment->images()->create([
+                    'image_url' => '/storage/' . $path,
+                    'is_primary' => $index === 0,
+                    'sort_order' => $index,
+                ]);
+            }
+        } else {
+            \Illuminate\Support\Facades\Log::warning('No images found in request');
+        }
+
+        return redirect()->route('owner.equipment')
+            ->with('success', 'تمت إضافة المعدة بنجاح.');
     }
 
     public function show(Equipment $equipment)
@@ -71,35 +105,38 @@ class EquipmentController extends Controller
         ]);
     }
 
-    public function update(Request $request, Equipment $equipment)
+    public function update(UpdateEquipmentRequest $request, Equipment $equipment)
     {
         $this->authorize('update', $equipment);
 
-        $data = $request->validate([
-            'name'             => ['required', 'string', 'max:255'],
-            'description'      => ['required', 'string'],
-            'governorate'      => ['required', 'string'],
-            'address'          => ['required', 'string'],
-            'price_per_day'    => ['required', 'numeric', 'min:0'],
-            'insurance_amount' => ['required', 'numeric', 'min:0'],
-            'rental_terms'     => ['required', 'string'],
-            'status'           => ['nullable', 'in:active,hidden'],
-        ]);
+        $data = $request->validated();
+        unset($data['images']);
 
         $equipment->update($data);
 
-        return redirect()->route('equipment.show', $equipment)
-            ->with('success', 'Equipment updated.');
+        if ($request->hasFile('images')) {
+            $startOrder = (int) $equipment->images()->max('sort_order') + 1;
+
+            foreach ($request->file('images') as $index => $image) {
+                $path = $image->store('equipment', 'public');
+                $equipment->images()->create([
+                    'image_url' => '/storage/' . $path,
+                    'is_primary' => ! $equipment->images()->exists() && $index === 0,
+                    'sort_order' => $startOrder + $index,
+                ]);
+            }
+        }
+
+        return back()->with('success', 'تم تحديث المعدة بنجاح.');
     }
 
     public function destroy(Equipment $equipment)
     {
         $this->authorize('delete', $equipment);
 
-        $equipment->update(['status' => 'deleted']);
+        $equipment->update(['status' => EquipmentStatus::Deleted->value]);
         $equipment->delete();
 
-        return redirect()->route('owner.equipment.index')
-            ->with('success', 'Equipment deleted.');
+        return back()->with('success', 'تم حذف المعدة بنجاح.');
     }
 }

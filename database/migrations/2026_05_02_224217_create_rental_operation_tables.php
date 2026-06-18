@@ -43,6 +43,7 @@ return new class extends Migration
             $table->enum('status', [
                 'pending',
                 'confirmed',
+                'paid',
                 'in_use',
                 'completed',
                 'cancelled',
@@ -50,6 +51,7 @@ return new class extends Migration
             ])->default('pending');
 
             $table->string('cancellation_reason')->nullable();
+            $table->timestamp('payment_deadline')->nullable();
 
             $table->string('delivery_location');
 
@@ -58,6 +60,10 @@ return new class extends Migration
             $table->timestamp('return_confirmed_at')->nullable();
 
             $table->timestamps();
+
+            $table->index(['equipment_id', 'status', 'start_date', 'end_date'], 'rental_equipment_status_dates_idx');
+            $table->index(['tenant_id', 'status']);
+            $table->index(['owner_id', 'status']);
         });
 
         /*
@@ -81,6 +87,11 @@ return new class extends Migration
             ])->default('pending');
 
             $table->enum('owner_signature', [
+                'pending',
+                'signed'
+            ])->default('pending');
+
+            $table->enum('status', [
                 'pending',
                 'signed'
             ])->default('pending');
@@ -119,9 +130,16 @@ return new class extends Migration
                 'pending',
                 'processing',
                 'paid',
+                'failed',
+                'cancelled',
                 'stopped',
                 'refunded'
             ])->default('pending');
+
+            $table->foreignId('payer_id')
+                ->nullable()
+                ->constrained('users')
+                ->nullOnDelete();
 
             $table->string('payment_method')->nullable();
             $table->string('transaction_ref')->nullable();
@@ -130,7 +148,7 @@ return new class extends Migration
                 'held',
                 'released',
                 'refunded'
-            ])->default('held');
+            ])->nullable()->default('held');
 
             $table->string('stop_reason')->nullable();
 
@@ -141,8 +159,14 @@ return new class extends Migration
 
             $table->timestamp('paid_at')->nullable();
             $table->timestamp('transferred_at')->nullable();
+            $table->timestamp('refunded_at')->nullable();   // ✦ جديد
+            $table->timestamp('cancelled_at')->nullable();
 
             $table->timestamps();
+
+            $table->index(['rental_op_id', 'type', 'status']);
+            $table->index(['rental_op_id', 'escrow_status']);
+            $table->index('transaction_ref');
         });
     }
 

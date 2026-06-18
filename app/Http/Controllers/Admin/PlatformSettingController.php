@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\PlatformSetting;
 use Illuminate\Http\Request;
+use App\Http\Requests\Admin\UpdateSettingsRequest;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
@@ -13,25 +15,20 @@ class PlatformSettingController extends Controller
     public function index()
     {
         return Inertia::render('Admin/Settings/Index', [
-            'settings' => PlatformSetting::first(),
+            'settings' => PlatformSetting::firstOrCreate([]),
         ]);
     }
 
-    public function update(Request $request)
+    public function update(UpdateSettingsRequest $request)
     {
-        $data = $request->validate([
-            'platform_fee_rate'      => ['required', 'numeric', 'min:0', 'max:100'],
-            'min_rental_days'        => ['required', 'integer', 'min:1'],
-            'max_rental_days'        => ['required', 'integer', 'min:1'],
-            'objection_window_hours' => ['required', 'integer', 'min:1'],
-            'refund_window_days'     => ['required', 'integer', 'min:1'],
-            'kyc_required'           => ['required', 'boolean'],
+        $data = $request->validated();
+
+        PlatformSetting::firstOrCreate([])->update([
+            ...$data,
+            'updated_by' => Auth::guard('admin')->id() ?? Auth::id(),
         ]);
 
-        PlatformSetting::first()->update([
-            ...$data,
-            'updated_by' => Auth::id(),
-        ]);
+        Cache::forget('platform_settings');
 
         return back()->with('success', 'Settings updated.');
     }

@@ -2,14 +2,20 @@
 
 namespace App\Http\Controllers;
 
+use App\Domains\Dispute\Services\DisputeWorkflowService;
 use App\Models\Dispute;
 use App\Models\EquipmentHandover;
 use Illuminate\Http\Request;
+use App\Http\Requests\StoreDisputeRequest;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 class DisputeController extends Controller
 {
+    public function __construct(
+        private DisputeWorkflowService $workflow,
+    ) {}
+
     public function index()
     {
         $disputes = Dispute::where('raised_by_id', Auth::id())
@@ -24,31 +30,33 @@ class DisputeController extends Controller
 
     public function create(EquipmentHandover $handover)
     {
+        $handover->load(['rental.equipment', 'rental.owner']);
+
+        abort_unless(
+            (int) Auth::id() === (int) $handover->rental->tenant_id,
+            403,
+            'Unauthorized access to this handover.'
+        );
+
         return Inertia::render('Disputes/Create', [
-            'handover' => $handover->load(['rental.equipment', 'rental.owner']),
+            'handover' => $handover,
         ]);
     }
 
-    public function store(Request $request)
+    public function store(StoreDisputeRequest $request)
     {
-        $data = $request->validate([
-            'rental_op_id'          => ['required', 'exists:rental_operations,id'],
-            'equipment_handover_id' => ['required', 'exists:equipment_handover,id'],
-            'tenant_claim'          => ['required', 'string'],
-            'requested_amount'      => ['nullable', 'numeric', 'min:0'],
-        ]);
+        $data = $request->validated();
 
-        Dispute::create([
-            ...$data,
-            'raised_by_id' => Auth::id(),
-            'status'       => 'open',
-        ]);
+        $handover = EquipmentHandover::with('rental')->findOrFail($data['equipment_handover_id']);
 
-        // update rental status
-        \App\Models\RentalOperation::find($data['rental_op_id'])
-            ->update(['status' => 'disputed']);
+        $this->workflow->openDispute(
+            $handover,
+            $request->user(),
+            $data['tenant_claim'],
+            (float) ($data['requested_amount'] ?? 0),
+        );
 
-        return redirect()->route('disputes.index')
+        return redirect()->back()
             ->with('success', 'Dispute opened.');
     }
 

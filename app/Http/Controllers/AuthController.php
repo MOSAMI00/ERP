@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use App\Http\Requests\Auth\RegisterRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 class AuthController extends Controller
@@ -18,19 +20,19 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $credentials = $request->validate([
-            'email'    => ['required', 'email'],
+            'phone'    => ['required', 'string'],
             'password' => ['required'],
         ]);
 
-        if (!Auth::attempt(['email' => $credentials['email'], 'password' => $credentials['password']])) {
+        if (!Auth::attempt(['phone' => $credentials['phone'], 'password' => $credentials['password']])) {
             return back()->withErrors([
-                'email' => 'The provided credentials are incorrect.',
+                'phone' => 'The provided credentials are incorrect.',
             ]);
         }
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard'));
+        return redirect()->intended(route('dashboard.index'));
     }
 
     public function showRegister()
@@ -38,25 +40,24 @@ class AuthController extends Controller
         return Inertia::render('Auth/Register');
     }
 
-    public function register(Request $request)
+    public function register(RegisterRequest $request)
     {
-        $data = $request->validate([
-            'full_name'  => ['required', 'string', 'max:255'],
-            'email'      => ['required', 'email', 'unique:users'],
-            'phone'      => ['required', 'string', 'unique:users'],
-            'password'   => ['required', 'confirmed', 'min:8'],
-            'type'       => ['required', 'in:tenant,owner'],
-            'governorate'=> ['required', 'string'],
-        ]);
+        $data = $request->validated();
+
+        $data['phone'] = preg_replace('/[^0-9+]/', '', $data['phone']);
+        $data['email'] = $data['email'] ?: 'phone-'.$data['phone'].'@local.erp';
+
+        $password = $data['password'];
+        unset($data['password'], $data['password_confirmation']);
 
         $user = User::create([
             ...$data,
-            'password_hash' => Hash::make($data['password']),
+            'password_hash' => Hash::make($password),
         ]);
 
         Auth::login($user);
 
-        return redirect()->route('dashboard');
+        return redirect()->route('dashboard.index');
     }
 
     public function logout(Request $request)

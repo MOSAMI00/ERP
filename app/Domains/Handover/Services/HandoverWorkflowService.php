@@ -1,0 +1,275 @@
+<?php
+
+namespace App\Domains\Handover\Services;
+
+use App\Domains\Handover\Actions\CreateHandoverReportAction;
+use App\Domains\Handover\Actions\UploadHandoverImagesAction;
+use App\Domains\Handover\Enums\HandoverPhase;
+use App\Domains\Rental\Actions\UpdateRentalStatusAction;
+use App\Domains\Rental\Enums\RentalStatus;
+use App\Domains\Rental\Services\RentalStateResolver;
+use App\Domains\Compensation\Services\CompensationWorkflowService;
+use App\Domains\Shared\Exceptions\InvalidStateTransitionException;
+use App\Domains\Shared\Exceptions\UnauthorizedDomainActionException;
+use App\Domains\Shared\Exceptions\DuplicateOperationException;
+use App\Models\HandoverReport;
+use App\Models\RentalOperation;
+use App\Models\User;
+use App\Shared\Audit\AuditLogService;
+use App\Shared\Notifications\NotificationService;
+use Illuminate\Support\Facades\DB;
+
+class HandoverWorkflowService
+{
+    public function __construct(
+        private CreateHandoverReportAction  $createReport,
+        private UploadHandoverImagesAction  $uploadImages,
+        private UpdateRentalStatusAction    $updateRentalStatus,
+        private RentalStateResolver         $stateResolver,
+        private CompensationWorkflowService $compensationWorkflow,
+        private NotificationService         $notifications,
+        private AuditLogService             $audit,
+    ) {}
+
+    // ══════════════════════════════════════════
+    // [6A] المؤجر يرفع تقرير التسليم
+    // ══════════════════════════════════════════
+    public function submitOwnerDeliveryReport(
+        RentalOperation $rental,
+        User $owner,
+        array $reportData,
+        array $images = []
+    ): void {
+        $this->mustBeRentalOwner($rental, $owner);
+        $this->stateResolver->canSubmitDeliveryReport($rental);
+
+        // ✦ Duplicate protection
+        $this->mustNotHaveReport($rental, HandoverPhase::Delivery, $owner->id);
+
+        DB::transaction(function () use ($rental, $owner, $reportData, $images) {
+            $report = $this->createReport->handle($rental, $owner, HandoverPhase::Delivery, $reportData);
+
+            if (! empty($images)) {
+                $this->uploadImages->handle($report, $images);
+            }
+
+            $this->audit->log('owner_delivery_report_submitted', $rental);
+        });
+
+        $this->notifications->notifyTenant($rental, 'delivery_report_submitted');
+    }
+
+    // ══════════════════════════════════════════
+    // [6B] المستأجر يؤكد الاستلام
+    // ══════════════════════════════════════════
+    public function submitTenantDeliveryReport(
+        RentalOperation $rental,
+        User $tenant,
+        array $reportData,
+        array $images = []
+    ): void {
+        $this->mustBeRentalTenant($rental, $tenant);
+        $this->stateResolver->canSubmitDeliveryReport($rental);
+
+        // ✦ Duplicate protection
+        $this->mustNotHaveReport($rental, HandoverPhase::Delivery, $tenant->id);
+
+        // ✦ المؤجر يجب أن يرفع أولاً
+        $this->mustHaveReport($rental, HandoverPhase::Delivery, $rental->owner_id);
+
+        DB::transaction(function () use ($rental, $tenant, $reportData, $images) {
+            $report = $this->createReport->handle($rental, $tenant, HandoverPhase::Delivery, $reportData);
+
+            if (! empty($images)) {
+                $this->uploadImages->handle($report, $images);
+            }
+
+            // ✦ كلا الطرفين رفعا → in_use
+            $this->updateRentalStatus->handle($rental, RentalStatus::InUse);
+            $rental->update(['delivery_confirmed_at' => now()]);
+            $this->audit->log('tenant_delivery_confirmed', $rental);
+        });
+
+        $this->notifications->notifyOwner($rental, 'delivery_confirmed_by_tenant');
+        $this->notifications->notifyBoth($rental, 'rental_started');
+    }
+
+    // ══════════════════════════════════════════
+    // [8A] المستأجر يرفع تقرير الإرجاع
+    // ══════════════════════════════════════════
+    public function submitTenantReturnReport(
+        RentalOperation $rental,
+        User $tenant,
+        array $reportData,
+        array $images = []
+    ): void {
+        $this->mustBeRentalTenant($rental, $tenant);
+        $this->stateResolver->canSubmitReturnReport($rental);
+
+        // ✦ Duplicate protection
+        $this->mustNotHaveReport($rental, HandoverPhase::Return, $tenant->id);
+
+        DB::transaction(function () use ($rental, $tenant, $reportData, $images) {
+            $report = $this->createReport->handle($rental, $tenant, HandoverPhase::Return, $reportData);
+
+            if (! empty($images)) {
+                $this->uploadImages->handle($report, $images);
+            }
+
+            $this->audit->log('tenant_return_report_submitted', $rental);
+        });
+
+        $this->notifications->notifyOwner($rental, 'return_report_submitted');
+    }
+
+    // ══════════════════════════════════════════
+    // [8B] المؤجر يؤكد استلام المعدة
+    // ══════════════════════════════════════════
+    public function submitOwnerReturnReport(
+        RentalOperation $rental,
+        User $owner,
+        array $reportData,
+        array $images = []
+    ): void {
+        $this->mustBeRentalOwner($rental, $owner);
+        $this->stateResolver->canSubmitReturnReport($rental);
+
+        // ✦ Duplicate protection
+        $this->mustNotHaveReport($rental, HandoverPhase::Return, $owner->id);
+
+        // ✦ المستأجر يجب أن يرفع أولاً
+        $this->mustHaveReport($rental, HandoverPhase::Return, $rental->tenant_id);
+
+        DB::transaction(function () use ($rental, $owner, $reportData, $images) {
+            $report = $this->createReport->handle($rental, $owner, HandoverPhase::Return, $reportData);
+
+            if (! empty($images)) {
+                $this->uploadImages->handle($report, $images);
+            }
+
+            $rental->update(['return_confirmed_at' => now()]);
+            
+            // ✦ Update status to ReturnDone
+            $this->updateRentalStatus->handle($rental, RentalStatus::ReturnDone);
+            
+            // ✦ Trigger compensation evaluation to create EquipmentHandover record
+            $this->compensationWorkflow->evaluate($rental);
+            
+            $this->audit->log('owner_return_report_submitted', $rental);
+        });
+
+        $this->notifications->notifyTenant($rental, 'return_confirmed_by_owner');
+        $this->notifications->notifyBoth($rental, 'equipment_returned');
+    }
+
+    // ══════════════════════════════════════════
+    // Confirm handover report
+    // ══════════════════════════════════════════
+    public function confirmReport(HandoverReport $report, User $confirmer): void
+    {
+        $rental = $report->rental;
+
+        // Ensure confirmer is a participant
+        if ((int) $confirmer->id !== (int) $rental->owner_id &&
+            (int) $confirmer->id !== (int) $rental->tenant_id) {
+            throw UnauthorizedDomainActionException::notParticipant();
+        }
+
+        // Prevent double confirmation
+        if ($report->confirmed_at !== null) {
+            throw DuplicateOperationException::forModel('HandoverReport', $report->id);
+        }
+
+        DB::transaction(function () use ($report, $confirmer, $rental) {
+            $report->update([
+                'confirmed_by_id'   => $confirmer->id,
+                'confirmed_by_role' => $confirmer->type,
+                'confirmed_at'      => now(),
+            ]);
+
+            // Check if both parties have submitted and confirmed for this phase
+            if ($report->phase === HandoverPhase::Delivery->value || $report->phase === 'delivery') {
+                $bothSubmitted = $rental->handoverReports()
+                    ->where('phase', 'delivery')
+                    ->whereNotNull('confirmed_at')
+                    ->count() >= 2;
+
+                // If both parties confirmed delivery → transition to InUse
+                if ($bothSubmitted && $rental->status === RentalStatus::Paid) {
+                    $this->updateRentalStatus->handle($rental, RentalStatus::InUse);
+                    $rental->update(['delivery_confirmed_at' => now()]);
+                    $this->audit->log('delivery_confirmed', $rental);
+                    $this->notifications->notifyBoth($rental, 'rental_started');
+                    return;
+                }
+            }
+
+            if ($report->phase === HandoverPhase::Return->value || $report->phase === 'return') {
+                $bothSubmitted = $rental->handoverReports()
+                    ->where('phase', 'return')
+                    ->whereNotNull('confirmed_at')
+                    ->count() >= 2;
+
+                // If both parties confirmed return → mark return confirmed
+                if ($bothSubmitted && $rental->status === RentalStatus::InUse) {
+                    $rental->update(['return_confirmed_at' => now()]);
+                    $this->audit->log('return_confirmed', $rental);
+                    $this->notifications->notifyBoth($rental, 'equipment_returned');
+                    return;
+                }
+            }
+
+            $this->audit->log('handover_report_confirmed', $rental);
+        });
+    }
+
+    // ══════════════════════════════════════════
+    // Private helpers
+    // ══════════════════════════════════════════
+
+    // ✦ يرمي exception لو الطرف رفع تقرير من نفس النوع مسبقاً
+    private function mustNotHaveReport(
+        RentalOperation $rental,
+        HandoverPhase $phase,
+        int $userId
+    ): void {
+        $exists = $rental->handoverReports()
+            ->where('phase', $phase->value)
+            ->where('submitted_by_id', $userId)
+            ->exists();
+
+        if ($exists) {
+            throw DuplicateOperationException::forModel('HandoverReport', $userId);
+        }
+    }
+
+    private function mustBeRentalOwner(RentalOperation $rental, User $user): void
+    {
+        if ((int) $rental->owner_id !== (int) $user->id) {
+            throw UnauthorizedDomainActionException::notOwner();
+        }
+    }
+
+    private function mustBeRentalTenant(RentalOperation $rental, User $user): void
+    {
+        if ((int) $rental->tenant_id !== (int) $user->id) {
+            throw UnauthorizedDomainActionException::notTenant();
+        }
+    }
+
+    // ✦ يرمي exception لو الطرف المطلوب لم يرفع بعد
+    private function mustHaveReport(
+        RentalOperation $rental,
+        HandoverPhase $phase,
+        int $userId
+    ): void {
+        $exists = $rental->handoverReports()
+            ->where('phase', $phase->value)
+            ->where('submitted_by_id', $userId)
+            ->exists();
+
+        if (! $exists) {
+            throw InvalidStateTransitionException::expected("{$phase->value} report submitted", 'not submitted');
+        }
+    }
+}
